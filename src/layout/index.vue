@@ -12,7 +12,6 @@
 </template>
 
 <script>
-import RightPanel from '@/components/RightPanel'
 import { Navbar, Sidebar, AppMain } from './components'
 import ResizeMixin from './mixin/ResizeHandler'
 
@@ -20,7 +19,6 @@ export default {
   name: 'Layout',
   components: {
     Navbar,
-    RightPanel,
     Sidebar,
     AppMain
   },
