@@ -65,6 +65,18 @@ for (let i = 0; i < CategoryCount; i++) {
   )
 }
 
+const DepartList = []
+const DepartCount = 20
+
+for (let i = 0; i < DepartCount; i++) {
+  DepartList.push(
+    Mock.mock({
+      id: '@increment',
+      name: '部门名称@id'
+    })
+  )
+}
+
 module.exports = [
   {
     url: '/vue-admin-template/system/type/list',
@@ -203,6 +215,67 @@ module.exports = [
       return {
         code: 200,
         data: 'success'
+      }
+    }
+  },
+
+  {
+    url: '/vue-admin-template/system/department/list',
+    type: 'post',
+    response: (config) => {
+      const { department, page = 1, limit = 20, sort } = config.query
+
+      let mockList = DepartList.filter((item) => {
+        if (department && item.name.indexOf(department) < 0) return false
+        return true
+      })
+
+      if (sort === '-id') {
+        mockList = mockList.reverse()
+      }
+
+      const pageList = mockList.filter(
+        (item, index) => index < limit * page && index >= limit * (page - 1)
+      )
+
+      return {
+        code: 200,
+        data: {
+          total: mockList.length,
+          items: pageList
+        }
+      }
+    }
+  },
+  {
+    url: '/vue-element-admin/system/department/create',
+    type: 'post',
+    response: (_) => {
+      return {
+        code: 200,
+        data: 'success'
+      }
+    }
+  },
+  {
+    url: '/vue-element-admin/system/department/update',
+    type: 'post',
+    response: (_) => {
+      return {
+        code: 200,
+        data: 'success'
+      }
+    }
+  },
+  {
+    url: '/vue-admin-template/system/department/all',
+    type: 'post',
+    response: (config) => {
+      return {
+        code: 200,
+        data: {
+          items: TypeList
+        }
       }
     }
   }
