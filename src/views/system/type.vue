@@ -3,8 +3,8 @@
     <div class="filter-container">
       <div class="filter-left">
         <el-input
-          v-model="listQuery.name"
-          placeholder="输入需求类型"
+          v-model="listQuery.type_name"
+          placeholder="需求类型"
           style="width: 200px"
           class="filter-item"
           @keyup.enter.native="handleFilter"
@@ -24,7 +24,7 @@
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
-          icon="el-icon-edit"
+          icon="el-icon-plus"
           @click="handleCreate"
         >
           新增需求类型
@@ -41,9 +41,16 @@
       fit
       highlight-current-row
     >
+
+      <el-table-column label="ID" align="center" width="100">
+        <template slot-scope="{ row }">
+          {{ row.id }}
+        </template>
+      </el-table-column>
+
       <el-table-column label="需求类型" align="center" min-width="150px">
         <template slot-scope="{ row }">
-          {{ row.name }}
+          {{ row.type_name }}
         </template>
       </el-table-column>
 
@@ -86,8 +93,8 @@
         label-width="70px"
         style="width: 400px; margin-left: 50px"
       >
-        <el-form-item label="名称" prop="name">
-          <el-input v-model="temp.name" />
+        <el-form-item label="名称" prop="type_name">
+          <el-input v-model="temp.type_name" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -121,21 +128,21 @@ export default {
       listQuery: {
         page: 1,
         limit: 10,
-        name: undefined,
+        type_name: undefined,
         sort: '+id'
       },
       dialogStatus: '',
       dialogFormVisible: false,
       temp: {
         id: undefined,
-        name: ''
+        type_name: ''
       },
       textMap: {
         update: '修改',
         create: '新增'
       },
       rules: {
-        name: [
+        type_name: [
           { required: true, message: '请输入需求类型名称', trigger: 'blur' }
         ]
       }
@@ -164,7 +171,7 @@ export default {
     resetTemp() {
       this.temp = {
         id: undefined,
-        name: ''
+        type_name: ''
       }
     },
     handleCreate() {

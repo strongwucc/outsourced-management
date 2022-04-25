@@ -8,6 +8,14 @@ export function fetchList(params) {
   })
 }
 
+export function fetchAllType(params) {
+  return request({
+    url: '/vue-admin-template/system/type/all',
+    method: 'post',
+    params
+  })
+}
+
 export function createType(data) {
   return request({
     url: '/vue-element-admin/system/type/create',
