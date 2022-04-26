@@ -77,6 +77,19 @@ for (let i = 0; i < DepartCount; i++) {
   )
 }
 
+const RoleList = []
+const RoleCount = 20
+
+for (let i = 0; i < RoleCount; i++) {
+  RoleList.push(
+    Mock.mock({
+      id: '@increment',
+      name: '分组名称@id',
+      'nums|1-10': 1
+    })
+  )
+}
+
 module.exports = [
   {
     url: '/vue-admin-template/system/type/list',
@@ -269,6 +282,57 @@ module.exports = [
   },
   {
     url: '/vue-admin-template/system/department/all',
+    type: 'post',
+    response: (config) => {
+      return {
+        code: 200,
+        data: {
+          items: TypeList
+        }
+      }
+    }
+  },
+
+  {
+    url: '/vue-admin-template/system/role/list',
+    type: 'post',
+    response: (config) => {
+      const { name, page = 1, limit = 20, sort } = config.query
+
+      let mockList = RoleList.filter((item) => {
+        if (name && item.name.indexOf(name) < 0) return false
+        return true
+      })
+
+      if (sort === '-id') {
+        mockList = mockList.reverse()
+      }
+
+      const pageList = mockList.filter(
+        (item, index) => index < limit * page && index >= limit * (page - 1)
+      )
+
+      return {
+        code: 200,
+        data: {
+          total: mockList.length,
+          items: pageList
+        }
+      }
+    }
+  },
+  {
+    url: '/vue-element-admin/system/role/update',
+    type: 'post',
+    response: (_) => {
+      return {
+        code: 200,
+        data: 'success'
+      }
+    }
+  },
+  {
+    url: '/vue-admin-template/system/role/all',
     type: 'post',
     response: (config) => {
       return {
