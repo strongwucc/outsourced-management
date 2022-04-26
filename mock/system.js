@@ -1,5 +1,13 @@
 const Mock = require('mockjs')
 
+// 拓展mockjs
+Mock.Random.extend({
+  phone: function() {
+    var phonePrefixs = ['132', '135', '189'] // 自己写前缀哈
+    return this.pick(phonePrefixs) + Mock.mock(/\d{8}/) // Number()
+  }
+})
+
 const TypeList = []
 const TypeCount = 20
 
@@ -57,7 +65,7 @@ for (let i = 0; i < CategoryCount; i++) {
         ]
       },
       property_array: function() {
-        return PropList.filter(prop => {
+        return PropList.filter((prop) => {
           return this.property_json.indexOf(prop.id) !== -1
         })
       }
@@ -86,6 +94,28 @@ for (let i = 0; i < RoleCount; i++) {
       id: '@increment',
       name: '分组名称@id',
       'nums|1-10': 1
+    })
+  )
+}
+
+const MemberList = []
+const MemberCount = 20
+
+for (let i = 0; i < MemberCount; i++) {
+  MemberList.push(
+    Mock.mock({
+      id: '@increment',
+      name: '@cname',
+      role_id: function() {
+        return RoleList[getRandomIntInclusive(0, RoleList.length - 1)].id
+      },
+      department_id: function() {
+        return DepartList[getRandomIntInclusive(0, DepartList.length - 1)].id
+      },
+      login_name: '@first',
+      mobile: '@phone',
+      email: '@email',
+      'status|1': [0, 1]
     })
   )
 }
@@ -287,7 +317,7 @@ module.exports = [
       return {
         code: 200,
         data: {
-          items: TypeList
+          items: DepartList
         }
       }
     }
@@ -338,7 +368,72 @@ module.exports = [
       return {
         code: 200,
         data: {
-          items: TypeList
+          items: RoleList
+        }
+      }
+    }
+  },
+
+  {
+    url: '/vue-admin-template/system/member/list',
+    type: 'post',
+    response: (config) => {
+      const { keyword, page = 1, limit = 20, sort } = config.query
+
+      let mockList = MemberList.filter((item) => {
+        if (
+          keyword &&
+          item.login_name.indexOf(keyword) < 0 &&
+          item.mobile.indexOf(keyword) < 0
+        ) { return false }
+        return true
+      })
+
+      if (sort === '-id') {
+        mockList = mockList.reverse()
+      }
+
+      const pageList = mockList.filter(
+        (item, index) => index < limit * page && index >= limit * (page - 1)
+      )
+
+      return {
+        code: 200,
+        data: {
+          total: mockList.length,
+          items: pageList
+        }
+      }
+    }
+  },
+  {
+    url: '/vue-element-admin/system/member/create',
+    type: 'post',
+    response: (_) => {
+      return {
+        code: 200,
+        data: 'success'
+      }
+    }
+  },
+  {
+    url: '/vue-element-admin/system/member/update',
+    type: 'post',
+    response: (_) => {
+      return {
+        code: 200,
+        data: 'success'
+      }
+    }
+  },
+  {
+    url: '/vue-admin-template/system/member/all',
+    type: 'post',
+    response: (config) => {
+      return {
+        code: 200,
+        data: {
+          items: MemberList
         }
       }
     }
