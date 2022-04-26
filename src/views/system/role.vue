@@ -80,7 +80,7 @@
         label-width="100px"
         style="width: 400px; margin-left: 50px"
       >
-        <el-form-item label="项目组名称" prop="name">
+        <el-form-item label="分组名称" prop="name">
           <el-input v-model="temp.name" />
         </el-form-item>
       </el-form>
@@ -130,7 +130,7 @@ export default {
       },
       rules: {
         name: [
-          { required: true, message: '请输入项目组名称', trigger: 'blur' }
+          { required: true, message: '请输入分组名称', trigger: 'blur' }
         ]
       }
     }
