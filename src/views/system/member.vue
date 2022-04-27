@@ -234,10 +234,6 @@ export default {
         if (reg.test(value)) {
           callback()
         } else {
-          this.$message({
-            message: '手机号填写不正确',
-            type: 'error'
-          })
           callback(new Error('手机号填写不正确'))
         }
       } else {

@@ -42,7 +42,7 @@ for (let i = 0; i < PropCount; i++) {
 }
 
 const CategoryList = []
-const CategoryCount = 100
+const CategoryCount = 20
 
 function getRandomIntInclusive(min, max) {
   min = Math.ceil(min)
@@ -240,6 +240,18 @@ module.exports = [
       }
     }
   },
+  {
+    url: '/vue-admin-template/system/category/all',
+    type: 'post',
+    response: (config) => {
+      return {
+        code: 200,
+        data: {
+          items: CategoryList
+        }
+      }
+    }
+  },
 
   {
     url: '/vue-element-admin/system/category/prop/create',
@@ -385,7 +397,9 @@ module.exports = [
           keyword &&
           item.login_name.indexOf(keyword) < 0 &&
           item.mobile.indexOf(keyword) < 0
-        ) { return false }
+        ) {
+          return false
+        }
         return true
       })
 
