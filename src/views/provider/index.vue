@@ -443,7 +443,7 @@ export default {
   computed: {
     rules: function() {
       if (this.dialogFormDisabled === true) {
-        return {}
+        return Object.assign({})
       }
       return {
         supplier_name: [
@@ -531,7 +531,7 @@ export default {
       }
     },
     handleShow(row) {
-      this.temp = Object.assign({}, row)
+      this.temp = JSON.parse(JSON.stringify(row))
       this.dialogStatus = 'view'
       this.dialogFormVisible = true
       this.dialogFormDisabled = true
@@ -551,7 +551,7 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          const temp = Object.assign({}, this.temp)
+          const temp = JSON.parse(JSON.stringify(this.temp))
           temp.supplier_id = parseInt(Math.random() * 100) + 1024
           temp.cat_json = JSON.stringify(temp.cat_array)
           temp.contacts = JSON.stringify(temp.contact_array)
@@ -573,7 +573,7 @@ export default {
       })
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row)
+      this.temp = JSON.parse(JSON.stringify(row))
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.dialogFormDisabled = false
@@ -584,11 +584,11 @@ export default {
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          const temp = Object.assign({}, this.temp)
+          const temp = JSON.parse(JSON.stringify(this.temp))
           temp.cat_json = JSON.stringify(temp.cat_array)
           temp.contacts = JSON.stringify(temp.contact_array)
 
-          const postTemp = Object.assign({}, temp)
+          const postTemp = JSON.parse(JSON.stringify(temp))
           delete postTemp.cat_array
           delete postTemp.contact_array
           updateProvider(postTemp).then(() => {

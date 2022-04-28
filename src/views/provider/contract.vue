@@ -1,96 +1,682 @@
 <template>
   <div class="app-container">
+    <!--筛选-->
+    <div class="filter-container">
+      <div class="filter-left">
+        <el-input
+          v-model="listQuery.supplier_name"
+          placeholder="供应商名称"
+          style="width: 200px"
+          class="filter-item"
+          @keyup.enter.native="handleFilter"
+        />
+        <el-input
+          v-model="listQuery.subject_name"
+          placeholder="签约主体"
+          style="width: 200px"
+          class="filter-item"
+          @keyup.enter.native="handleFilter"
+        />
+        <el-input
+          v-model="listQuery.bn"
+          placeholder="合同编号"
+          style="width: 200px"
+          class="filter-item"
+          @keyup.enter.native="handleFilter"
+        />
+        <el-select
+          v-model="listQuery.area"
+          placeholder="区域"
+          clearable
+          class="filter-item"
+          style="width: 200px"
+        >
+          <el-option
+            v-for="item in areas"
+            :key="item.id"
+            :label="item.name"
+            :value="item.name"
+          />
+        </el-select>
+        <el-select
+          v-model="listQuery.status"
+          placeholder="合作状态"
+          clearable
+          class="filter-item"
+          style="width: 200px"
+        >
+          <el-option
+            v-for="item in statList"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
+        </el-select>
+        <el-button
+          v-waves
+          class="filter-item"
+          type="primary"
+          icon="el-icon-search"
+          @click="handleFilter"
+        >
+          搜索
+        </el-button>
+      </div>
+      <div class="filter-right">
+        <el-button
+          class="filter-item"
+          style="margin-left: 10px"
+          type="primary"
+          icon="el-icon-plus"
+          @click="handleCreate"
+        >
+          新增合同
+        </el-button>
+      </div>
+    </div>
+
+    <!--表格列表-->
     <el-table
       v-loading="listLoading"
+      class="list-container"
       :data="list"
-      element-loading-text="Loading"
+      element-loading-text="加载中"
       border
       fit
       highlight-current-row
     >
-      <el-table-column align="center" label="ID" width="95">
-        <template slot-scope="scope">
-          {{ scope.$index }}
+      <el-table-column label="ID" align="center" width="100">
+        <template slot-scope="{ row }">
+          {{ row.pact_id }}
         </template>
       </el-table-column>
-      <el-table-column label="Title">
-        <template slot-scope="scope">
-          {{ scope.row.title }}
+
+      <el-table-column label="供应商名称" align="center" min-width="150px">
+        <template slot-scope="{ row }">
+          {{ row.supplier_name }}
         </template>
       </el-table-column>
-      <el-table-column label="Author" width="110" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.author }}</span>
+      <el-table-column label="签约主体" align="center" min-width="150px">
+        <template slot-scope="{ row }">
+          {{ row.subject_name }}
         </template>
       </el-table-column>
-      <el-table-column label="Pageviews" width="110" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.pageviews }}
+      <el-table-column label="区域" align="center" min-width="150px">
+        <template slot-scope="{ row }">
+          {{ row.area }}
         </template>
       </el-table-column>
+      <el-table-column label="合同号" align="center" min-width="150px">
+        <template slot-scope="{ row }">
+          {{ row.bn }}
+        </template>
+      </el-table-column>
+      <el-table-column label="合同开始时间" align="center" min-width="150px">
+        <template slot-scope="{ row }">
+          {{ row.period_start }}
+        </template>
+      </el-table-column>
+      <el-table-column label="合同结束时间" align="center" min-width="150px">
+        <template slot-scope="{ row }">
+          {{ row.period_end }}
+        </template>
+      </el-table-column>
+      <el-table-column label="合同状态" align="center" min-width="150px">
+        <template slot-scope="{ row }">
+          <el-tag :type="row.status | statusFilter">
+            {{ row.status | statusText }}
+          </el-tag>
+        </template>
+      </el-table-column>
+
       <el-table-column
-        class-name="status-col"
-        label="Status"
-        width="110"
+        label="操作"
         align="center"
+        width="250"
+        class-name="small-padding fixed-width"
       >
-        <template slot-scope="scope">
-          <el-tag :type="scope.row.status | statusFilter">{{
-            scope.row.status
-          }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column
-        align="center"
-        prop="created_at"
-        label="Display_time"
-        width="200"
-      >
-        <template slot-scope="scope">
-          <i class="el-icon-time" />
-          <span>{{ scope.row.display_time }}</span>
+        <template slot-scope="{ row, $index }">
+          <el-button size="mini" @click="handleDetail(row)"> 查看 </el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)">
+            编辑
+          </el-button>
+          <el-popconfirm
+            v-if="row.status === 3"
+            style="margin-left: 10px"
+            confirm-button-text="好的"
+            cancel-button-text="不用了"
+            icon="el-icon-info"
+            icon-color="red"
+            title="确认恢复合作吗？"
+            @onConfirm="handleRecoverContract(row, $index)"
+          >
+            <el-button slot="reference" size="mini" type="success">
+              恢复合作
+            </el-button>
+          </el-popconfirm>
+
+          <el-popconfirm
+            v-else
+            style="margin-left: 10px"
+            confirm-button-text="好的"
+            cancel-button-text="不用了"
+            icon="el-icon-info"
+            icon-color="red"
+            title="确认暂停合作吗？"
+            @onConfirm="handlePauseContract(row, $index)"
+          >
+            <el-button slot="reference" size="mini" type="danger">
+              暂停合作
+            </el-button>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
+
+    <!--分页-->
+    <pagination
+      v-show="total > 0"
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.page_num"
+      @pagination="getList"
+    />
+
+    <!--新增合同弹窗-->
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+      <el-form
+        ref="dataForm"
+        :rules="rules"
+        :model="temp"
+        label-position="left"
+        label-width="100px"
+        style="width: 500px; margin-left: 50px"
+        class="dialog-form"
+      >
+        <el-form-item label="供应商" prop="supplier_id">
+          <el-select
+            v-model="temp.supplier_id"
+            filterable
+            remote
+            placeholder="请输入关键词"
+            :remote-method="fetchProviderList"
+            :loading="providerLoading"
+            class="dialog-form-item"
+          >
+            <el-option
+              v-for="item in providers"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="签约主体" prop="sub_id">
+          <el-select
+            v-model="temp.sub_id"
+            filterable
+            remote
+            placeholder="请输入关键词"
+            :remote-method="fetchSubjectList"
+            :loading="subjectLoading"
+            class="dialog-form-item"
+          >
+            <el-option
+              v-for="item in subjects"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="合同编号" prop="bn">
+          <el-input v-model="temp.bn" class="dialog-form-item" />
+        </el-form-item>
+        <el-form-item label="合同有效期" prop="period_date">
+          <el-date-picker
+            v-model="temp.period_date"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            class="dialog-form-item"
+            format="yyyy-MM-dd"
+            value-format="yyyy-MM-dd"
+          />
+        </el-form-item>
+        <el-form-item label="上传合同附件" prop="file">
+          <el-upload
+            class="upload-demo"
+            action="https://jsonplaceholder.typicode.com/posts/"
+            :on-success="handleAddFileSucc"
+            :file-list="fileList"
+          >
+            <el-button size="small" type="primary">上传</el-button>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input
+            v-model="temp.remark"
+            type="textarea"
+            class="dialog-form-item"
+          />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false"> 取消 </el-button>
+        <el-button
+          type="primary"
+          @click="dialogStatus === 'create' ? createData() : updateData()"
+        >
+          确定
+        </el-button>
+      </div>
+    </el-dialog>
+
+    <!--查看合同详情弹窗-->
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogDetailVisible"
+    >
+      <el-form
+        ref="dataDetail"
+        :model="temp"
+        label-position="left"
+        label-width="150px"
+        style="width: 500px; margin-left: 100px"
+        class="dialog-form"
+      >
+        <el-form-item label="供应商:">
+          <div>{{ temp.supplier_name }}</div>
+        </el-form-item>
+        <el-form-item label="签约主体:">
+          <div>{{ temp.subject_name }}</div>
+        </el-form-item>
+        <el-form-item label="合同号:">
+          <div>{{ temp.bn }}</div>
+        </el-form-item>
+        <el-form-item label="合同有效时间:">
+          <div>{{ temp.period_start }}至{{ temp.period_end }}</div>
+        </el-form-item>
+        <el-form-item label="合同附件" />
+        <el-form-item label="备注">
+          <div>{{ temp.remark }}</div>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogDetailVisible = false"> 关闭 </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getList } from '@/api/table'
+import {
+  fetchList,
+  createContract,
+  updateContract,
+  recoverContract,
+  pauseContract
+} from '@/api/provider/contract'
+import {
+  fetchAllProvider,
+  fetchSubject,
+  fetchRegion
+} from '@/api/provider/index'
+import waves from '@/directive/waves'
+import Pagination from '@/components/Pagination'
+
+const statList = [
+  { id: 0, name: '未生效' },
+  { id: 1, name: '正常' },
+  { id: 2, name: '已过期' },
+  { id: 3, name: '已停用' }
+]
 
 export default {
+  name: 'Type',
+  components: { Pagination },
+  directives: { waves },
   filters: {
     statusFilter(status) {
       const statusMap = {
-        published: 'success',
-        draft: 'gray',
-        deleted: 'danger'
+        0: '',
+        1: 'success',
+        2: 'info',
+        3: 'danger'
       }
       return statusMap[status]
+    },
+    statusText(status) {
+      let statusText = ''
+      statList.some((stat) => {
+        if (status === stat.id) {
+          statusText = stat.name
+          return true
+        }
+        return false
+      })
+      return statusText
     }
   },
   data() {
+    const validatePeriod = (rule, value, callback) => {
+      if (!value[0] || !value[1]) {
+        callback(new Error('请选择合同有效时间'))
+      } else {
+        callback()
+      }
+    }
     return {
+      areas: [],
+      statList: statList,
       list: null,
-      listLoading: true
+      total: 0,
+      listLoading: true,
+      listQuery: {
+        supplier_name: '',
+        subject_name: '',
+        bn: '',
+        area: '',
+        status: '',
+        page: 1,
+        page_num: 10,
+        sort: '+id'
+      },
+      providers: [],
+      providerLoading: false,
+      subjects: [],
+      subjectLoading: false,
+      dialogStatus: '',
+      dialogFormVisible: false,
+      dialogDetailVisible: false,
+      temp: {
+        pact_id: undefined,
+        supplier_id: '',
+        sub_id: '',
+        bn: '',
+        period_date: '',
+        period_start: '',
+        period_end: '',
+        file: '',
+        remark: ''
+      },
+      textMap: {
+        update: '修改',
+        create: '新增',
+        detail: '查看'
+      },
+      rules: {
+        supplier_id: [
+          { required: true, message: '请选择供应商', trigger: 'change' }
+        ],
+        sub_id: [
+          { required: true, message: '请选择签约主体', trigger: 'change' }
+        ],
+        bn: [{ required: true, message: '请输入合同号', trigger: 'blur' }],
+        period_date: [
+          {
+            required: true,
+            validator: validatePeriod,
+            message: '请选择合同有效时间',
+            trigger: 'blur'
+          }
+        ]
+      },
+      fileList: []
     }
   },
   created() {
-    this.fetchData()
+    this.getList()
   },
   methods: {
-    fetchData() {
+    async getList() {
       this.listLoading = true
-      getList().then((response) => {
-        this.list = response.data.items
-        this.listLoading = false
+      if (this.areas.length === 0) {
+        const areaData = await fetchRegion()
+        this.areas = areaData.data.items
+      }
+      fetchList(this.listQuery).then((response) => {
+        this.list = response.data.items.map((item) => {
+          const newItem = Object.assign({}, item)
+          newItem.period_date = [item.period_start, item.period_end]
+          return newItem
+        })
+        this.total = response.data.total
+
+        // Just to simulate the time of the request
+        setTimeout(() => {
+          this.listLoading = false
+        }, 1.5 * 1000)
       })
+    },
+    fetchProviderList(query) {
+      if (query !== '') {
+        this.providerLoading = true
+        fetchAllProvider({ name: query }).then((response) => {
+          this.providerLoading = false
+          this.providers = response.data.items
+        })
+      } else {
+        this.providers = []
+      }
+    },
+    fetchSubjectList(query) {
+      if (query !== '') {
+        this.subjectLoading = true
+        fetchSubject({ name: query }).then((response) => {
+          this.subjectLoading = false
+          this.subjects = response.data.items
+        })
+      } else {
+        this.subjects = []
+      }
+    },
+    handleFilter() {
+      this.listQuery.page = 1
+      this.getList()
+    },
+    resetTemp() {
+      this.temp = {
+        pact_id: undefined,
+        supplier_id: '',
+        sub_id: '',
+        bn: '',
+        period_date: '',
+        period_start: '',
+        period_end: '',
+        file: '',
+        remark: ''
+      }
+    },
+    handleCreate() {
+      this.resetTemp()
+      this.dialogStatus = 'create'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
+    createData() {
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          const temp = JSON.parse(JSON.stringify(this.temp))
+          temp.pact_id = parseInt(Math.random() * 100) + 1024
+          temp.period_start = this.temp.period_date[0] || ''
+          temp.period_end = this.temp.period_date[1] || ''
+          temp.status = 0
+          this.providers.some((provider) => {
+            if (provider.id === temp.supplier_id) {
+              temp.supplier_name = provider.name
+              temp.area = provider.area
+              return true
+            }
+            return false
+          })
+          this.subjects.some((subject) => {
+            if (subject.id === temp.sub_id) {
+              temp.subject_name = subject.name
+              return true
+            }
+            return false
+          })
+
+          const postTemp = JSON.parse(JSON.stringify(temp))
+          delete postTemp.supplier_name
+          delete postTemp.subject_name
+          delete postTemp.period_date
+
+          createContract(postTemp).then(() => {
+            this.list.unshift(temp)
+            this.dialogFormVisible = false
+            this.$notify({
+              title: '成功',
+              message: '创建成功',
+              type: 'success',
+              duration: 2000
+            })
+          })
+        }
+      })
+    },
+    handleDetail(row) {
+      this.temp = JSON.parse(JSON.stringify(row))
+      this.dialogStatus = 'detail'
+      this.dialogDetailVisible = true
+    },
+    handleUpdate(row) {
+      this.temp = JSON.parse(JSON.stringify(row))
+      this.fetchProviderList(this.temp.supplier_name)
+      this.fetchSubjectList(this.temp.subject_name)
+      this.dialogStatus = 'update'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
+    updateData() {
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          const temp = JSON.parse(JSON.stringify(this.temp))
+          temp.period_start = this.temp.period_date[0] || ''
+          temp.period_end = this.temp.period_date[1] || ''
+          temp.status = 0
+
+          this.providers.some((provider) => {
+            if (provider.id === temp.supplier_id) {
+              temp.supplier_name = provider.name
+              temp.area = provider.area
+              return true
+            }
+            return false
+          })
+          this.subjects.some((subject) => {
+            if (subject.id === temp.sub_id) {
+              temp.subject_name = subject.name
+              return true
+            }
+            return false
+          })
+
+          const postTemp = JSON.parse(JSON.stringify(temp))
+          delete postTemp.supplier_name
+          delete postTemp.subject_name
+          delete postTemp.period_date
+
+          updateContract(postTemp).then(() => {
+            const index = this.list.findIndex(
+              (v) => v.pact_id === temp.pact_id
+            )
+            this.list.splice(index, 1, temp)
+            this.dialogFormVisible = false
+            this.$notify({
+              title: '成功',
+              message: '修改成功',
+              type: 'success',
+              duration: 2000
+            })
+          })
+        }
+      })
+    },
+    handleRecoverContract(row, index) {
+      const temp = JSON.parse(JSON.stringify(row))
+      temp.status = 1
+      const postTemp = { bn: temp.bn }
+      recoverContract(postTemp).then(() => {
+        this.list.splice(index, 1, temp)
+        this.$notify({
+          title: '成功',
+          message: '恢复成功',
+          type: 'success',
+          duration: 2000
+        })
+      })
+    },
+    handlePauseContract(row, index) {
+      const temp = JSON.parse(JSON.stringify(row))
+      temp.status = 3
+      const postTemp = { bn: temp.bn }
+      pauseContract(postTemp).then(() => {
+        this.list.splice(index, 1, temp)
+        this.$notify({
+          title: '成功',
+          message: '暂停成功',
+          type: 'success',
+          duration: 2000
+        })
+      })
+    },
+    handleAddFileSucc(response, file, fileList) {
+      const files = fileList
+        .map((fileItem) => {
+          return fileItem.name
+        })
+        .join(',')
+      this.temp = Object.assign({}, this.temp, { file: files })
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+@import "~@/styles/variables.scss";
+%flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+%flex-space-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 .app-container {
+  .filter-container {
+    margin-bottom: 20px;
+    @extend %flex-space-between;
+    .filter-left {
+      .filter-item {
+        &:not(:first-child) {
+          margin-left: 10px;
+        }
+      }
+    }
+  }
+  .list-container {
+  }
+  .dialog-form {
+    .dialog-form-item {
+      width: 400px;
+    }
+    .add-file-btn {
+      color: $themeColor;
+      &:hover {
+        opacity: 0.8;
+        cursor: pointer;
+      }
+    }
+  }
 }
 </style>

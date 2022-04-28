@@ -8,6 +8,14 @@ export function fetchRegion(params) {
   })
 }
 
+export function fetchSubject(params) {
+  return request({
+    url: '/vue-admin-template/subject/all',
+    method: 'post',
+    params
+  })
+}
+
 export function fetchList(params) {
   return request({
     url: '/vue-admin-template/provider/list',
