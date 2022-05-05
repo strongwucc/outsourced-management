@@ -79,10 +79,19 @@ const DepartCount = 20
 for (let i = 0; i < DepartCount; i++) {
   DepartList.push(
     Mock.mock({
-      id: '@increment',
-      name: '部门名称@id'
+      id: "@increment",
+      name: "部门名称@id",
+      "tag|1": [0, 1, 2],
+      'budget|20000-50000': 20000,
+      budget_warn: function() {
+        return this.budget - 2000;
+      },
+      budget_used: function() {
+        return Math.round(Math.random() * this.budget)
+      },
+      email: "@email"
     })
-  )
+  );
 }
 
 const RoleList = []
@@ -278,10 +287,11 @@ module.exports = [
     url: '/vue-admin-template/system/department/list',
     type: 'post',
     response: (config) => {
-      const { department, page = 1, limit = 20, sort } = config.query
+      const { department, tag=0, page = 1, limit = 20, sort } = config.query
 
       let mockList = DepartList.filter((item) => {
-        if (department && item.name.indexOf(department) < 0) return false
+        if (tag >= 0 && item.tag !== parseInt(tag)) return false;
+        if (department && item.name.indexOf(department) < 0) return false;
         return true
       })
 

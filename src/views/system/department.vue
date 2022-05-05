@@ -41,7 +41,6 @@
       fit
       highlight-current-row
     >
-
       <el-table-column label="ID" align="center" width="100">
         <template slot-scope="{ row }">
           {{ row.id }}
@@ -55,9 +54,32 @@
       </el-table-column>
 
       <el-table-column
+        label="预算"
+        align="center"
+        min-width="150"
+        v-if="tag === 2"
+      >
+        <template slot-scope="{ row }">
+          <div class="budget-cost-box" v-if="row.budget > 0">
+            <div class="text">{{ row.budget_used || 0 }}/{{ row.budget }}</div>
+            <div class="progress">
+              <el-progress
+                :text-inside="true"
+                :stroke-width="18"
+                :percentage="Math.round((row.budget_used / row.budget) * 100)"
+                :status="
+                  row.budget_used > row.budget_warn ? 'warning' : 'success'
+                "
+              />
+            </div>
+          </div>
+          <div v-else>-</div>
+        </template>
+      </el-table-column>
+
+      <el-table-column
         label="操作"
         align="center"
-        width="230"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
@@ -71,6 +93,14 @@
             @click="handleDelete(row, $index)"
           >
             删除
+          </el-button>
+          <el-button
+            v-if="tag === 2"
+            size="mini"
+            type="danger"
+            @click="handleManage(row, $index)"
+          >
+            预算管理
           </el-button>
         </template>
       </el-table-column>
@@ -90,11 +120,35 @@
         :rules="rules"
         :model="temp"
         label-position="left"
-        label-width="100px"
+        label-width="150px"
         style="width: 400px; margin-left: 50px"
       >
-        <el-form-item label="部门名称" prop="name">
+        <el-form-item label="部门名称:" v-if="dialogStatus === 'manage'">
+          {{ temp.name }}
+        </el-form-item>
+        <el-form-item label="部门名称:" prop="name" v-else>
           <el-input v-model="temp.name" />
+        </el-form-item>
+        <el-form-item
+          label="预算经费:"
+          prop="name"
+          v-if="dialogStatus === 'manage'"
+        >
+          <el-input v-model="temp.budget" />
+        </el-form-item>
+        <el-form-item
+          label="预警阈值:"
+          prop="name"
+          v-if="dialogStatus === 'manage'"
+        >
+          <el-input v-model="temp.budget_warn" />
+        </el-form-item>
+        <el-form-item
+          label="阙值提醒邮箱:"
+          prop="name"
+          v-if="tag === 2 && dialogStatus !== 'manage'"
+        >
+          <el-input v-model="temp.email" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -111,17 +165,22 @@
 </template>
 
 <script>
-import { fetchList, createDepartment, updateDepartment } from '@/api/system/department'
-import waves from '@/directive/waves'
-import Pagination from '@/components/Pagination'
+import {
+  fetchList,
+  createDepartment,
+  updateDepartment,
+} from "@/api/system/department";
+import waves from "@/directive/waves";
+import Pagination from "@/components/Pagination";
 
 export default {
-  name: 'Type',
+  name: "Type",
   components: { Pagination },
   directives: { waves },
   filters: {},
   data() {
     return {
+      tag: 0,
       list: null,
       total: 0,
       listLoading: true,
@@ -129,113 +188,145 @@ export default {
         page: 1,
         limit: 10,
         name: undefined,
-        sort: '+id'
+        tag: 0,
+        sort: "+id",
       },
-      dialogStatus: '',
+      dialogStatus: "",
       dialogFormVisible: false,
       temp: {
         id: undefined,
-        name: ''
+        name: "",
+        tag: 0,
+        budget: "",
+        budget_used: "",
+        budget_warn: "",
+        email: "",
       },
       textMap: {
-        update: '修改',
-        create: '新增'
+        update: "修改部门",
+        create: "新增部门",
+        manage: "调整预算",
       },
       rules: {
-        name: [
-          { required: true, message: '请输入部门名称', trigger: 'blur' }
-        ]
-      }
-    }
+        name: [{ required: true, message: "请输入部门名称", trigger: "blur" }],
+      },
+    };
   },
+  computed: {},
   created() {
-    this.getList()
+    const path = this.$route.path;
+    let tag = 0;
+    if (path.endsWith("initiate")) {
+      tag = 0;
+    }
+    if (path.endsWith("accounting")) {
+      tag = 1;
+    }
+    if (path.endsWith("use")) {
+      tag = 2;
+    }
+    this.tag = tag;
+    this.listQuery = Object.assign({}, this.listQuery, { tag });
+    this.getList();
   },
   methods: {
     getList() {
-      this.listLoading = true
+      this.listLoading = true;
       fetchList(this.listQuery).then((response) => {
-        this.list = response.data.items
-        this.total = response.data.total
+        this.list = response.data.items;
+        this.total = response.data.total;
 
         // Just to simulate the time of the request
         setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
-      })
+          this.listLoading = false;
+        }, 1.5 * 1000);
+      });
     },
     handleFilter() {
-      this.listQuery.page = 1
-      this.getList()
+      this.listQuery.page = 1;
+      this.getList();
     },
     resetTemp() {
       this.temp = {
         id: undefined,
-        type_name: ''
-      }
+        name: "",
+        tag: this.tag,
+        budget: "",
+        budget_used: "",
+        budget_warn: "",
+        email: "",
+      };
     },
     handleCreate() {
-      this.resetTemp()
-      this.dialogStatus = 'create'
-      this.dialogFormVisible = true
+      this.resetTemp();
+      this.dialogStatus = "create";
+      this.dialogFormVisible = true;
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+        this.$refs["dataForm"].clearValidate();
+      });
     },
     createData() {
-      this.$refs['dataForm'].validate((valid) => {
+      this.$refs["dataForm"].validate((valid) => {
         if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024
+          this.temp.id = parseInt(Math.random() * 100) + 1024;
           createDepartment(this.temp).then(() => {
-            this.list.unshift(this.temp)
-            this.dialogFormVisible = false
+            this.list.unshift(this.temp);
+            this.dialogFormVisible = false;
             this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
-            })
-          })
+              title: "成功",
+              message: "创建成功",
+              type: "success",
+              duration: 2000,
+            });
+          });
         }
-      })
+      });
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row)
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
+      this.temp = Object.assign({}, row);
+      this.dialogStatus = "update";
+      this.dialogFormVisible = true;
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+        this.$refs["dataForm"].clearValidate();
+      });
     },
     updateData() {
-      this.$refs['dataForm'].validate((valid) => {
+      this.$refs["dataForm"].validate((valid) => {
         if (valid) {
-          const tempData = Object.assign({}, this.temp)
+          const tempData = Object.assign({}, this.temp, {tag: this.tag});
           updateDepartment(tempData).then(() => {
-            const index = this.list.findIndex((v) => v.id === this.temp.id)
-            this.list.splice(index, 1, this.temp)
-            this.dialogFormVisible = false
+            const index = this.list.findIndex((v) => v.id === this.temp.id);
+            this.list.splice(index, 1, this.temp);
+            this.dialogFormVisible = false;
             this.$notify({
-              title: '成功',
-              message: '修改成功',
-              type: 'success',
-              duration: 2000
-            })
-          })
+              title: "成功",
+              message: "修改成功",
+              type: "success",
+              duration: 2000,
+            });
+          });
         }
-      })
+      });
+    },
+    handleManage(row) {
+      this.temp = Object.assign({}, row);
+      this.dialogStatus = "manage";
+      this.dialogFormVisible = true;
+      this.$nextTick(() => {
+        this.$refs["dataForm"].clearValidate();
+      });
     },
     handleDelete(row, index) {
       this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
-      })
-      this.list.splice(index, 1)
-    }
-  }
-}
+        title: "成功",
+        message: "删除成功",
+        type: "success",
+        duration: 2000,
+      });
+      this.list.splice(index, 1);
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -262,6 +353,17 @@ export default {
     }
   }
   .list-container {
+    .budget-cost-box {
+      width: 100%;
+      @extend %flex-center;
+      .text {
+        white-space: nowrap;
+      }
+      .progress {
+        margin-left: 10px;
+        width: 150px;
+      }
+    }
   }
 }
 </style>

@@ -32,166 +32,172 @@ import Layout from '@/layout'
  */
 export const constantRoutes = [
   {
-    path: '/login',
-    component: () => import('@/views/login/index'),
-    hidden: true
+    path: "/login",
+    component: () => import("@/views/login/index"),
+    hidden: true,
   },
 
   {
-    path: '/404',
-    component: () => import('@/views/404'),
-    hidden: true
+    path: "/404",
+    component: () => import("@/views/404"),
+    hidden: true,
   },
 
   {
-    path: '/',
+    path: "/",
     component: Layout,
-    redirect: '/project/index',
-    name: '项目管理',
-    meta: { title: '项目管理', icon: 'el-icon-folder' },
+    redirect: "/project/index",
+    name: "项目管理",
+    meta: { title: "项目管理", icon: "el-icon-folder" },
     children: [
       {
-        path: 'project/index',
-        name: '项目列表',
-        component: () => import('@/views/project/index'),
-        meta: { title: '项目列表' }
+        path: "project/index",
+        name: "项目列表",
+        component: () => import("@/views/project/index"),
+        meta: { title: "项目列表" },
       },
       {
-        path: 'project/subject',
-        name: '项目主体管理',
-        component: () => import('@/views/project/subject'),
-        meta: { title: '项目主体' }
-      }
-    ]
+        path: "project/subject",
+        name: "项目主体管理",
+        component: () => import("@/views/project/subject"),
+        meta: { title: "项目主体" },
+      },
+    ],
   },
 
   {
-    path: '/demand',
+    path: "/demand",
     component: Layout,
-    redirect: 'noRedirect',
+    redirect: "noRedirect",
     alwaysShow: true,
-    name: '需求管理',
-    meta: { title: '需求管理', icon: 'el-icon-s-opportunity' },
+    name: "需求管理",
+    meta: { title: "需求管理", icon: "el-icon-s-opportunity" },
     children: [
       {
-        path: 'index',
-        name: '需求列表',
-        component: () => import('@/views/demand/index'),
-        meta: { title: '需求列表' }
-      }
-    ]
+        path: "index",
+        name: "需求列表",
+        component: () => import("@/views/demand/index"),
+        meta: { title: "需求列表" },
+      },
+    ],
   },
 
   {
-    path: '/order',
+    path: "/order",
     component: Layout,
-    redirect: 'noRedirect',
+    redirect: "noRedirect",
     alwaysShow: true,
-    name: '订单管理',
-    meta: { title: '订单管理', icon: 'el-icon-s-order' },
+    name: "订单管理",
+    meta: { title: "订单管理", icon: "el-icon-s-order" },
     children: [
       {
-        path: 'index',
-        component: () => import('@/views/order/index'),
-        name: '订单列表',
-        meta: { title: '订单列表' }
-      }
-    ]
+        path: "index",
+        component: () => import("@/views/order/index"),
+        name: "订单列表",
+        meta: { title: "订单列表" },
+      },
+    ],
   },
 
   {
-    path: '/acceptance',
+    path: "/acceptance",
     component: Layout,
-    redirect: 'noRedirect',
-    name: '验收对账管理',
-    meta: { title: '验收对账管理', icon: 'el-icon-tickets' },
+    redirect: "noRedirect",
+    name: "验收对账管理",
+    meta: { title: "验收对账管理", icon: "el-icon-tickets" },
     children: [
       {
-        path: 'index',
-        component: () => import('@/views/acceptance/index'),
-        name: '验收单列表',
-        meta: { title: '验收单列表' }
+        path: "index",
+        component: () => import("@/views/acceptance/index"),
+        name: "验收单列表",
+        meta: { title: "验收单列表" },
       },
       {
-        path: 'alteration',
-        component: () => import('@/views/acceptance/alteration'),
-        name: '变更申请单',
-        meta: { title: '变更申请单' }
+        path: "alteration",
+        component: () => import("@/views/acceptance/alteration"),
+        name: "变更申请单",
+        meta: { title: "变更申请单" },
       },
       {
-        path: 'statement',
-        component: () => import('@/views/acceptance/statement'),
-        name: '对账单',
-        meta: { title: '对账单' }
-      }
-    ]
+        path: "statement",
+        component: () => import("@/views/acceptance/statement"),
+        name: "对账单",
+        meta: { title: "对账单" },
+      },
+    ],
   },
 
   {
-    path: '/provider',
+    path: "/provider",
     component: Layout,
-    redirect: 'noRedirect',
-    name: '供应商管理',
-    meta: { title: '供应商管理', icon: 'el-icon-s-custom' },
+    redirect: "noRedirect",
+    name: "供应商管理",
+    meta: { title: "供应商管理", icon: "el-icon-s-custom" },
     children: [
       {
-        path: 'index',
-        name: '供应商列表',
-        component: () => import('@/views/provider/index'),
-        meta: { title: '供应商列表' }
+        path: "index",
+        name: "供应商列表",
+        component: () => import("@/views/provider/index"),
+        meta: { title: "供应商列表" },
       },
       {
-        path: 'contract',
-        name: '供应商合同管理',
-        component: () => import('@/views/provider/contract'),
-        meta: { title: '供应商合同' }
-      }
-    ]
+        path: "contract",
+        name: "供应商合同管理",
+        component: () => import("@/views/provider/contract"),
+        meta: { title: "供应商合同" },
+      },
+    ],
   },
 
   {
-    path: '/system',
+    path: "/system",
     component: Layout,
-    redirect: 'noRedirect',
-    name: '系统配置',
-    meta: { title: '系统配置', icon: 'el-icon-setting' },
+    redirect: "noRedirect",
+    name: "系统配置",
+    meta: { title: "系统配置", icon: "el-icon-setting" },
     children: [
       {
-        path: 'type',
-        name: '需求类型',
-        component: () => import('@/views/system/type'),
-        meta: { title: '需求类型' }
+        path: "category",
+        name: "需求品类",
+        component: () => import("@/views/system/category"),
+        meta: { title: "需求品类" },
       },
       {
-        path: 'category',
-        name: '需求品类',
-        component: () => import('@/views/system/category'),
-        meta: { title: '需求品类' }
+        path: "department/initiate",
+        name: "发起部门配置",
+        component: () => import("@/views/system/department"),
+        meta: { title: "发起部门配置" },
       },
       {
-        path: 'department',
-        name: '部门管理',
-        component: () => import('@/views/system/department'),
-        meta: { title: '部门管理' }
+        path: "department/accounting",
+        name: "核算部门配置",
+        component: () => import("@/views/system/department"),
+        meta: { title: "核算部门配置" },
       },
       {
-        path: 'role',
-        name: '角色管理',
-        component: () => import('@/views/system/role'),
-        meta: { title: '角色管理' }
+        path: "department/use",
+        name: "预算使用部门配置",
+        component: () => import("@/views/system/department"),
+        meta: { title: "预算使用部门配置" },
       },
       {
-        path: 'member',
-        name: '成员管理',
-        component: () => import('@/views/system/member'),
-        meta: { title: '成员管理' }
-      }
-    ]
+        path: "role",
+        name: "角色管理",
+        component: () => import("@/views/system/role"),
+        meta: { title: "角色管理" },
+      },
+      {
+        path: "member",
+        name: "成员管理",
+        component: () => import("@/views/system/member"),
+        meta: { title: "成员管理" },
+      },
+    ],
   },
 
   // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
-]
+  { path: "*", redirect: "/404", hidden: true },
+];
 
 const createRouter = () => new Router({
   // mode: 'history', // require service support
