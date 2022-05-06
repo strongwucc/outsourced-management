@@ -163,6 +163,19 @@ for (let i = 0; i < MemberCount; i++) {
   )
 }
 
+const EmailList = []
+const EmailCount = 20
+
+for (let i = 0; i < EmailCount; i++) {
+  EmailList.push(
+    Mock.mock({
+      id: i + 1,
+      email: '@email',
+      remark: '@sentence'
+    })
+  )
+}
+
 module.exports = [
   {
     url: '/vue-admin-template/system/type/list',
@@ -229,12 +242,7 @@ module.exports = [
     url: '/vue-admin-template/system/category/list',
     type: 'post',
     response: (config) => {
-      const {
-        category_name,
-        page = 1,
-        limit = 20,
-        sort
-      } = config.query
+      const { category_name, page = 1, limit = 20, sort } = config.query
 
       let mockList = CategoryList.filter((item) => {
         if (category_name && item.category_name.indexOf(category_name) < 0) {
@@ -491,6 +499,52 @@ module.exports = [
         data: {
           items: MemberList
         }
+      }
+    }
+  },
+
+  {
+    url: '/vue-admin-template/system/email/list',
+    type: 'post',
+    response: (config) => {
+      const { page = 1, limit = 20, sort } = config.query
+
+      let mockList = EmailList
+
+      if (sort === '-id') {
+        mockList = mockList.reverse()
+      }
+
+      const pageList = mockList.filter(
+        (item, index) => index < limit * page && index >= limit * (page - 1)
+      )
+
+      return {
+        code: 200,
+        data: {
+          total: mockList.length,
+          items: pageList
+        }
+      }
+    }
+  },
+  {
+    url: '/vue-element-admin/system/email/create',
+    type: 'post',
+    response: (_) => {
+      return {
+        code: 200,
+        data: 'success'
+      }
+    }
+  },
+  {
+    url: '/vue-element-admin/system/email/update',
+    type: 'post',
+    response: (_) => {
+      return {
+        code: 200,
+        data: 'success'
       }
     }
   }

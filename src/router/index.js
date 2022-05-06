@@ -191,6 +191,12 @@ export const constantRoutes = [
         name: '成员管理',
         component: () => import('@/views/system/member'),
         meta: { title: '成员管理' }
+      },
+      {
+        path: 'email',
+        name: '合同过期提醒',
+        component: () => import('@/views/system/email'),
+        meta: { title: '合同过期提醒' }
       }
     ]
   },
