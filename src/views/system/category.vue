@@ -10,20 +10,6 @@
           class="filter-item"
           @keyup.enter.native="handleFilter"
         />
-        <el-select
-          v-model="listQuery.type_id"
-          placeholder="需求类型"
-          clearable
-          class="filter-item"
-          style="width: 200px"
-        >
-          <el-option
-            v-for="item in typeOptions"
-            :key="item.id"
-            :label="item.type_name"
-            :value="item.id"
-          />
-        </el-select>
         <el-button
           v-waves
           class="filter-item"
@@ -40,7 +26,7 @@
           style="margin-left: 10px"
           type="primary"
           icon="el-icon-plus"
-          @click="handleCreate"
+          @click="handleCreate(1, 0)"
         >
           新增需求品类
         </el-button>
@@ -56,22 +42,19 @@
       border
       fit
       highlight-current-row
+      row-key="cat_id"
+      :indent="64"
     >
-      <el-table-column label="ID" align="center" width="100">
+      >
+      <!-- <el-table-column label="ID" align="center" width="100">
         <template slot-scope="{ row }">
           {{ row.id }}
         </template>
-      </el-table-column>
+      </el-table-column> -->
 
       <el-table-column label="需求品类" align="center" min-width="150px">
         <template slot-scope="{ row }">
           {{ row.category_name }}
-        </template>
-      </el-table-column>
-
-      <el-table-column label="需求类型" align="center" min-width="150px">
-        <template slot-scope="{ row }">
-          {{ row.type_name }}
         </template>
       </el-table-column>
 
@@ -84,21 +67,33 @@
       <el-table-column
         label="操作"
         align="center"
-        width="230"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
+          <el-button
+            v-if="row.cat_path === 1 || row.cat_path === 2"
+            type="primary"
+            size="mini"
+            @click="handleCreate(row.cat_path + 1, row.cat_id)"
+          >
+            添加子类
+          </el-button>
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             编辑
           </el-button>
-          <el-button
-            v-if="row.status != 'deleted'"
-            size="mini"
-            type="danger"
-            @click="handleDelete(row, $index)"
+          <el-popconfirm
+            style="margin-left: 10px"
+            confirm-button-text="好的"
+            cancel-button-text="不用了"
+            icon="el-icon-info"
+            icon-color="red"
+            title="确认要删除吗？"
+            @onConfirm="handleDelete(row, $index)"
           >
-            删除
-          </el-button>
+            <el-button slot="reference" size="mini" type="danger">
+              删除
+            </el-button>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -127,31 +122,34 @@
         style="width: 400px; margin-left: 50px"
         class="dialog-form"
       >
-        <el-form-item label="需求类型:" prop="type_id">
-          <el-select
-            v-model="temp.type_id"
+        <el-form-item label="父级品类" prop="parent_id">
+          <ElSelectTree
+            v-model="temp.parent_id"
             class="dialog-form-item"
-            placeholder="请选择"
-          >
-            <el-option
-              v-for="item in typeOptions"
-              :key="item.id"
-              :label="item.type_name"
-              :value="item.id"
-            />
-          </el-select>
+            :data="parents"
+            :popper-append-to-body="false"
+            popper-class="select-parent"
+            check-strictly
+            clearable
+            filterable
+            @change="(value) => parentChange(value)"
+          />
         </el-form-item>
 
         <el-form-item label="需求品类名称:" prop="category_name">
           <el-input v-model="temp.category_name" class="dialog-form-item" />
         </el-form-item>
 
-        <el-form-item label="关联属性:" prop="property_json">
+        <el-form-item
+          v-if="temp.cat_path === 3"
+          label="关联属性:"
+          prop="property_json"
+        >
           <div class="add-prop-btn" @click="handleCreateProp">新建属性标签</div>
         </el-form-item>
       </el-form>
 
-      <div class="props-container">
+      <div v-if="temp.cat_path === 3" class="props-container">
         <el-table
           class="props-table"
           :data="temp.property_array"
@@ -297,9 +295,9 @@
 </template>
 
 <script>
-import { fetchAllType } from '@/api/system/type'
 import {
   fetchList,
+  fetchAllCategory,
   updateCategory,
   createCategory,
   updateCategoryProp,
@@ -309,7 +307,7 @@ import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 
 export default {
-  name: 'Type',
+  name: 'Category',
   components: { Pagination },
   directives: { waves },
   filters: {
@@ -339,12 +337,13 @@ export default {
         name: undefined,
         sort: '+id'
       },
-      typeOptions: [],
       dialogStatus: '',
       dialogFormVisible: false,
+      parents: [],
       temp: {
-        id: undefined,
-        type_id: '',
+        cat_id: undefined,
+        parent_id: '',
+        cat_path: '',
         category_name: '',
         property_json: '[]',
         property_array: []
@@ -354,8 +353,8 @@ export default {
         create: '新增需求品类'
       },
       rules: {
-        type_id: [
-          { required: true, message: '请选择需求类型', trigger: 'change' }
+        parent_id: [
+          { required: true, message: '请选择父级品类', trigger: 'change' }
         ],
         category_name: [
           { required: true, message: '请输入需求品类名称', trigger: 'blur' }
@@ -396,29 +395,151 @@ export default {
     }
   },
   created() {
+    this.getParents()
     this.getList()
   },
   methods: {
-    async getList() {
-      this.listLoading = true
-      if (this.typeOptions.length === 0) {
-        const typeData = await fetchAllType()
-        this.typeOptions = typeData.data.items
+    updateListData(listItem) {
+      if (listItem.cat_path === 1) {
+        let updateIndex = -1
+        this.list.some((first, firstIndex) => {
+          if (first.cat_id === listItem.cat_id) {
+            updateIndex = firstIndex
+            return true
+          }
+          return false
+        })
+        if (updateIndex >= 0) {
+          this.list.splice(updateIndex, 1, listItem)
+        } else {
+          this.list.unshift(listItem)
+        }
+        return true
       }
-      fetchList(this.listQuery).then((response) => {
-        this.list = response.data.items.map((item) => {
-          const newItem = Object.assign({}, item, { type_name: '' })
+      if (listItem.cat_path === 2) {
+        let updateFirstIndex = -1
+        let updateSecondIndex = -1
+        this.list.some((first, firstIndex) => {
+          if (first.cat_id === listItem.parent_id) {
+            updateFirstIndex = firstIndex
+            first.children.some((second, secondIndex) => {
+              if (second.cat_id === listItem.cat_id) {
+                updateSecondIndex = secondIndex
+                return true
+              }
+              return false
+            })
+            return true
+          } else {
+            return false
+          }
+        })
+        if (updateFirstIndex < 0) {
+          return false
+        }
+        if (updateSecondIndex >= 0) {
+          this.list[updateFirstIndex].children.splice(
+            updateSecondIndex,
+            1,
+            listItem
+          )
+        } else {
+          this.list[updateFirstIndex].children.unshift(listItem)
+        }
+        return true
+      }
+      if (listItem.cat_path === 3) {
+        let updateFirstIndex = -1
+        let updateSecondIndex = -1
+        let updateThirdIndex = -1
+        this.list.some((first, firstIndex) => {
+          if (
+            first.children.some((second, secondIndex) => {
+              if (second.cat_id === listItem.parent_id) {
+                updateSecondIndex = secondIndex
+                second.children.some((third, thirdIndex) => {
+                  if (third.cat_id === listItem.cat_id) {
+                    updateThirdIndex = thirdIndex
+                    return true
+                  }
+                  return false
+                })
+                return true
+              } else {
+                return false
+              }
+            })
+          ) {
+            updateFirstIndex = firstIndex
+            return true
+          }
+          return false
+        })
 
-          this.typeOptions.some((typeItem) => {
-            if (typeItem.id === item.type_id) {
-              newItem.type_name = typeItem.type_name
+        if (updateFirstIndex < 0 || updateSecondIndex < 0) {
+          return false
+        }
+        if (updateThirdIndex >= 0) {
+          this.list[updateFirstIndex].children[
+            updateSecondIndex
+          ].children.splice(updateThirdIndex, 1, listItem)
+        } else {
+          this.list[updateFirstIndex].children[
+            updateSecondIndex
+          ].children.unshift(listItem)
+        }
+        return true
+      }
+      return false
+    },
+    getParentCatPath(parent_id = 0) {
+      let cat_path = 1
+      if (parent_id > 0) {
+        this.parents.some((parent) => {
+          if (parent.value === parent_id) {
+            cat_path = parent.cat_path + 1
+            return true
+          }
+          return parent.children.some((child) => {
+            if (child.value === parent_id) {
+              cat_path = child.cat_path + 1
               return true
             }
             return false
           })
-
-          return newItem
         })
+      }
+      return cat_path
+    },
+    getParents() {
+      fetchAllCategory().then((response) => {
+        this.parents = response.data.items.map((parent) => {
+          const children = parent.children.map((child) => {
+            return {
+              label: child.category_name,
+              value: child.cat_id,
+              cat_path: child.cat_path
+            }
+          })
+          return {
+            label: parent.category_name,
+            value: parent.cat_id,
+            children: children,
+            cat_path: parent.cat_path
+          }
+        })
+        this.parents.unshift({
+          label: '无',
+          value: 0,
+          children: [],
+          cat_path: 0
+        })
+      })
+    },
+    getList() {
+      this.listLoading = true
+      fetchList(this.listQuery).then((response) => {
+        this.list = response.data.items
         this.total = response.data.total
 
         // Just to simulate the time of the request
@@ -431,17 +552,18 @@ export default {
       this.listQuery.page = 1
       this.getList()
     },
-    resetTemp() {
+    resetTemp(cat_path = 1, parent_id = 0) {
       this.temp = {
-        id: undefined,
-        type_id: '',
+        cat_id: undefined,
+        parent_id,
+        cat_path,
         category_name: '',
         property_json: '[]',
         property_array: []
       }
     },
-    handleCreate() {
-      this.resetTemp()
+    handleCreate(cat_path = 1, parent_id = 0) {
+      this.resetTemp(cat_path, parent_id)
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -452,16 +574,10 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const temp = Object.assign({}, this.temp)
-          temp.id = parseInt(Math.random() * 100) + 1024
+          temp.cat_id = parseInt(Math.random() * 100) + 1024
           createCategory(temp).then(() => {
-            this.typeOptions.some((typeItem) => {
-              if (typeItem.id === temp.type_id) {
-                temp.type_name = typeItem.type_name
-                return true
-              }
-              return false
-            })
-            this.list.unshift(temp)
+            temp.children = []
+            this.updateListData(temp)
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -486,8 +602,7 @@ export default {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
           updateCategory(tempData).then(() => {
-            const index = this.list.findIndex((v) => v.id === this.temp.id)
-            this.list.splice(index, 1, this.temp)
+            this.updateListData(tempData)
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -506,7 +621,72 @@ export default {
         type: 'success',
         duration: 2000
       })
-      this.list.splice(index, 1)
+      if (row.cat_path === 1) {
+        this.list.splice(index, 1)
+        return true
+      }
+      if (row.cat_path === 2) {
+        let updateFirstIndex = -1
+        let updateSecondIndex = -1
+        this.list.some((first, firstIndex) => {
+          if (first.cat_id === row.parent_id) {
+            updateFirstIndex = firstIndex
+            first.children.some((second, secondIndex) => {
+              if (second.cat_id === row.cat_id) {
+                updateSecondIndex = secondIndex
+                return true
+              }
+              return false
+            })
+            return true
+          } else {
+            return false
+          }
+        })
+        if (updateFirstIndex < 0) {
+          return false
+        }
+        this.list[updateFirstIndex].children.splice(updateSecondIndex, 1)
+        return true
+      }
+      if (row.cat_path === 3) {
+        let updateFirstIndex = -1
+        let updateSecondIndex = -1
+        let updateThirdIndex = -1
+        this.list.some((first, firstIndex) => {
+          if (
+            first.children.some((second, secondIndex) => {
+              if (second.cat_id === row.parent_id) {
+                updateSecondIndex = secondIndex
+                second.children.some((third, thirdIndex) => {
+                  if (third.cat_id === row.cat_id) {
+                    updateThirdIndex = thirdIndex
+                    return true
+                  }
+                  return false
+                })
+                return true
+              } else {
+                return false
+              }
+            })
+          ) {
+            updateFirstIndex = firstIndex
+            return true
+          }
+          return false
+        })
+
+        if (updateFirstIndex < 0 || updateSecondIndex < 0) {
+          return false
+        }
+        this.list[updateFirstIndex].children[updateSecondIndex].children.splice(
+          updateThirdIndex,
+          1
+        )
+        return true
+      }
+      return false
     },
     resetPropTemp() {
       this.propTemp = {
@@ -611,6 +791,10 @@ export default {
           })
         }
       })
+    },
+    parentChange(parent_id) {
+      const cat_path = this.getParentCatPath(parent_id)
+      this.temp = Object.assign({}, this.temp, { cat_path })
     },
     handleDeleteProp(index) {
       const property_array = this.temp.property_array

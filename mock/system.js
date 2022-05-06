@@ -51,26 +51,60 @@ function getRandomIntInclusive(min, max) {
 }
 
 for (let i = 0; i < CategoryCount; i++) {
-  CategoryList.push(
-    Mock.mock({
-      id: '@increment',
-      type_id: function() {
-        return TypeList[getRandomIntInclusive(0, TypeList.length - 1)].id
-      },
-      category_name: '品类名称@id',
-      property_json: function() {
-        return [
-          PropList[getRandomIntInclusive(0, PropList.length - 1)].id,
-          PropList[getRandomIntInclusive(0, PropList.length - 1)].id
-        ]
-      },
-      property_array: function() {
-        return PropList.filter((prop) => {
-          return this.property_json.indexOf(prop.id) !== -1
-        })
-      }
+  const first = Mock.mock({
+    cat_id: i + 1,
+    parent_id: 0,
+    cat_path: 1,
+    category_name: '品类名称@cat_id',
+    children: [],
+    property_json: [],
+    property_array: []
+  })
+
+  const seconds = []
+  for (let j = 0; j < 10; j++) {
+    const second = Mock.mock({
+      cat_id: first.cat_id * 100 + j,
+      parent_id: first.cat_id,
+      cat_path: 2,
+      category_name: '品类名称@cat_id',
+      children: [],
+      property_json: [],
+      property_array: []
     })
-  )
+
+    const thirds = []
+    for (let z = 0; z < 5; z++) {
+      const third = Mock.mock({
+        cat_id: second.cat_id * 100 + z,
+        parent_id: second.cat_id,
+        cat_path: 3,
+        category_name: '品类名称@cat_id',
+        children: [],
+        property_json: function() {
+          return [
+            PropList[getRandomIntInclusive(0, PropList.length - 1)].id,
+            PropList[getRandomIntInclusive(0, PropList.length - 1)].id
+          ]
+        },
+        property_array: function() {
+          return PropList.filter((prop) => {
+            return this.property_json.indexOf(prop.id) !== -1
+          })
+        }
+      })
+
+      thirds.push(third)
+    }
+
+    second.children = thirds
+
+    seconds.push(second)
+  }
+
+  first.children = seconds
+
+  CategoryList.push(first)
 }
 
 const DepartList = []
@@ -79,19 +113,19 @@ const DepartCount = 20
 for (let i = 0; i < DepartCount; i++) {
   DepartList.push(
     Mock.mock({
-      id: "@increment",
-      name: "部门名称@id",
-      "tag|1": [0, 1, 2],
+      id: '@increment',
+      name: '部门名称@id',
+      'tag|1': [0, 1, 2],
       'budget|20000-50000': 20000,
       budget_warn: function() {
-        return this.budget - 2000;
+        return this.budget - 2000
       },
       budget_used: function() {
         return Math.round(Math.random() * this.budget)
       },
-      email: "@email"
+      email: '@email'
     })
-  );
+  )
 }
 
 const RoleList = []
@@ -197,7 +231,6 @@ module.exports = [
     response: (config) => {
       const {
         category_name,
-        type_id,
         page = 1,
         limit = 20,
         sort
@@ -207,7 +240,6 @@ module.exports = [
         if (category_name && item.category_name.indexOf(category_name) < 0) {
           return false
         }
-        if (type_id && item.type_id !== type_id) return false
         return true
       })
 
@@ -287,11 +319,11 @@ module.exports = [
     url: '/vue-admin-template/system/department/list',
     type: 'post',
     response: (config) => {
-      const { department, tag=0, page = 1, limit = 20, sort } = config.query
+      const { department, tag = 0, page = 1, limit = 20, sort } = config.query
 
       let mockList = DepartList.filter((item) => {
-        if (tag >= 0 && item.tag !== parseInt(tag)) return false;
-        if (department && item.name.indexOf(department) < 0) return false;
+        if (tag >= 0 && item.tag !== parseInt(tag)) return false
+        if (department && item.name.indexOf(department) < 0) return false
         return true
       })
 
