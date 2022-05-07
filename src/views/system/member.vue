@@ -62,13 +62,13 @@
 
       <el-table-column label="用户分组" align="center" min-width="150px">
         <template slot-scope="{ row }">
-          {{ row.role_name }}
+          {{ row.group_name }}
         </template>
       </el-table-column>
 
       <el-table-column label="部门" align="center" min-width="150px">
         <template slot-scope="{ row }">
-          {{ row.department_name }}
+          {{ row.dep_name }}
         </template>
       </el-table-column>
 
@@ -135,9 +135,9 @@
           <el-input v-model="temp.name" />
         </el-form-item>
 
-        <el-form-item label="用户分组:" prop="role_id">
+        <el-form-item label="用户分组:" prop="group_id">
           <el-select
-            v-model="temp.role_id"
+            v-model="temp.group_id"
             class="dialog-form-item"
             placeholder="请选择"
           >
@@ -150,9 +150,9 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="部门:" prop="department_id">
+        <el-form-item label="部门:" prop="dep_id">
           <el-select
-            v-model="temp.department_id"
+            v-model="temp.dep_id"
             class="dialog-form-item"
             placeholder="请选择"
           >
@@ -257,8 +257,8 @@ export default {
       temp: {
         id: undefined,
         name: '',
-        role_id: '',
-        department_id: '',
+        group_id: '',
+        dep_id: '',
         login_name: '',
         password: '',
         mobile: '',
@@ -271,7 +271,7 @@ export default {
       },
       rules: {
         name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-        role_id: [
+        group_id: [
           { required: true, message: '请选择用户分组', trigger: 'change' }
         ],
         login_name: [
@@ -299,21 +299,21 @@ export default {
       fetchList(this.listQuery).then((response) => {
         this.list = response.data.items.map((item) => {
           const newItem = Object.assign({}, item, {
-            role_name: '',
-            department_name: ''
+            group_name: '',
+            dep_name: ''
           })
 
           this.departments.some((departItem) => {
-            if (departItem.id === item.department_id) {
-              newItem.department_name = departItem.name
+            if (departItem.id === item.dep_id) {
+              newItem.dep_name = departItem.name
               return true
             }
             return false
           })
 
           this.roles.some((roleItem) => {
-            if (roleItem.id === item.role_id) {
-              newItem.role_name = roleItem.name
+            if (roleItem.id === item.group_id) {
+              newItem.group_name = roleItem.name
               return true
             }
             return false
@@ -355,15 +355,15 @@ export default {
           temp.id = parseInt(Math.random() * 100) + 1024
           createMember(temp).then(() => {
             this.roles.some((roleItem) => {
-              if (roleItem.id === temp.role_id) {
-                temp.role_name = roleItem.name
+              if (roleItem.id === temp.group_id) {
+                temp.group_name = roleItem.name
                 return true
               }
               return false
             })
             this.departments.some((departItem) => {
-              if (departItem.id === temp.department_id) {
-                temp.department_name = departItem.name
+              if (departItem.id === temp.dep_id) {
+                temp.dep_name = departItem.name
                 return true
               }
               return false
@@ -394,15 +394,15 @@ export default {
           const tempData = Object.assign({}, this.temp)
           updateMember(tempData).then(() => {
             this.roles.some((roleItem) => {
-              if (roleItem.id === tempData.role_id) {
-                tempData.role_name = roleItem.name
+              if (roleItem.id === tempData.group_id) {
+                tempData.group_name = roleItem.name
                 return true
               }
               return false
             })
             this.departments.some((departItem) => {
-              if (departItem.id === tempData.department_id) {
-                tempData.department_name = departItem.name
+              if (departItem.id === tempData.dep_id) {
+                tempData.dep_name = departItem.name
                 return true
               }
               return false

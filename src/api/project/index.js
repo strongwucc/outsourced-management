@@ -8,6 +8,14 @@ export function fetchList(params) {
   })
 }
 
+export function fetchAllProject(params) {
+  return request({
+    url: '/vue-admin-template/project/all',
+    method: 'post',
+    params
+  })
+}
+
 export function createProject(data) {
   return request({
     url: '/vue-element-admin/project/create',

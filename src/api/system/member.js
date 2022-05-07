@@ -8,7 +8,7 @@ export function fetchList(params) {
   })
 }
 
-export function fetchAllDepartment(params) {
+export function fetchAllMember(params) {
   return request({
     url: '/vue-admin-template/system/member/all',
     method: 'post',

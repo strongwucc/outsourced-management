@@ -128,18 +128,13 @@ for (let i = 0; i < DepartCount; i++) {
   )
 }
 
-const RoleList = []
-const RoleCount = 20
-
-for (let i = 0; i < RoleCount; i++) {
-  RoleList.push(
-    Mock.mock({
-      id: '@increment',
-      name: '分组名称@id',
-      'nums|1-10': 1
-    })
-  )
-}
+const RoleList = [
+  { id: 1, name: '项目组', nums: 6 },
+  { id: 2, name: '项目组负责人', nums: 6 },
+  { id: 3, name: '供管', nums: 6 },
+  { id: 4, name: '供管负责人', nums: 6 },
+  { id: 5, name: '项目制作人', nums: 6 }
+]
 
 const MemberList = []
 const MemberCount = 20
@@ -149,11 +144,33 @@ for (let i = 0; i < MemberCount; i++) {
     Mock.mock({
       id: '@increment',
       name: '@cname',
-      role_id: function() {
+      group_id: function() {
         return RoleList[getRandomIntInclusive(0, RoleList.length - 1)].id
       },
-      department_id: function() {
+      group_name: function() {
+        let group_name = ''
+        RoleList.some((role) => {
+          if (role.id === this.group_id) {
+            group_name = role.name
+            return true
+          }
+          return false
+        })
+        return group_name
+      },
+      dep_id: function() {
         return DepartList[getRandomIntInclusive(0, DepartList.length - 1)].id
+      },
+      dep: function() {
+        let dep_name = ''
+        DepartList.some((dep) => {
+          if (dep.id === this.dep_id) {
+            dep_name = dep.name
+            return true
+          }
+          return false
+        })
+        return dep_name
       },
       login_name: '@first',
       mobile: '@phone',
@@ -376,10 +393,16 @@ module.exports = [
     url: '/vue-admin-template/system/department/all',
     type: 'post',
     response: (config) => {
+      const { name, tag } = config.query
+      const mockList = DepartList.filter((item) => {
+        if (tag && item.tag !== parseInt(tag)) return false
+        if (name && item.name.indexOf(name) < 0) return false
+        return true
+      })
       return {
         code: 200,
         data: {
-          items: DepartList
+          items: mockList
         }
       }
     }
@@ -494,10 +517,28 @@ module.exports = [
     url: '/vue-admin-template/system/member/all',
     type: 'post',
     response: (config) => {
+      const { keyword, group_id } = config.query
+
+      const mockList = MemberList.filter((item) => {
+        if (
+          keyword &&
+          item.login_name.indexOf(keyword) < 0 &&
+          item.mobile.indexOf(keyword) < 0
+        ) {
+          return false
+        }
+        if (
+          group_id > 0 &&
+          item.group_id !== parseInt(group_id)
+        ) {
+          return false
+        }
+        return true
+      })
       return {
         code: 200,
         data: {
-          items: MemberList
+          items: mockList
         }
       }
     }

@@ -57,6 +57,23 @@ export const constantRoutes = [
         meta: { title: '项目列表' }
       },
       {
+        path: 'project/process',
+        name: '流程列表',
+        component: () => import('@/views/project/process/index'),
+        meta: { title: '流程列表' }
+      },
+      {
+        path: 'project/process/detail/:id(\\d+)',
+        component: () => import('@/views/project/process/detail'),
+        name: '流程详情',
+        meta: {
+          title: '流程详情',
+          noCache: true,
+          activeMenu: '/project/process'
+        },
+        hidden: true
+      },
+      {
         path: 'project/subject',
         name: '项目主体管理',
         component: () => import('@/views/project/subject'),
