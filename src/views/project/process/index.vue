@@ -861,6 +861,7 @@ import { fetchAllDepartment } from '@/api/system/department'
 import { fetchAllSub } from '@/api/project/sub'
 import { fetchAllCategory } from '@/api/system/category'
 import { fetchAllMember } from '@/api/system/member'
+import { parseTime } from '@/utils/index'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 
@@ -1179,6 +1180,7 @@ export default {
   created() {
     this.getCategory()
     this.getAllDepart()
+    this.getAllMember()
     this.getList()
   },
   methods: {
@@ -1219,8 +1221,12 @@ export default {
     },
     getAllDepart() {
       fetchAllDepartment().then((response) => {
-        this.departLoading = false
         this.allDeparts = response.data.items
+      })
+    },
+    getAllMember() {
+      fetchAllMember().then((response) => {
+        this.allMembers = response.data.items
       })
     },
     getList() {
@@ -1307,7 +1313,7 @@ export default {
             // 获取关联字段名称
             this.allProjects.some((project) => {
               if (project.id === temp.project_id) {
-                temp.project_name = project.name
+                temp.project_name = project.project_name
                 return true
               }
               return false
@@ -1382,9 +1388,6 @@ export default {
       fetchAllMember({ keyword: query, group_id }).then((response) => {
         this.memberLoading = false
         this.members = response.data.items
-        if (query === '' && this.allMembers.length === 0) {
-          this.allMembers = response.data.items
-        }
       })
     },
     addNeedsCreateItem() {
