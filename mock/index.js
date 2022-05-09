@@ -6,8 +6,9 @@ const table = require('./table')
 const system = require('./system')
 const project = require('./project')
 const provider = require('./provider')
+const demand = require('./demand')
 
-const mocks = [...user, ...table, ...system, ...project, ...provider]
+const mocks = [...user, ...table, ...system, ...project, ...provider, ...demand]
 
 // for front mock
 // please use it cautiously, it will redefine XMLHttpRequest,

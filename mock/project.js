@@ -529,5 +529,28 @@ module.exports = [
         data: 'success'
       }
     }
+  },
+  {
+    url: '/vue-admin-template/project/process/all',
+    type: 'post',
+    response: (config) => {
+      const {
+        name
+      } = config.query
+
+      const mockList = ProcessList.filter((item) => {
+        if (name && item.flow_name.indexOf(name) < 0) {
+          return false
+        }
+        return true
+      })
+
+      return {
+        code: 200,
+        data: {
+          items: mockList
+        }
+      }
+    }
   }
 ]

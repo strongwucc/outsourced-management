@@ -23,3 +23,11 @@ export function fetchDetail(data) {
     data
   })
 }
+
+export function fetchAllProcess(params) {
+  return request({
+    url: '/vue-admin-template/project/process/all',
+    method: 'post',
+    params
+  })
+}
