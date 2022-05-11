@@ -144,8 +144,8 @@
                 />
               </template>
             </el-table-column>
-            <el-table-column prop="task_id" label="物件单号" width="200" />
-            <el-table-column prop="task_image" label="缩略图">
+            <el-table-column prop="task_id" label="物件单号" width="200" align="center" />
+            <el-table-column prop="task_image" label="缩略图" align="center">
               <template slot-scope="scope">
                 <el-image
                   style="width: 50px; height: 50px"
