@@ -51,6 +51,43 @@ for (let i = 0; i < 20; i++) {
   )
 }
 
+const TaskList = []
+
+for (let i = 0; i < 20; i++) {
+  TaskList.push(
+    Mock.mock({
+      task_id: 'T@id',
+      demand_id: '',
+      task_name: '角色@word',
+      task_image: "@image('100x100')",
+      category_id: function() {
+        return CategoryList[getRandomIntInclusive(0, CategoryList.length - 1)]
+          .cat_id
+      },
+      category_name: function() {
+        let category_name = ''
+        CategoryList.some((category) => {
+          if (category.cat_id === this.category_id) {
+            category_name = category.category_name
+            return true
+          }
+          return false
+        })
+        return category_name
+      },
+      deliver_date: '@datetime',
+      work_unit: '人日',
+      work_num: 10,
+      work_price: '0.00',
+      work_amount: '0.00',
+      supplier_id: 0,
+      display_area: '',
+      finished_product: '',
+      remark: '备注随便谢谢'
+    })
+  )
+}
+
 const DemandList = []
 const DemandCount = 20
 
@@ -84,7 +121,14 @@ for (let i = 0; i < DemandCount; i++) {
         return MemberList[getRandomIntInclusive(0, MemberList.length - 1)]
           .name
       },
-      'status|1': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      'status|1': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      tasks: function() {
+        return [
+          TaskList[getRandomIntInclusive(0, TaskList.length - 1)],
+          TaskList[getRandomIntInclusive(0, TaskList.length - 1)],
+          TaskList[getRandomIntInclusive(0, TaskList.length - 1)]
+        ]
+      }
     })
   )
 }

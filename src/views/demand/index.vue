@@ -84,14 +84,73 @@
       class="list-container"
       :data="list"
       element-loading-text="加载中"
-      border
       fit
       highlight-current-row
-      @selection-change="handleSelectionChange"
     >
       >
-      <el-table-column type="selection" align="center" width="50" />
-      <el-table-column label="需求订单号" align="center" width="200">
+      <el-table-column width="50" align="center">
+        <div slot="header" slot-scope="scope">
+          <el-checkbox
+            v-model="globelCheckedAll"
+            :checked="globelCheckedAll"
+            :indeterminate="isIndeterminateAll"
+            @change="clickCheckAll(scope)"
+          />
+        </div>
+        <template slot-scope="scope">
+          <el-checkbox
+            v-model="scope.row.checked"
+            :checked="scope.row.checked"
+            :indeterminate="scope.row.isIndeterminate"
+            @change="handleSelectionChange(scope.row)"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column type="expand" width="20">
+        <template slot-scope="{ row }">
+          <el-table class="task-list" :data="row.tasks" fit stripe>
+            <el-table-column label="" width="50" align="center">
+              <template slot-scope="scope">
+                <el-checkbox
+                  v-model="scope.row.checked"
+                  :checked="scope.row.checked"
+                  @change="clickCheckItemFn(row, scope.row)"
+                />
+              </template>
+            </el-table-column>
+            <el-table-column prop="task_id" label="物件单号" width="200" />
+            <el-table-column prop="task_image" label="缩略图">
+              <template slot-scope="scope">
+                <el-image
+                  style="width: 50px; height: 50px"
+                  :src="scope.row.task_image"
+                >
+                  <div slot="error" class="image-slot">
+                    <i class="el-icon-picture-outline" />
+                  </div>
+                </el-image>
+              </template>
+            </el-table-column>
+            <el-table-column prop="task_name" label="物件名称" align="center" />
+            <el-table-column
+              prop="category_name"
+              label="物件品类"
+              align="center"
+            />
+            <el-table-column
+              prop="deliver_date"
+              label="交付日期"
+              width="200"
+              align="center"
+            />
+            <el-table-column prop="work_unit" label="工作单位" align="center" />
+            <el-table-column prop="work_num" label="数量" align="center" />
+            <el-table-column prop="work_price" label="单价" align="center" />
+            <el-table-column prop="work_amount" label="总价" align="center" />
+          </el-table>
+        </template>
+      </el-table-column>
+      <el-table-column label="需求订单号" align="left" width="200">
         <template slot-scope="{ row }">
           {{ row.demand_id }}
         </template>
@@ -520,6 +579,8 @@ export default {
       { id: 3, name: '动态团队' }
     ]
     return {
+      globelCheckedAll: false,
+      isIndeterminateAll: false,
       list: [],
       total: 0,
       listLoading: true,
@@ -603,6 +664,7 @@ export default {
       fetchList(this.listQuery).then((response) => {
         this.total = response.data.total
         this.list = response.data.items
+        this.updateCheckedAllBtnStatus(false)
 
         // Just to simulate the time of the request
         setTimeout(() => {
@@ -766,9 +828,6 @@ export default {
       this.temp = Object.assign({}, row)
       this.dialogDetailVisible = true
     },
-    handleSelectionChange(val) {
-      this.multipleSelection = val
-    },
     handleResolve() {
       this.dialogStatus = 'resolve'
       this.dialogVerifyVisible = true
@@ -789,6 +848,86 @@ export default {
     },
     confirmProvider() {
       this.dialogProviderVisible = false
+    },
+    handleTaskSelectionChange(val, demand_id) {
+      console.log(11111111, val, demand_id)
+    },
+    /**
+     * 全选所有
+     */
+    clickCheckAll(item) {
+      this.list = this.list.map((val) => {
+        val.checked = this.globelCheckedAll
+        val.tasks = val.tasks.map((i) => {
+          i.checked = this.globelCheckedAll
+          return i
+        })
+        return val
+      })
+      this.updateCheckedAllBtnStatus(this.globelCheckedAll)
+    },
+    /**
+     * 手动更改全选按钮的状态
+     */
+    updateCheckedAllBtnStatus(value) {
+      // 如果是选了勾选
+      if (value) {
+        // 检查是否所有数据都手动勾选了
+        const isAllChecked = this.list.every((v) => v.checked)
+        if (isAllChecked) {
+          this.globelCheckedAll = true
+          this.isIndeterminateAll = false
+        } else {
+          this.isIndeterminateAll = true
+        }
+      } else {
+        // 检查是否所有数据取消勾选了
+        const isAllCancelChecked = this.list.every((v) => v.checked === false)
+        if (isAllCancelChecked) {
+          this.globelCheckedAll = false
+          this.isIndeterminateAll = false
+        } else {
+          this.isIndeterminateAll = true
+        }
+      }
+    },
+    /**
+     * 每行选择事件
+     */
+    handleSelectionChange(val) {
+      val.tasks = val.tasks.map((i) => {
+        i.checked = val.checked
+        return i
+      })
+      val.isIndeterminate = false
+      this.updateCheckedAllBtnStatus(val.checked)
+    },
+    /**
+     * 每个小项选择事件-单选
+     */
+    clickCheckItemFn(row, item) {
+      // 如果是选了勾选
+      if (item.checked) {
+        this.isIndeterminateAll = true
+        // 检查是否所有数据都手动勾选了
+        const isAllChecked = row.tasks.every((v) => v.checked)
+        if (isAllChecked) {
+          row.checked = true
+          row.isIndeterminate = false
+        } else {
+          row.isIndeterminate = true
+        }
+      } else {
+        // 检查是否所有数据取消勾选了
+        const isAllCancelChecked = row.tasks.every((v) => v.checked === false)
+        if (isAllCancelChecked) {
+          row.checked = false
+          row.isIndeterminate = false
+          this.isIndeterminateAll = false
+        } else {
+          row.isIndeterminate = true
+        }
+      }
     }
   }
 }
