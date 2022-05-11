@@ -8,6 +8,7 @@
           placeholder="供应商名称"
           style="width: 200px"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-input
@@ -15,6 +16,7 @@
           placeholder="签约主体"
           style="width: 200px"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-input
@@ -22,6 +24,7 @@
           placeholder="合同编号"
           style="width: 200px"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-select
@@ -30,6 +33,7 @@
           clearable
           class="filter-item"
           style="width: 200px"
+          size="mini"
         >
           <el-option
             v-for="item in areas"
@@ -44,6 +48,7 @@
           clearable
           class="filter-item"
           style="width: 200px"
+          size="mini"
         >
           <el-option
             v-for="item in statList"
@@ -57,6 +62,7 @@
           class="filter-item"
           type="primary"
           icon="el-icon-search"
+          size="mini"
           @click="handleFilter"
         >
           搜索
@@ -68,6 +74,7 @@
           style="margin-left: 10px"
           type="primary"
           icon="el-icon-plus"
+          size="mini"
           @click="handleCreate"
         >
           新增合同

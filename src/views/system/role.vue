@@ -7,6 +7,7 @@
           placeholder="分组名称"
           style="width: 200px"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-button
@@ -14,6 +15,7 @@
           class="filter-item"
           type="primary"
           icon="el-icon-search"
+          size="mini"
           @click="handleFilter"
         >
           搜索

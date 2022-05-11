@@ -7,6 +7,7 @@
           placeholder="输入用户名、手机号查找"
           style="width: 200px"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
 
@@ -15,6 +16,7 @@
           class="filter-item"
           type="primary"
           icon="el-icon-search"
+          size="mini"
           @click="handleFilter"
         >
           搜索
@@ -26,6 +28,7 @@
           style="margin-left: 10px"
           type="primary"
           icon="el-icon-plus"
+          size="mini"
           @click="handleCreate"
         >
           添加用户

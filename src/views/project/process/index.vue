@@ -6,48 +6,56 @@
           v-model="listQuery.project_name"
           placeholder="项目名称"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-input
           v-model="listQuery.flow_name"
           placeholder="流程名称"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-input
           v-model="listQuery.bn"
           placeholder="流程代码"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-input
           v-model="listQuery.demand"
           placeholder="需求方"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-input
           v-model="listQuery.budget_dep_name"
           placeholder="预算使用部门"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-input
           v-model="listQuery.launch_dep_name"
           placeholder="发起部门"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-input
           v-model="listQuery.sub_name"
           placeholder="合同主体"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-input
           v-model="listQuery.account_dep_name"
           placeholder="核算部门"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-button
@@ -55,6 +63,7 @@
           class="filter-btn"
           type="primary"
           icon="el-icon-search"
+          size="mini"
           @click="handleFilter"
         >
           搜索
@@ -65,6 +74,7 @@
           style="margin-left: 10px"
           type="primary"
           icon="el-icon-plus"
+          size="mini"
           @click="handleCreate"
         >
           创建流程
