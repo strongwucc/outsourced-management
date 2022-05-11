@@ -113,8 +113,8 @@ const DepartCount = 20
 for (let i = 0; i < DepartCount; i++) {
   DepartList.push(
     Mock.mock({
-      id: '@increment',
-      name: '部门名称@id',
+      id: i + 1,
+      name: '部门名称' + i,
       'tag|1': [0, 1, 2],
       'budget|20000-50000': 20000,
       budget_warn: function() {

@@ -12,8 +12,8 @@ const SubCount = 20
 for (let i = 0; i < SubCount; i++) {
   SubList.push(
     Mock.mock({
-      id: '@increment',
-      name: '主体名称@id',
+      id: i + 1,
+      name: '主体名称' + i,
       bn: '@id'
     })
   )
@@ -25,8 +25,8 @@ const ProjectCount = 20
 for (let i = 0; i < ProjectCount; i++) {
   ProjectList.push(
     Mock.mock({
-      id: '@increment',
-      project_name: '项目名称@id',
+      id: i + 1,
+      project_name: '项目名称' + i,
       bn: '@id',
       brief: '@sentence',
       'budget_cost|20000-50000': 20000,
@@ -48,8 +48,8 @@ const DepartCount = 20
 for (let i = 0; i < DepartCount; i++) {
   DepartList.push(
     Mock.mock({
-      id: '@increment',
-      name: '部门名称@id',
+      id: i + 1,
+      name: '部门名称' + i,
       'tag|1': [0, 1, 2],
       'budget|20000-50000': 20000,
       budget_warn: function() {
@@ -69,7 +69,7 @@ const RoleCount = 20
 for (let i = 0; i < RoleCount; i++) {
   RoleList.push(
     Mock.mock({
-      id: '@increment',
+      id: i + 1,
       name: '分组名称@id',
       'nums|1-10': 1
     })
@@ -82,7 +82,7 @@ const MemberCount = 20
 for (let i = 0; i < MemberCount; i++) {
   MemberList.push(
     Mock.mock({
-      id: '@increment',
+      id: i + 1,
       name: '@cname',
       role_id: function() {
         return RoleList[getRandomIntInclusive(0, RoleList.length - 1)].id
@@ -406,7 +406,7 @@ module.exports = [
     url: '/vue-element-admin/project/process/detail',
     type: 'post',
     response: (config) => {
-      const { process_id } = config.query
+      const { process_id } = config.body
 
       const detail = Mock.mock({
         process_id: process_id,
@@ -414,104 +414,40 @@ module.exports = [
           return ProjectList[getRandomIntInclusive(0, ProjectList.length - 1)]
             .id
         },
-        project: function() {
-          let project = {}
-          ProjectList.some((projectItem) => {
-            if (projectItem.id === this.project_id) {
-              project = Object.assign({}, project, projectItem)
-              return true
-            }
-            return false
-          })
-          return project
-        },
         flow_name: '流程名称' + process_id,
-        bn: '@word(6)',
+        bn: '@integer(100000, 999999)@word',
         'demand|1': ['研发', '运营', '其他'],
         budget_dep_id: function() {
-          return DepartList[getRandomIntInclusive(0, DepartList.length - 1)].id
+          return ''
         },
-        budget_dep_name: function() {
-          let dep_name = ''
-          DepartList.some((dep) => {
-            if (dep.id === this.budget_dep_id) {
-              dep_name = dep.name
-              return true
-            }
-            return false
-          })
-          return dep_name
-        },
-        soft_code: '@word',
+        soft_code: 'HELLO',
         brief: '@sentence',
         launch_dep_id: function() {
-          return DepartList[getRandomIntInclusive(0, DepartList.length - 1)].id
-        },
-        launch_dep_name: function() {
-          let dep_name = ''
-          DepartList.some((dep) => {
-            if (dep.id === this.launch_dep_id) {
-              dep_name = dep.name
-              return true
-            }
-            return false
-          })
-          return dep_name
+          return ''
         },
         sub_id: function() {
           return SubList[getRandomIntInclusive(0, SubList.length - 1)].id
         },
-        sub_name: function() {
-          let sub_name = ''
-          SubList.some((sub) => {
-            if (sub.id === this.sub_id) {
-              sub_name = sub.name
-              return true
-            }
-            return false
-          })
-          return sub_name
-        },
-        accounting: '@word(1, 15)',
+        accounting: 'WORLD',
         account_dep_id: function() {
-          return DepartList[getRandomIntInclusive(0, DepartList.length - 1)].id
+          return ''
         },
-        account_dep_name: function() {
-          let dep_name = ''
-          DepartList.some((dep) => {
-            if (dep.id === this.account_dep_id) {
-              dep_name = dep.name
-              return true
-            }
-            return false
-          })
-          return dep_name
-        },
-        create_user_id: 1,
-        node_list: function() {
-          return {
-            needs_create_array: ['超管', '老王'],
-            needs_verify_array: ['超管', '老王'],
-            assign_supplier_array: ['超管', '老王'],
-            wj_verify_array: ['超管', '老王'],
-            order_create_array: ['超管', '老王'],
-            order_verify_array: ['超管', '老王'],
-            check_array: ['超管', '老王'],
-            check_confirm_pro_array: ['超管', '老王'],
-            check_confirm_supplier_array: ['超管', '老王'],
-            check_confirm_supplier_charge_array: ['超管', '老王'],
-            push_settle_array: ['超管', '老王'],
-            change_verify_array: ['超管', '老王'],
-            change_review_array: ['超管', '老王'],
-            change_check_array: ['超管', '老王'],
-            change_check_verify_array: ['超管', '老王']
-          }
-        },
-        created_at: '@datetime',
-        updated_at: '@datetime',
-        task_total: 0,
-        task_finish: 0,
-        task_going: 0
+        project_producer_json: [],
+        needs_create_json: [], // 创建需求卡
+        needs_verify_json: [{ id: '' }, { id: '' }], // 需求卡审批
+        assign_supplier_json: [], // 分配供应商
+        wj_verify_json: [{ id: '' }, { id: '' }], // 物件审核
+        order_create_json: [], // 拟制订单
+        order_verify_json: [{ id: '' }, { id: '' }], // 订单审批
+        check_json: [{ id: '' }, { id: '' }], // 验收资源
+        check_confirm_pro_json: [{ id: '' }, { id: '' }], // 确认验收资源（项目负责人）
+        check_confirm_supplier_json: [{ id: '' }, { id: '' }], // 确认验收资源（供管）
+        check_confirm_supplier_charge_json: [{ id: '' }, { id: '' }], // 确认验收资源（供管负责人）
+        push_settle_json: [], // 推送申请
+        change_verify_json: [{ id: '' }, { id: '' }], // 变更审批
+        change_review_json: [{ id: '' }, { id: '' }], // 变更复审
+        change_check_json: [{ id: '' }, { id: '' }], // 验收变更
+        change_check_verify_json: [{ id: '' }, { id: '' }] // 验收变更审核
       })
 
       return {
