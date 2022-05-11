@@ -8,6 +8,7 @@
           placeholder="输入需求名称"
           style="width: 200px"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-input
@@ -15,6 +16,7 @@
           placeholder="输入需求单号"
           style="width: 200px"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-input
@@ -22,6 +24,7 @@
           placeholder="输入需求品类"
           style="width: 200px"
           class="filter-item"
+          size="mini"
           @keyup.enter.native="handleFilter"
         />
         <el-select
@@ -30,6 +33,7 @@
           clearable
           class="filter-item"
           style="width: 200px"
+          size="mini"
         >
           <el-option
             v-for="item in tagOptions"
@@ -44,6 +48,7 @@
           class="filter-item"
           type="primary"
           icon="el-icon-search"
+          size="mini"
           @click="handleFilter"
         >
           搜索
@@ -55,6 +60,7 @@
           style="margin-left: 10px"
           type="primary"
           icon="el-icon-plus"
+          size="mini"
           @click="handleCreate"
         >
           新建需求
@@ -63,6 +69,7 @@
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
+          size="mini"
           @click="handleResolve"
         >
           确认
@@ -71,9 +78,28 @@
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
+          size="mini"
           @click="handleReject"
         >
           驳回
+        </el-button>
+        <el-button
+          class="filter-item"
+          style="margin-left: 10px"
+          type="primary"
+          size="mini"
+          @click="handleCreateOrder"
+        >
+          生成订单
+        </el-button>
+        <el-button
+          class="filter-item"
+          style="margin-left: 10px"
+          type="primary"
+          size="mini"
+          @click="handleFinish"
+        >
+          终止
         </el-button>
       </div>
     </div>
@@ -108,7 +134,7 @@
       </el-table-column>
       <el-table-column type="expand" width="20">
         <template slot-scope="{ row }">
-          <el-table class="task-list" :data="row.tasks" fit stripe>
+          <el-table class="task-list" border :data="row.tasks" fit stripe>
             <el-table-column label="" width="50" align="center">
               <template slot-scope="scope">
                 <el-checkbox
@@ -508,6 +534,46 @@
         <el-button type="primary" @click="confirmProvider"> 确认 </el-button>
       </div>
     </el-dialog>
+
+    <!--终止-->
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogFinishVisible"
+    >
+      <el-form
+        ref="finishDataForm"
+        class="dialog-form"
+        :rules="finishRules"
+        :model="tempFinish"
+        label-position="left"
+        label-width="150px"
+        style="margin: 0 50px"
+      >
+        <el-form-item label="终止原因:" prop="reason">
+          <el-input
+            v-model="tempFinish.reason"
+            type="textarea"
+            placeholder="请输入终止原因"
+            class="dialog-form-item"
+          />
+        </el-form-item>
+
+        <el-form-item label="上传附件" prop="file">
+          <el-upload
+            class="upload-demo"
+            action="https://jsonplaceholder.typicode.com/posts/"
+            :on-success="handleAddFileSucc"
+            :file-list="fileList"
+          >
+            <el-button size="small" type="primary">上传</el-button>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFinishVisible = false"> 取消 </el-button>
+        <el-button type="primary" @click="confirmFinish"> 确认 </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -649,6 +715,16 @@ export default {
       },
       tempProvider: {
         id: '',
+        file: ''
+      },
+      dialogFinishVisible: false,
+      finishRules: {
+        reason: [
+          { required: true, message: '请输入终止原因', trigger: 'blur' }
+        ]
+      },
+      tempFinish: {
+        reason: '',
         file: ''
       }
     }
@@ -849,9 +925,6 @@ export default {
     confirmProvider() {
       this.dialogProviderVisible = false
     },
-    handleTaskSelectionChange(val, demand_id) {
-      console.log(11111111, val, demand_id)
-    },
     /**
      * 全选所有
      */
@@ -928,6 +1001,34 @@ export default {
           row.isIndeterminate = true
         }
       }
+    },
+    handleCreateOrder() {
+      this.$notify({
+        title: '成功',
+        message: '订单生成成功',
+        type: 'success',
+        duration: 2000
+      })
+    },
+    handleFinish() {
+      this.tempFinish = Object.assign({}, this.tempFinish, {
+        reason: '',
+        file: ''
+      })
+      this.dialogFinishVisible = true
+    },
+    confirmFinish() {
+      this.$refs['finishDataForm'].validate((valid) => {
+        if (valid) {
+          this.$notify({
+            title: '成功',
+            message: '终止成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.dialogFinishVisible = false
+        }
+      })
     }
   }
 }
