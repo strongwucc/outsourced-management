@@ -8,6 +8,14 @@ export function fetchList(params) {
   })
 }
 
+export function fetchDemandDetail(params) {
+  return request({
+    url: '/vue-admin-template/demand/detail',
+    method: 'post',
+    params
+  })
+}
+
 export function createDemand(data) {
   return request({
     url: '/vue-element-admin/demand/create',
