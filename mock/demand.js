@@ -141,6 +141,80 @@ for (let i = 0; i < 20; i++) {
   )
 }
 
+const ProcessList = []
+const ProcessCount = 20
+
+for (let i = 0; i < ProcessCount; i++) {
+  ProcessList.push(
+    Mock.mock({
+      id: i + 1,
+      project_id: function() {
+        return ProjectList[getRandomIntInclusive(0, ProjectList.length - 1)].id
+      },
+      project_name: function() {
+        let project_name = ''
+        ProjectList.some((project) => {
+          if (project.id === this.project_id) {
+            project_name = project.project_name
+            return true
+          }
+          return false
+        })
+        return project_name
+      },
+      flow_name: '流程名称' + (i + 1),
+      bn: '@word(6)',
+      'demand|1': ['研发', '运营', '其他'],
+      budget_dep_id: function() {
+        return DepartList[getRandomIntInclusive(0, DepartList.length - 1)].id
+      },
+      budget_dep_name: function() {
+        let dep_name = ''
+        DepartList.some((dep) => {
+          if (dep.id === this.budget_dep_id) {
+            dep_name = dep.name
+            return true
+          }
+          return false
+        })
+        return dep_name
+      },
+      soft_code: '@word',
+      brief: '@sentence',
+      launch_dep_id: function() {
+        return DepartList[getRandomIntInclusive(0, DepartList.length - 1)].id
+      },
+      launch_dep_name: function() {
+        let dep_name = ''
+        DepartList.some((dep) => {
+          if (dep.id === this.launch_dep_id) {
+            dep_name = dep.name
+            return true
+          }
+          return false
+        })
+        return dep_name
+      },
+      accounting: '@word(1, 15)',
+      account_dep_id: function() {
+        return DepartList[getRandomIntInclusive(0, DepartList.length - 1)].id
+      },
+      account_dep_name: function() {
+        let dep_name = ''
+        DepartList.some((dep) => {
+          if (dep.id === this.account_dep_id) {
+            dep_name = dep.name
+            return true
+          }
+          return false
+        })
+        return dep_name
+      },
+      created_at: '@datetime'
+    })
+  )
+}
+
 const DemandList = []
 const DemandCount = 20
 
@@ -154,6 +228,7 @@ for (let i = 0; i < DemandCount; i++) {
       name: '需求名称' + i,
       'tag|1': [0, 1, 2, 3],
       introduce: '@sentence',
+      file: '123,123',
       category: function() {
         const index = getRandomIntInclusive(0, CategoryList.length - 1)
         return {
@@ -169,11 +244,16 @@ for (let i = 0; i < DemandCount; i++) {
       },
       'status|1': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       tasks: function() {
-        return [
+        const demand_id = this.demand_id
+        const tasks = [
           TaskList[getRandomIntInclusive(0, TaskList.length - 1)],
           TaskList[getRandomIntInclusive(0, TaskList.length - 1)],
           TaskList[getRandomIntInclusive(0, TaskList.length - 1)]
         ]
+        return tasks.map(task => {
+          task.demand_id = demand_id
+          return task
+        })
       }
     })
   )
@@ -232,9 +312,7 @@ module.exports = [
     url: '/vue-admin-template/demand/detail',
     type: 'post',
     response: (config) => {
-      const {
-        demand_id
-      } = config.body
+      const { demand_id } = config.body
 
       const detail = Mock.mock({
         demand_id: demand_id,
@@ -333,6 +411,141 @@ module.exports = [
   },
   {
     url: '/vue-element-admin/demand/update',
+    type: 'post',
+    response: (_) => {
+      return {
+        code: 200,
+        data: 'success'
+      }
+    }
+  },
+  {
+    url: '/vue-admin-template/demand/task/detail',
+    type: 'post',
+    response: (config) => {
+      console.log(111111, config)
+      const { task_id } = config.body
+
+      const detail = Mock.mock({
+        task_id: task_id,
+        process: function() {
+          return ProcessList[getRandomIntInclusive(0, ProcessList.length - 1)]
+        },
+        demand: function() {
+          return DemandList[getRandomIntInclusive(0, DemandList.length - 1)]
+        },
+        launch_dep_id: function() {
+          return DepartList[getRandomIntInclusive(0, DepartList.length - 1)].id
+        },
+        launch_dep_name: function() {
+          let launch_dep_name = ''
+          DepartList.some((depart) => {
+            if (depart.id === this.launch_dep_id) {
+              launch_dep_name = depart.name
+              return true
+            }
+            return false
+          })
+          return launch_dep_name
+        },
+        account_dep_id: function() {
+          return DepartList[getRandomIntInclusive(0, DepartList.length - 1)].id
+        },
+        account_dep_name: function() {
+          let account_dep_name = ''
+          DepartList.some((depart) => {
+            if (depart.id === this.launch_dep_id) {
+              account_dep_name = depart.name
+              return true
+            }
+            return false
+          })
+          return account_dep_name
+        },
+        task_name: '角色@word',
+        task_image: "@image('100x100')",
+        category_id: function() {
+          return CategoryList[getRandomIntInclusive(0, CategoryList.length - 1)]
+            .cat_id
+        },
+        category_name: function() {
+          let category_name = ''
+          CategoryList.some((category) => {
+            if (category.cat_id === this.category_id) {
+              category_name = category.category_name
+              return true
+            }
+            return false
+          })
+          return category_name
+        },
+        props: [
+          { name: '长度', value: '10公分' },
+          { name: '上色方式', value: '上色1' }
+        ],
+        provider: function() {
+          return {
+            id: 'G' + this.task_id,
+            name: '上海角色设计有限公司',
+            contact: {
+              phone: '137344333244',
+              qq: '1212122121',
+              wx: '137344333244'
+            },
+            bn: 'HT12121212',
+            tasks: [
+              {
+                work_unit: '人日',
+                work_num: 10,
+                work_price: '1000',
+                work_amount: '2000',
+                deliver_date: '2020-03-22',
+                create_at: '2020-03-22 17:20:32'
+              }
+            ]
+          }
+        },
+        plan_images: function() {
+          return [Mock.Random.image('200x200'), Mock.Random.image('200x200')]
+        },
+        files: function() {
+          return ['file1', 'file2']
+        },
+        records: function() {
+          const list = []
+          for (let i = 1; i <= 20; i++) {
+            list.push(
+              Mock.mock({
+                id: i,
+                operator: '@cname',
+                title: '我干了啥' + i,
+                datetime: '@datetime',
+                stay_time: 2
+              })
+            )
+          }
+          return list
+        }
+      })
+
+      return {
+        code: 200,
+        data: detail
+      }
+    }
+  },
+  {
+    url: '/vue-element-admin/demand/task/create',
+    type: 'post',
+    response: (_) => {
+      return {
+        code: 200,
+        data: 'success'
+      }
+    }
+  },
+  {
+    url: '/vue-element-admin/demand/task/update',
     type: 'post',
     response: (_) => {
       return {
