@@ -7,8 +7,17 @@ const system = require('./system')
 const project = require('./project')
 const provider = require('./provider')
 const demand = require('./demand')
+const order = require('./order')
 
-const mocks = [...user, ...table, ...system, ...project, ...provider, ...demand]
+const mocks = [
+  ...user,
+  ...table,
+  ...system,
+  ...project,
+  ...provider,
+  ...demand,
+  ...order
+]
 
 // for front mock
 // please use it cautiously, it will redefine XMLHttpRequest,
@@ -47,7 +56,11 @@ function mockXHR() {
   }
 
   for (const i of mocks) {
-    Mock.mock(new RegExp(i.url), i.type || 'get', XHR2ExpressReqWrap(i.response))
+    Mock.mock(
+      new RegExp(i.url),
+      i.type || 'get',
+      XHR2ExpressReqWrap(i.response)
+    )
   }
 }
 
@@ -55,4 +68,3 @@ module.exports = {
   mocks,
   mockXHR
 }
-

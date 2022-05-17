@@ -112,6 +112,24 @@ export const constantRoutes = [
         component: () => import('@/views/order/index'),
         name: '订单列表',
         meta: { title: '订单列表' }
+      },
+      {
+        path: 'modify',
+        component: () => import('@/views/order/modify'),
+        name: '申请变更单',
+        meta: { title: '申请变更单' }
+      },
+      {
+        path: 'check',
+        component: () => import('@/views/order/check'),
+        name: '验收单',
+        meta: { title: '验收单' }
+      },
+      {
+        path: 'reconcile',
+        component: () => import('@/views/order/reconcile'),
+        name: '对账单',
+        meta: { title: '对账单' }
       }
     ]
   },
