@@ -4,6 +4,14 @@
     <div class="filter-container">
       <div class="filter-left">
         <el-input
+          v-model="listQuery.check_id"
+          placeholder="输入验收单号"
+          style="width: 200px"
+          class="filter-item"
+          size="mini"
+          @keyup.enter.native="handleFilter"
+        />
+        <el-input
           v-model="listQuery.order_id"
           placeholder="输入订单号"
           style="width: 200px"
@@ -30,7 +38,7 @@
 
         <el-button
           v-waves
-          class="filter-item"
+          class="filter-btn"
           type="primary"
           icon="el-icon-search"
           size="mini"
@@ -58,6 +66,18 @@
         >
           收起
         </el-button>
+        <el-popconfirm
+          title="确定生成对账单吗？"
+          @confirm="handleReconcile"
+        ><el-button
+          slot="reference"
+          class="filter-item"
+          style="margin-left: 10px"
+          type="primary"
+          size="mini"
+        >
+          生成对账单
+        </el-button></el-popconfirm>
         <el-button
           class="filter-item"
           style="margin-left: 10px"
@@ -67,18 +87,35 @@
         >
           申请变更
         </el-button>
-        <el-popconfirm
-          title="这是一段内容确定删除吗？"
-          @confirm="handleDeliver"
-        ><el-button
+        <el-button
           slot="reference"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
           size="mini"
+          @click="handleVerify(true)"
         >
-          交付验收
-        </el-button></el-popconfirm>
+          通过
+        </el-button>
+        <el-button
+          slot="reference"
+          class="filter-item"
+          style="margin-left: 10px"
+          type="primary"
+          size="mini"
+          @click="handleVerify(false)"
+        >
+          驳回
+        </el-button>
+        <el-button
+          class="filter-item"
+          style="margin-left: 10px"
+          type="primary"
+          size="mini"
+          @click="handleFinish"
+        >
+          终止
+        </el-button>
       </div>
     </div>
 
@@ -89,7 +126,7 @@
       element-loading-text="Loading"
       fit
       highlight-current-row
-      row-key="order_id"
+      row-key="check_id"
       :expand-row-keys="expandRowKeys"
       @expand-change="expandChange"
     >
@@ -172,60 +209,13 @@
                 class-name="small-padding fixed-width"
               >
                 <template slot-scope="scope">
-                  <el-upload
-                    class="upload-demo"
-                    action="https://jsonplaceholder.typicode.com/posts/"
-                    :show-file-list="false"
-                    multiple
-                    @on-success="handleUploadWorkSuccess"
-                    @on-error="handleUploadWorkError"
-                  >
-                    <el-button
-                      size="mini"
-                      type="primary"
-                      plain
-                    >上传作品</el-button>
-                  </el-upload>
                   <el-button
                     type="primary"
                     size="mini"
                     plain
                     @click="handleDownloadWork(scope.row, scope.$index, $index)"
                   >
-                    下载作品
-                  </el-button>
-                  <el-upload
-                    class="upload-demo"
-                    action="https://jsonplaceholder.typicode.com/posts/"
-                    :show-file-list="false"
-                    multiple
-                    @on-success="handleUploadPlanImageSuccess"
-                    @on-error="handleUploadPlanImageError"
-                  >
-                    <el-button type="primary" size="mini" plain>
-                      上传展示图
-                    </el-button>
-                  </el-upload>
-
-                  <el-button
-                    type="primary"
-                    size="mini"
-                    plain
-                    @click="
-                      handleRejectTaskReason(scope.row, scope.$index, $index)
-                    "
-                  >
-                    驳回原因
-                  </el-button>
-                  <el-button
-                    type="primary"
-                    size="mini"
-                    plain
-                    @click="
-                      handleStopTaskReason(scope.row, scope.$index, $index)
-                    "
-                  >
-                    终止原因
+                    下载
                   </el-button>
                 </template>
               </el-table-column>
@@ -233,9 +223,9 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="订单号" align="left" width="200">
+      <el-table-column label="验收单号" align="left" width="200">
         <template slot-scope="{ row }">
-          {{ row.order_id }}
+          {{ row.check_id }}
         </template>
       </el-table-column>
       <el-table-column label="项目名称" align="center" width="200">
@@ -243,64 +233,37 @@
           {{ row.project_name }}
         </template>
       </el-table-column>
-      <el-table-column label="需求名称" align="center" width="200">
-        <template slot-scope="{ row }">
-          {{ row.demand_name }}
-        </template>
-      </el-table-column>
       <el-table-column label="供应商" align="center" width="200">
         <template slot-scope="{ row }">
           {{ row.provider_name }}
         </template>
       </el-table-column>
-      <el-table-column label="供管" align="center" width="100">
-        <template slot-scope="{ row }">
-          {{ row.manager }}
-        </template>
-      </el-table-column>
-      <el-table-column label="物件数量" align="center" width="100">
+      <el-table-column label="物件数量" align="center">
         <template slot-scope="{ row }">
           {{ row.task_num }}
         </template>
       </el-table-column>
-      <el-table-column label="工作总量" align="center" width="100">
+      <el-table-column label="工作总量" align="center">
         <template slot-scope="{ row }">
           {{ row.work_total }}
         </template>
       </el-table-column>
-      <el-table-column label="总金额" align="center" width="100">
+      <el-table-column label="总金额" align="center">
         <template slot-scope="{ row }">
           {{ row.work_amount }}
         </template>
       </el-table-column>
-      <el-table-column label="停留时间" align="center" width="100">
+      <el-table-column label="停留时间" align="center">
         <template slot-scope="{ row }"> {{ row.stay_time }}小时 </template>
       </el-table-column>
-      <el-table-column label="当前处理人" align="center" width="100">
+      <el-table-column label="当前处理人" align="center">
         <template slot-scope="{ row }">
           {{ row.current_manager }}
         </template>
       </el-table-column>
-      <el-table-column label="单据状态" align="center" width="100">
+      <el-table-column label="订单状态" align="center">
         <template slot-scope="{ row }">
           {{ row.status }}
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="操作"
-        align="center"
-        min-width="150"
-        class-name="small-padding fixed-width"
-      >
-        <template slot-scope="{ row, $index }">
-          <el-button
-            type="primary"
-            size="mini"
-            plain
-            @click="handleCreateTask(row)"
-          >
-            新增物件
-          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -313,143 +276,6 @@
       :limit.sync="listQuery.page_num"
       @pagination="getList"
     />
-
-    <!--新增物件-->
-    <el-dialog
-      :title="textMap[dialogStatus]"
-      :visible.sync="dialogTaskVisible"
-      width="70%"
-    >
-      <el-form
-        ref="taskDataForm"
-        class="dialog-form"
-        :rules="taskRules"
-        :model="tempTask"
-        label-position="left"
-        label-width="150px"
-        style="margin: 0 50px"
-      >
-        <el-row :gutter="100">
-          <el-col :span="16">
-            <el-form-item>
-              <div slot="label" class="form-title">基础信息</div>
-            </el-form-item>
-            <el-form-item label="物件名称:" prop="task_name">
-              <el-input
-                v-model="tempTask.task_name"
-                class="dialog-form-item"
-                placeholder="请输入物件名称"
-              />
-            </el-form-item>
-
-            <el-form-item label="物件类别:">
-              <span>{{ tempTaskCategory.category_name }}</span>
-            </el-form-item>
-
-            <el-form-item label="工作单位:" prop="work_unit">
-              <el-select
-                v-model="tempTask.work_unit"
-                class="dialog-form-item"
-                style="width: 100%"
-              >
-                <el-option
-                  v-for="(item, itemIndex) in ['人日']"
-                  :key="itemIndex"
-                  :label="item"
-                  :value="item"
-                />
-              </el-select>
-            </el-form-item>
-
-            <el-form-item label="预估数量:" prop="work_num">
-              <el-input
-                v-model="tempTask.work_num"
-                placeholder="请输入预估数量"
-                class="dialog-form-item"
-              />
-            </el-form-item>
-
-            <el-form-item label="完成日期:" prop="deliver_date">
-              <el-date-picker
-                v-model="tempTask.deliver_date"
-                type="date"
-                value-format="yyyy-MM-dd"
-                placeholder="选择日期"
-                class="dialog-form-item"
-                style="width: 100%"
-              />
-            </el-form-item>
-
-            <el-form-item label="备注信息:" prop="remark">
-              <el-input
-                v-model="tempTask.remark"
-                type="textarea"
-                placeholder="请输入说明"
-                class="dialog-form-item"
-              />
-            </el-form-item>
-            <el-form-item>
-              <div slot="label" class="form-title">属性</div>
-            </el-form-item>
-            <el-form-item
-              v-for="(property, propIndex) in tempTask.extend"
-              :key="propIndex"
-              :label="property.name"
-            >
-              <el-select
-                v-if="property.type === 1"
-                v-model="property.value"
-                class="dialog-form-item"
-                style="width: 100%"
-              >
-                <el-option
-                  v-for="(option, optionIndex) in property.options.split(',')"
-                  :key="optionIndex"
-                  :label="option"
-                  :value="option"
-                />
-              </el-select>
-              <el-input
-                v-else
-                v-model="property.value"
-                type="textarea"
-                :placeholder="`请输入${property.name}`"
-                class="dialog-form-item"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item>
-              <div slot="label" class="form-title">缩略图</div>
-            </el-form-item>
-            <el-form-item prop="task_image" label-width="0">
-              <el-upload
-                class="task-image-uploader"
-                action="https://jsonplaceholder.typicode.com/posts/"
-                :show-file-list="false"
-                :on-success="handleTaskImageSuccess"
-                :before-upload="beforeTaskImageUpload"
-              >
-                <img
-                  v-if="tempTask.task_image"
-                  :src="tempTask.task_image"
-                  class="task-image"
-                >
-                <i v-else class="el-icon-plus task-image-uploader-icon" />
-              </el-upload>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button size="mini" @click="dialogTaskVisible = false">
-          取消
-        </el-button>
-        <el-button type="primary" size="mini" @click="createTaskData()">
-          确定
-        </el-button>
-      </div>
-    </el-dialog>
 
     <!--申请变更-->
     <el-dialog
@@ -508,49 +334,102 @@
       </div>
     </el-dialog>
 
-    <!--驳回原因-->
+    <!--审批驳回-->
     <el-dialog
-      title="驳回原因"
-      :visible.sync="dialogRejectReasonVisible"
-      width="600px"
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogVerifyVisible"
     >
-      <div class="reason-box">
-        <div class="content">
-          品类改为3D品类改为3D品类改为3D品类改为3D品类改为3D
-        </div>
-        <div class="user-info">
-          <div>驳回人：tom</div>
-          <div>驳回时间：2022-05-05 12:00:00</div>
-        </div>
+      <el-form
+        ref="verifyDataForm"
+        class="dialog-form"
+        :model="tempVerify"
+        label-position="left"
+        label-width="100px"
+        style="margin: 0 50px"
+      >
+        <el-form-item
+          v-if="dialogStatus === 'resolve'"
+          label="通过原因:"
+          prop="reason"
+        >
+          <el-input
+            v-model="tempVerify.reason"
+            type="textarea"
+            placeholder="请输入通过原因"
+            class="dialog-form-item"
+          />
+        </el-form-item>
+        <el-form-item
+          v-else-if="dialogStatus === 'reject'"
+          label="驳回原因:"
+          prop="reason"
+        >
+          <el-input
+            v-model="tempVerify.reason"
+            type="textarea"
+            placeholder="请输入驳回原因"
+            class="dialog-form-item"
+          />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogVerifyVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="confirmVerify">
+          确认
+        </el-button>
       </div>
     </el-dialog>
 
-    <!--终止原因-->
+    <!--终止-->
     <el-dialog
-      title="终止原因"
-      :visible.sync="dialogStopReasonVisible"
-      width="600px"
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogFinishVisible"
     >
-      <el-form label-position="left" label-width="100px" style="margin: 0 50px">
-        <el-form-item label="终止原因:">
-          <span>终止原因终止原因终止原因终止原因终止原因终止原因终止原因终止原因终止原因终止原因</span>
+      <el-form
+        ref="finishDataForm"
+        class="dialog-form"
+        :rules="finishRules"
+        :model="tempFinish"
+        label-position="left"
+        label-width="150px"
+        style="margin: 0 50px"
+      >
+        <el-form-item label="终止原因:" prop="reason">
+          <el-input
+            v-model="tempFinish.reason"
+            type="textarea"
+            placeholder="请输入终止原因"
+            class="dialog-form-item"
+          />
         </el-form-item>
 
-        <el-form-item label="附件:">
-          <div
-            class="file-box"
-            style="display: flex; justify-content: flex-start"
+        <el-form-item label="上传附件" prop="file">
+          <el-upload
+            class="upload-demo"
+            action="https://jsonplaceholder.typicode.com/posts/"
+            :on-success="handleAddFileSucc"
+            :file-list="fileList"
           >
-            <span>附件.doc</span><el-button size="mini" style="margin-left: 20px">下载</el-button>
-          </div>
+            <el-button size="small" type="primary">上传</el-button>
+          </el-upload>
         </el-form-item>
-      </el-form></el-dialog>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogFinishVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="confirmFinish">
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { fetchOrderList } from '@/api/order/index'
-import { createTask } from '@/api/demand/task'
+import { fetchCheckOrderList } from '@/api/order/index'
 
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
@@ -567,6 +446,7 @@ export default {
       list: [],
       listLoading: true,
       listQuery: {
+        check_id: '',
         order_id: '',
         project_name: '',
         provider_name: '',
@@ -576,28 +456,10 @@ export default {
       },
       textMap: {
         modify: '申请变更',
-        create_task: '新增物件'
+        resolve: '通过',
+        reject: '驳回'
       },
       dialogStatus: '',
-      dialogTaskVisible: false,
-      tempTaskCategory: {
-        category_id: '',
-        category_name: '',
-        property_json: '[]',
-        property_array: []
-      },
-      tempTask: {
-        order_id: '',
-        demand_id: '',
-        task_name: '',
-        task_image: '',
-        work_unit: '',
-        work_num: '',
-        deliver_date: '',
-        remark: '',
-        extend: []
-      },
-      taskRules: {},
       dialogModifyVisible: false,
       tempModify: {
         work_num: '',
@@ -608,7 +470,22 @@ export default {
       },
       modifyRules: {},
       dialogRejectReasonVisible: false,
-      dialogStopReasonVisible: false
+      dialogStopReasonVisible: false,
+      dialogFinishVisible: false,
+      finishRules: {
+        reason: [
+          { required: true, message: '请输入终止原因', trigger: 'blur' }
+        ]
+      },
+      fileList: [],
+      tempFinish: {
+        reason: '',
+        file: ''
+      },
+      dialogVerifyVisible: false,
+      tempVerify: {
+        reason: ''
+      }
     }
   },
   created() {
@@ -617,7 +494,7 @@ export default {
   methods: {
     expandChange(row, expandedRows) {
       this.expandRowKeys = expandedRows.map((row) => {
-        return row.order_id
+        return row.check_id
       })
     },
     /**
@@ -685,7 +562,7 @@ export default {
     getList() {
       this.listLoading = true
 
-      fetchOrderList(this.listQuery).then((response) => {
+      fetchCheckOrderList(this.listQuery).then((response) => {
         this.total = response.data.total
         this.list = response.data.items
 
@@ -709,15 +586,15 @@ export default {
       if (isExpand) {
         this.list.forEach((listItem) => {
           if (listItem.checked) {
-            if (this.expandRowKeys.indexOf(listItem.order_id) < 0) {
-              this.expandRowKeys.push(listItem.order_id)
+            if (this.expandRowKeys.indexOf(listItem.check_id) < 0) {
+              this.expandRowKeys.push(listItem.check_id)
             }
           }
         })
       } else {
         this.list.forEach((listItem) => {
           if (listItem.checked) {
-            const keyIndex = this.expandRowKeys.indexOf(listItem.order_id)
+            const keyIndex = this.expandRowKeys.indexOf(listItem.check_id)
             if (keyIndex >= 0) {
               this.expandRowKeys.splice(keyIndex, 1)
             }
@@ -756,9 +633,9 @@ export default {
       })
     },
     /**
-     * 交付验收
+     * 生成对账单
      */
-    handleDeliver() {
+    handleReconcile() {
       this.$notify({
         title: '成功',
         message: '交付成功',
@@ -767,148 +644,65 @@ export default {
       })
     },
     /**
-     * 上传作品
+     * 通过驳回弹窗
      */
-    handleUploadWork(task, taskIndex, demandIndex) {},
-    handleUploadWorkSuccess(response, file, fileList) {
-      console.log('上传成功', response, file, fileList)
+    handleVerify(pass) {
+      this.dialogStatus = pass ? 'resolve' : 'reject'
+      this.dialogVerifyVisible = true
+    },
+    /**
+     * 通过申请弹窗
+     */
+    confirmVerify() {
       this.$notify({
         title: '成功',
-        message: '上传成功',
+        message: '处理成功',
         type: 'success',
         duration: 2000
       })
+      this.dialogVerifyVisible = false
     },
-    handleUploadWorkError(err, file, fileList) {
-      console.log('上传失败', err, file, fileList)
-      this.$notify({
-        title: '失败',
-        message: '上传失败',
-        type: 'error',
-        duration: 2000
+    /**
+     * 终止弹窗
+     */
+    handleFinish() {
+      this.tempFinish = Object.assign({}, this.tempFinish, {
+        reason: '',
+        file: ''
       })
+      this.dialogFinishVisible = true
     },
     /**
-     * 下载作品
+     * 确认终止
      */
-    handleDownloadWork(task, taskIndex, demandIndex) {},
-    /**
-     * 上传展示图
-     */
-    handleUploadPlanImage(task, taskIndex, demandIndex) {},
-    handleUploadPlanImageSuccess(response, file, fileList) {
-      console.log('上传成功', response, file, fileList)
-      this.$notify({
-        title: '成功',
-        message: '上传成功',
-        type: 'success',
-        duration: 2000
-      })
-    },
-    handleUploadPlanImageError(err, file, fileList) {
-      console.log('上传失败', err, file, fileList)
-      this.$notify({
-        title: '失败',
-        message: '上传失败',
-        type: 'error',
-        duration: 2000
-      })
-    },
-    /**
-     * 驳回原因
-     */
-    handleRejectTaskReason(task, taskIndex, demandIndex) {
-      this.dialogRejectReasonVisible = true
-    },
-    /**
-     * 终止原因
-     */
-    handleStopTaskReason(task, taskIndex, demandIndex) {
-      this.dialogStopReasonVisible = true
-    },
-    /**
-     * 重置物件数据
-     */
-    resetTaskTemp() {
-      this.tempTask = {
-        order_id: '',
-        demand_id: '',
-        task_name: '',
-        task_image: '',
-        work_unit: '',
-        work_num: '',
-        deliver_date: '',
-        remark: '',
-        extend: []
-      }
-    },
-    /**
-     * 新增物件弹窗
-     */
-    handleCreateTask(order) {
-      this.tempTaskCategory = order.category
-      this.resetTaskTemp()
-      this.tempTask = Object.assign({}, this.tempTask, {
-        order_id: order.order_id,
-        demand_id: order.demand_id,
-        extend: order.category.property_array.map((property) => {
-          return {
-            name: property.extend_name,
-            value: '',
-            type: property.extend_tag,
-            options: property.extend_value
-          }
-        })
-      })
-      this.dialogStatus = 'create_task'
-      this.dialogTaskVisible = true
-      this.$nextTick(() => {
-        this.$refs['taskDataForm'].clearValidate()
-      })
-    },
-    /**
-     * 新增物件
-     */
-    createTaskData() {
-      this.$refs['taskDataForm'].validate((valid) => {
+    confirmFinish() {
+      this.$refs['finishDataForm'].validate((valid) => {
         if (valid) {
-          const temp = JSON.parse(JSON.stringify(this.tempTask))
-          temp.task_id = parseInt(Math.random() * 100) + 1024
-          createTask(temp).then(() => {
-            const orderIndex = this.list.findIndex(
-              (v) => v.order_id === temp.order_id
-            )
-
-            if (orderIndex >= 0) {
-              temp.category_id = this.tempTaskCategory.category_id
-              temp.category_name = this.tempTaskCategory.category_name
-              temp.work_price = 10
-              temp.work_amount = 10 * temp.work_num
-              this.list[orderIndex].tasks.unshift(temp)
-            }
-            this.dialogTaskVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
-            })
+          this.$notify({
+            title: '成功',
+            message: '终止成功',
+            type: 'success',
+            duration: 2000
           })
+          this.dialogFinishVisible = false
         }
       })
     },
     /**
-     * 上传物件图片成功回调
+     * 上传文件成功
      */
-    handleTaskImageSuccess(res, file) {
-      console.log(11111, res, file)
+    handleAddFileSucc(response, file, fileList) {
+      const files = fileList
+        .map((fileItem) => {
+          return fileItem.name
+        })
+        .join(',')
+      this.tempFinish = Object.assign({}, this.tempFinish, { file: files })
     },
     /**
-     * 上传物件图片前回调
+     * 下载作品
      */
-    beforeTaskImageUpload(file) {
-      console.log(22222, file)
-    }
+    handleDownloadWork(task, taskIndex, demandIndex) {}
   }
 }
 </script>
@@ -926,14 +720,25 @@ export default {
 }
 .app-container {
   .filter-container {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     @extend %flex-space-between;
+    align-items: flex-end;
     .filter-left {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      flex-wrap: wrap;
       .filter-item {
-        &:not(:first-child) {
-          margin-left: 10px;
-        }
+        width: 15%;
+        margin: 0 10px 10px 0;
       }
+      .filter-btn {
+        margin: 0 10px 10px 0;
+      }
+    }
+    .filter-right {
+      display: flex;
+      flex-wrap: nowrap;
     }
   }
   .list-container {

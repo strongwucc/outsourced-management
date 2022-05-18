@@ -288,7 +288,7 @@ module.exports = [
         sort
       } = config.query
 
-      let mockList = OrderList.filter((item) => {
+      let mockList = CheckOrderList.filter((item) => {
         if (check_id && item.check_id.indexOf(check_id) < 0) {
           return false
         }
