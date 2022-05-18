@@ -108,7 +108,7 @@ const CheckOrderList = []
 for (let i = 0; i < 20; i++) {
   CheckOrderList.push(
     Mock.mock({
-      check_id: 'YS@id',
+      receipt_id: 'YS@id',
       order_id: 'DD@id',
       project_id: 'XM@id',
       project_name: '守望先锋手游' + i,
@@ -279,7 +279,7 @@ module.exports = [
     type: 'post',
     response: (config) => {
       const {
-        check_id,
+        receipt_id,
         project_name,
         provider_name,
         order_id,
@@ -289,7 +289,7 @@ module.exports = [
       } = config.query
 
       let mockList = CheckOrderList.filter((item) => {
-        if (check_id && item.check_id.indexOf(check_id) < 0) {
+        if (receipt_id && item.receipt_id.indexOf(receipt_id) < 0) {
           return false
         }
         if (project_name && item.project_name.indexOf(project_name) < 0) {
@@ -330,13 +330,12 @@ module.exports = [
         reconcile_id,
         project_name,
         provider_name,
-        order_id,
         page = 1,
         page_num = 20,
         sort
       } = config.query
 
-      let mockList = OrderList.filter((item) => {
+      let mockList = ReconcileOrderList.filter((item) => {
         if (reconcile_id && item.reconcile_id.indexOf(reconcile_id) < 0) {
           return false
         }
@@ -344,9 +343,6 @@ module.exports = [
           return false
         }
         if (provider_name && item.provider_name.indexOf(provider_name) < 0) {
-          return false
-        }
-        if (order_id && item.order_id.indexOf(order_id) < 0) {
           return false
         }
         return true
@@ -367,6 +363,16 @@ module.exports = [
           total: mockList.length,
           items: pageList
         }
+      }
+    }
+  },
+  {
+    url: '/vue-element-template/order/bill/upload',
+    type: 'post',
+    response: (_) => {
+      return {
+        code: 200,
+        data: 'success'
       }
     }
   }

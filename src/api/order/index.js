@@ -31,3 +31,11 @@ export function fetchReconcileOrderList(params) {
     params
   })
 }
+
+export function uploadBillData(data) {
+  return request({
+    url: '/vue-element-template/order/bill/upload',
+    method: 'post',
+    data
+  })
+}

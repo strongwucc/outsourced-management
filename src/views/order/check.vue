@@ -4,7 +4,7 @@
     <div class="filter-container">
       <div class="filter-left">
         <el-input
-          v-model="listQuery.check_id"
+          v-model="listQuery.receipt_id"
           placeholder="输入验收单号"
           style="width: 200px"
           class="filter-item"
@@ -126,7 +126,7 @@
       element-loading-text="Loading"
       fit
       highlight-current-row
-      row-key="check_id"
+      row-key="receipt_id"
       :expand-row-keys="expandRowKeys"
       @expand-change="expandChange"
     >
@@ -225,7 +225,7 @@
       </el-table-column>
       <el-table-column label="验收单号" align="left" width="200">
         <template slot-scope="{ row }">
-          {{ row.check_id }}
+          {{ row.receipt_id }}
         </template>
       </el-table-column>
       <el-table-column label="项目名称" align="center" width="200">
@@ -446,7 +446,7 @@ export default {
       list: [],
       listLoading: true,
       listQuery: {
-        check_id: '',
+        receipt_id: '',
         order_id: '',
         project_name: '',
         provider_name: '',
@@ -494,7 +494,7 @@ export default {
   methods: {
     expandChange(row, expandedRows) {
       this.expandRowKeys = expandedRows.map((row) => {
-        return row.check_id
+        return row.receipt_id
       })
     },
     /**
@@ -586,15 +586,15 @@ export default {
       if (isExpand) {
         this.list.forEach((listItem) => {
           if (listItem.checked) {
-            if (this.expandRowKeys.indexOf(listItem.check_id) < 0) {
-              this.expandRowKeys.push(listItem.check_id)
+            if (this.expandRowKeys.indexOf(listItem.receipt_id) < 0) {
+              this.expandRowKeys.push(listItem.receipt_id)
             }
           }
         })
       } else {
         this.list.forEach((listItem) => {
           if (listItem.checked) {
-            const keyIndex = this.expandRowKeys.indexOf(listItem.check_id)
+            const keyIndex = this.expandRowKeys.indexOf(listItem.receipt_id)
             if (keyIndex >= 0) {
               this.expandRowKeys.splice(keyIndex, 1)
             }
