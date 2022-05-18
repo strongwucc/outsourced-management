@@ -71,6 +71,38 @@ for (let i = 0; i < 20; i++) {
   )
 }
 
+const ModifyOrderList = []
+
+for (let i = 0; i < 20; i++) {
+  ModifyOrderList.push(
+    Mock.mock({
+      modify_id: 'BG@id',
+      project_id: 'XM@id',
+      project_name: '守望先锋手游' + i,
+      provider_name: '上海角色设计有限公司' + i,
+      'initiator|1': [0, 1],
+      'type|1': [0, 1],
+      task_num: 3,
+      'status|1': [0, 1, 2],
+      tasks: function() {
+        const modify_id = this.modify_id
+        const tasks = [
+          TaskList[getRandomIntInclusive(0, TaskList.length - 1)],
+          TaskList[getRandomIntInclusive(0, TaskList.length - 1)],
+          TaskList[getRandomIntInclusive(0, TaskList.length - 1)]
+        ]
+        return tasks.map((task) => {
+          task.modify_id = modify_id
+          task.modify_deliver_date = '2022-06-01'
+          task.modify_work_num = 20
+          task.modify_work_amount = 20000
+          return task
+        })
+      }
+    })
+  )
+}
+
 const CheckOrderList = []
 
 for (let i = 0; i < 20; i++) {
@@ -163,6 +195,62 @@ module.exports = [
           return false
         }
         if (provider_name && item.provider_name.indexOf(provider_name) < 0) {
+          return false
+        }
+        return true
+      })
+
+      if (sort === '-id') {
+        mockList = mockList.reverse()
+      }
+
+      const pageList = mockList.filter(
+        (item, index) =>
+          index < page_num * page && index >= page_num * (page - 1)
+      )
+
+      return {
+        code: 200,
+        data: {
+          total: mockList.length,
+          items: pageList
+        }
+      }
+    }
+  },
+  {
+    url: '/vue-admin-template/order/modify/list',
+    type: 'post',
+    response: (config) => {
+      const {
+        modify_id,
+        project_name,
+        provider_name,
+        initiator,
+        type,
+        status,
+        page = 1,
+        page_num = 20,
+        sort
+      } = config.query
+
+      let mockList = ModifyOrderList.filter((item) => {
+        if (modify_id && item.modify_id.indexOf(modify_id) < 0) {
+          return false
+        }
+        if (project_name && item.project_name.indexOf(project_name) < 0) {
+          return false
+        }
+        if (provider_name && item.provider_name.indexOf(provider_name) < 0) {
+          return false
+        }
+        if (initiator !== '' && parseInt(initiator) !== item.initiator) {
+          return false
+        }
+        if (type !== '' && parseInt(type) !== item.type) {
+          return false
+        }
+        if (status !== '' && parseInt(status) !== item.status) {
           return false
         }
         return true

@@ -8,6 +8,14 @@ export function fetchOrderList(params) {
   })
 }
 
+export function fetchModifyOrderList(params) {
+  return request({
+    url: '/vue-admin-template/order/modify/list',
+    method: 'post',
+    params
+  })
+}
+
 export function fetchCheckOrderList(params) {
   return request({
     url: '/vue-admin-template/order/check/list',

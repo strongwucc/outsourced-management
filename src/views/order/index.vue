@@ -68,7 +68,7 @@
           申请变更
         </el-button>
         <el-popconfirm
-          title="这是一段内容确定删除吗？"
+          title="确定交付验收吗？"
           @confirm="handleDeliver"
         ><el-button
           slot="reference"
