@@ -39,9 +39,11 @@
     <!--表格列表-->
     <el-table
       v-loading="listLoading"
+      element-loading-text="拼命加载中"
+      element-loading-spinner="el-icon-loading"
+      element-loading-background="rgba(0, 0, 0, 0.8)"
       class="list-container"
       :data="list"
-      element-loading-text="加载中"
       border
       fit
       highlight-current-row
@@ -82,7 +84,12 @@
           >
             添加子类
           </el-button>
-          <el-button type="primary" size="mini" plain @click="handleUpdate(row)">
+          <el-button
+            type="primary"
+            size="mini"
+            plain
+            @click="handleUpdate(row)"
+          >
             编辑
           </el-button>
           <el-popconfirm
@@ -206,7 +213,9 @@
       </div>
 
       <div slot="footer" class="dialog-footer">
-        <el-button size="mini" @click="dialogFormVisible = false"> 取消 </el-button>
+        <el-button size="mini" @click="dialogFormVisible = false">
+          取消
+        </el-button>
         <el-button
           type="primary"
           size="mini"
@@ -285,7 +294,9 @@
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button size="mini" @click="propDialogFormVisible = false"> 取消 </el-button>
+        <el-button size="mini" @click="propDialogFormVisible = false">
+          取消
+        </el-button>
         <el-button
           type="primary"
           size="mini"

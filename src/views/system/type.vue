@@ -34,14 +34,15 @@
 
     <el-table
       v-loading="listLoading"
+      element-loading-text="拼命加载中"
+      element-loading-spinner="el-icon-loading"
+      element-loading-background="rgba(0, 0, 0, 0.8)"
       class="list-container"
       :data="list"
-      element-loading-text="加载中"
       border
       fit
       highlight-current-row
     >
-
       <el-table-column label="ID" align="center" width="100">
         <template slot-scope="{ row }">
           {{ row.id }}

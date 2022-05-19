@@ -84,9 +84,11 @@
 
     <el-table
       v-loading="listLoading"
+      element-loading-text="拼命加载中"
+      element-loading-spinner="el-icon-loading"
+      element-loading-background="rgba(0, 0, 0, 0.8)"
       class="list-container"
       :data="list"
-      element-loading-text="加载中"
       border
       fit
       highlight-current-row
@@ -157,7 +159,12 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row }">
-          <el-button type="primary" size="mini" plain @click="handleDetail(row)">
+          <el-button
+            type="primary"
+            size="mini"
+            plain
+            @click="handleDetail(row)"
+          >
             查看
           </el-button>
         </template>
@@ -481,7 +488,9 @@
                   clearable
                   filterable
                   remote
-                  :placeholder="itemIndex === 0 ? '一级审批系统默认' : '二级审批'"
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批系统默认' : '二级审批'
+                  "
                   :remote-method="(query) => fetchMemberList(query)"
                   :loading="memberLoading"
                   @focus="fetchMemberList('')"
@@ -572,7 +581,9 @@
                   clearable
                   filterable
                   remote
-                  :placeholder="itemIndex === 0 ? '一级审批系统默认' : '二级审批'"
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批系统默认' : '二级审批'
+                  "
                   :remote-method="(query) => fetchMemberList(query)"
                   :loading="memberLoading"
                   @focus="fetchMemberList('')"
@@ -667,7 +678,9 @@
         >
           <div class="check-confirm-supplier-charge-box json-normal-box">
             <div
-              v-for="(item, itemIndex) in temp.check_confirm_supplier_charge_json"
+              v-for="(
+                item, itemIndex
+              ) in temp.check_confirm_supplier_charge_json"
               :key="itemIndex"
               class="item-member"
             >
@@ -738,7 +751,9 @@
                   clearable
                   filterable
                   remote
-                  :placeholder="itemIndex === 0 ? '一级审批系统默认' : '二级审批'"
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批系统默认' : '二级审批'
+                  "
                   :remote-method="(query) => fetchMemberList(query)"
                   :loading="memberLoading"
                   @focus="fetchMemberList('')"
@@ -1302,22 +1317,70 @@ export default {
           temp.id = parseInt(Math.random() * 100) + 1024
 
           const postTemp = JSON.parse(JSON.stringify(temp))
-          postTemp.project_producer_json = JSON.stringify(temp.project_producer_json)
+          postTemp.project_producer_json = JSON.stringify(
+            temp.project_producer_json
+          )
           postTemp.needs_create_json = JSON.stringify(temp.needs_create_json)
-          postTemp.needs_verify_json = JSON.stringify(temp.needs_verify_json.map((item) => { return item.id }))
-          postTemp.assign_supplier_json = JSON.stringify(temp.assign_supplier_json)
-          postTemp.wj_verify_json = JSON.stringify(temp.wj_verify_json.map((item) => { return item.id }))
+          postTemp.needs_verify_json = JSON.stringify(
+            temp.needs_verify_json.map((item) => {
+              return item.id
+            })
+          )
+          postTemp.assign_supplier_json = JSON.stringify(
+            temp.assign_supplier_json
+          )
+          postTemp.wj_verify_json = JSON.stringify(
+            temp.wj_verify_json.map((item) => {
+              return item.id
+            })
+          )
           postTemp.order_create_json = JSON.stringify(temp.order_create_json)
-          postTemp.order_verify_json = JSON.stringify(temp.order_verify_json.map((item) => { return item.id }))
-          postTemp.check_json = JSON.stringify(temp.check_json.map((item) => { return item.id }))
-          postTemp.check_confirm_pro_json = JSON.stringify(temp.check_confirm_pro_json.map((item) => { return item.id }))
-          postTemp.check_confirm_supplier_json = JSON.stringify(temp.check_confirm_supplier_json.map((item) => { return item.id }))
-          postTemp.check_confirm_supplier_charge_json = JSON.stringify(temp.check_confirm_supplier_charge_json.map((item) => { return item.id }))
+          postTemp.order_verify_json = JSON.stringify(
+            temp.order_verify_json.map((item) => {
+              return item.id
+            })
+          )
+          postTemp.check_json = JSON.stringify(
+            temp.check_json.map((item) => {
+              return item.id
+            })
+          )
+          postTemp.check_confirm_pro_json = JSON.stringify(
+            temp.check_confirm_pro_json.map((item) => {
+              return item.id
+            })
+          )
+          postTemp.check_confirm_supplier_json = JSON.stringify(
+            temp.check_confirm_supplier_json.map((item) => {
+              return item.id
+            })
+          )
+          postTemp.check_confirm_supplier_charge_json = JSON.stringify(
+            temp.check_confirm_supplier_charge_json.map((item) => {
+              return item.id
+            })
+          )
           postTemp.push_settle_json = JSON.stringify(temp.push_settle_json)
-          postTemp.change_verify_json = JSON.stringify(temp.change_verify_json.map((item) => { return item.id }))
-          postTemp.change_review_json = JSON.stringify(temp.change_review_json.map((item) => { return item.id }))
-          postTemp.change_check_json = JSON.stringify(temp.change_check_json.map((item) => { return item.id }))
-          postTemp.change_check_verify_json = JSON.stringify(temp.change_check_verify_json.map((item) => { return item.id }))
+          postTemp.change_verify_json = JSON.stringify(
+            temp.change_verify_json.map((item) => {
+              return item.id
+            })
+          )
+          postTemp.change_review_json = JSON.stringify(
+            temp.change_review_json.map((item) => {
+              return item.id
+            })
+          )
+          postTemp.change_check_json = JSON.stringify(
+            temp.change_check_json.map((item) => {
+              return item.id
+            })
+          )
+          postTemp.change_check_verify_json = JSON.stringify(
+            temp.change_check_verify_json.map((item) => {
+              return item.id
+            })
+          )
 
           createProcess(postTemp).then(() => {
             // 获取关联字段名称

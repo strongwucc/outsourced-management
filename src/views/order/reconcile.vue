@@ -86,8 +86,10 @@
     <!--列表-->
     <el-table
       v-loading="listLoading"
+      element-loading-text="拼命加载中"
+      element-loading-spinner="el-icon-loading"
+      element-loading-background="rgba(0, 0, 0, 0.8)"
       :data="list"
-      element-loading-text="Loading"
       fit
       highlight-current-row
       row-key="reconcile_id"
@@ -411,8 +413,12 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button size="mini" @click="dialogReconcileVisible = false"> 取消 </el-button>
-        <el-button type="primary" size="mini" @click="uploadReconcile"> 确认 </el-button>
+        <el-button size="mini" @click="dialogReconcileVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="uploadReconcile">
+          确认
+        </el-button>
       </div>
     </el-dialog>
 
@@ -486,8 +492,12 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button size="mini" @click="dialogBillVisible = false"> 取消 </el-button>
-        <el-button type="primary" size="mini" @click="uploadBill"> 确认 </el-button>
+        <el-button size="mini" @click="dialogBillVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="uploadBill">
+          确认
+        </el-button>
       </div>
     </el-dialog>
   </div>

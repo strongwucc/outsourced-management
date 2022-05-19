@@ -107,9 +107,11 @@
     <!--列表-->
     <el-table
       v-loading="listLoading"
+      element-loading-text="拼命加载中"
+      element-loading-spinner="el-icon-loading"
+      element-loading-background="rgba(0, 0, 0, 0.8)"
       class="list-container"
       :data="list"
-      element-loading-text="加载中"
       fit
       highlight-current-row
       row-key="demand_id"
@@ -1108,17 +1110,16 @@
       :visible.sync="dialogStopReasonVisible"
       width="600px"
     >
-      <el-form
-        label-position="left"
-        label-width="100px"
-        style="margin: 0 50px"
-      >
+      <el-form label-position="left" label-width="100px" style="margin: 0 50px">
         <el-form-item label="终止原因:">
           <span>终止原因终止原因终止原因终止原因终止原因终止原因终止原因终止原因终止原因终止原因</span>
         </el-form-item>
 
         <el-form-item label="附件:">
-          <div class="file-box" style="display: flex;justify-content: flex-start;">
+          <div
+            class="file-box"
+            style="display: flex; justify-content: flex-start"
+          >
             <span>附件.doc</span><el-button size="mini" style="margin-left: 20px">下载</el-button>
           </div>
         </el-form-item>
