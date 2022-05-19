@@ -157,7 +157,7 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row }">
-          <el-button type="primary" size="mini" @click="handleDetail(row)">
+          <el-button type="primary" size="mini" plain @click="handleDetail(row)">
             查看
           </el-button>
         </template>

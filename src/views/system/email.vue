@@ -34,12 +34,13 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
+          <el-button type="primary" size="mini" plain @click="handleUpdate(row)">
             编辑
           </el-button>
           <el-button
             size="mini"
             type="danger"
+            plain
             @click="handleDelete(row, $index)"
           >
             删除
@@ -73,9 +74,10 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false"> 取消 </el-button>
+        <el-button size="mini" @click="dialogFormVisible = false"> 取消 </el-button>
         <el-button
           type="primary"
+          size="mini"
           @click="dialogStatus === 'create' ? createData() : updateData()"
         >
           确定

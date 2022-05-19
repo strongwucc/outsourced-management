@@ -77,11 +77,12 @@
             v-if="row.cat_path === 1 || row.cat_path === 2"
             type="primary"
             size="mini"
+            plain
             @click="handleCreate(row.cat_path + 1, row.cat_id)"
           >
             添加子类
           </el-button>
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
+          <el-button type="primary" size="mini" plain @click="handleUpdate(row)">
             编辑
           </el-button>
           <el-popconfirm
@@ -93,7 +94,7 @@
             title="确认要删除吗？"
             @onConfirm="handleDelete(row, $index)"
           >
-            <el-button slot="reference" size="mini" type="danger">
+            <el-button slot="reference" size="mini" plain type="danger">
               删除
             </el-button>
           </el-popconfirm>
@@ -205,9 +206,10 @@
       </div>
 
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false"> 取消 </el-button>
+        <el-button size="mini" @click="dialogFormVisible = false"> 取消 </el-button>
         <el-button
           type="primary"
+          size="mini"
           @click="dialogStatus === 'create' ? createData() : updateData()"
         >
           确定
@@ -283,9 +285,10 @@
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button @click="propDialogFormVisible = false"> 取消 </el-button>
+        <el-button size="mini" @click="propDialogFormVisible = false"> 取消 </el-button>
         <el-button
           type="primary"
+          size="mini"
           @click="
             propDialogStatus === 'create' ? createPropData() : updatePropData()
           "

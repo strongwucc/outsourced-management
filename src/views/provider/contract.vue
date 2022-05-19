@@ -143,8 +143,8 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
-          <el-button size="mini" @click="handleDetail(row)"> 查看 </el-button>
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
+          <el-button size="mini" plain @click="handleDetail(row)"> 查看 </el-button>
+          <el-button type="primary" size="mini" plain @click="handleUpdate(row)">
             编辑
           </el-button>
           <el-popconfirm
@@ -157,7 +157,7 @@
             title="确认恢复合作吗？"
             @onConfirm="handleRecoverContract(row, $index)"
           >
-            <el-button slot="reference" size="mini" type="success">
+            <el-button slot="reference" size="mini" plain type="success">
               恢复合作
             </el-button>
           </el-popconfirm>
@@ -172,7 +172,7 @@
             title="确认暂停合作吗？"
             @onConfirm="handlePauseContract(row, $index)"
           >
-            <el-button slot="reference" size="mini" type="danger">
+            <el-button slot="reference" size="mini" plain type="danger">
               暂停合作
             </el-button>
           </el-popconfirm>
@@ -271,9 +271,10 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false"> 取消 </el-button>
+        <el-button size="mini" @click="dialogFormVisible = false"> 取消 </el-button>
         <el-button
           type="primary"
+          size="mini"
           @click="dialogStatus === 'create' ? createData() : updateData()"
         >
           确定
@@ -312,7 +313,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogDetailVisible = false"> 关闭 </el-button>
+        <el-button size="mini" @click="dialogDetailVisible = false"> 关闭 </el-button>
       </div>
     </el-dialog>
   </div>

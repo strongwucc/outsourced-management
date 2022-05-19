@@ -135,34 +135,6 @@ export const constantRoutes = [
   },
 
   {
-    path: '/acceptance',
-    component: Layout,
-    redirect: 'noRedirect',
-    name: '验收对账管理',
-    meta: { title: '验收对账管理', icon: 'el-icon-tickets' },
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/acceptance/index'),
-        name: '验收单列表',
-        meta: { title: '验收单列表' }
-      },
-      {
-        path: 'alteration',
-        component: () => import('@/views/acceptance/alteration'),
-        name: '变更申请单',
-        meta: { title: '变更申请单' }
-      },
-      {
-        path: 'statement',
-        component: () => import('@/views/acceptance/statement'),
-        name: '对账单',
-        meta: { title: '对账单' }
-      }
-    ]
-  },
-
-  {
     path: '/provider',
     component: Layout,
     redirect: 'noRedirect',
@@ -217,15 +189,15 @@ export const constantRoutes = [
       },
       {
         path: 'role',
-        name: '角色管理',
+        name: '用户组管理',
         component: () => import('@/views/system/role'),
-        meta: { title: '角色管理' }
+        meta: { title: '用户组管理' }
       },
       {
         path: 'member',
-        name: '成员管理',
+        name: '用户管理',
         component: () => import('@/views/system/member'),
-        meta: { title: '成员管理' }
+        meta: { title: '用户管理' }
       },
       {
         path: 'email',

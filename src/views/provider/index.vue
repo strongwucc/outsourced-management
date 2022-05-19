@@ -83,14 +83,15 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
-          <el-button size="mini" @click="handleShow(row)"> 查看 </el-button>
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
+          <el-button size="mini" plain @click="handleShow(row)"> 查看 </el-button>
+          <el-button type="primary" size="mini" plain @click="handleUpdate(row)">
             编辑
           </el-button>
           <el-button
             v-if="row.status != 'deleted'"
             size="mini"
             type="danger"
+            plain
             @click="handleDelete(row, $index)"
           >
             删除
@@ -359,12 +360,13 @@
         slot="footer"
         class="dialog-view-footer"
       >
-        <el-button @click="dialogFormVisible = false"> 关闭 </el-button>
+        <el-button size="mini" @click="dialogFormVisible = false"> 关闭 </el-button>
       </div>
       <div v-else slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false"> 取消 </el-button>
+        <el-button size="mini" @click="dialogFormVisible = false"> 取消 </el-button>
         <el-button
           type="primary"
+          size="mini"
           @click="dialogStatus === 'create' ? createData() : updateData()"
         >
           确定

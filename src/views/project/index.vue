@@ -97,7 +97,7 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row }">
-          <el-button type="primary" size="mini" @click="handleCostManage(row)">
+          <el-button type="primary" size="mini" plain @click="handleCostManage(row)">
             项目预算管理
           </el-button>
         </template>
@@ -146,9 +146,10 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false"> 取消 </el-button>
+        <el-button size="mini" @click="dialogFormVisible = false"> 取消 </el-button>
         <el-button
           type="primary"
+          size="mini"
           @click="dialogStatus === 'create' ? createData() : updateData()"
         >
           确定
@@ -182,8 +183,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogCostVisible = false"> 取消 </el-button>
-        <el-button type="primary" @click="updateCost()"> 确定 </el-button>
+        <el-button size="mini" @click="dialogCostVisible = false"> 取消 </el-button>
+        <el-button type="primary" size="mini" @click="updateCost()"> 确定 </el-button>
       </div>
     </el-dialog>
   </div>
