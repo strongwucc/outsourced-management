@@ -3,7 +3,7 @@
     <div class="filter-container">
       <div class="filter-left">
         <el-input
-          v-model="listQuery.name"
+          v-model="listQuery.group_name"
           placeholder="分组名称"
           style="width: 200px"
           class="filter-item"
@@ -42,7 +42,7 @@
 
       <el-table-column label="分组名称" align="center" min-width="150px">
         <template slot-scope="{ row }">
-          {{ row.name }}
+          {{ row.group_name }}
         </template>
       </el-table-column>
 
@@ -71,13 +71,13 @@
       </el-table-column>
     </el-table>
 
-    <pagination
+    <!-- <pagination
       v-show="total > 0"
       :total="total"
       :page.sync="listQuery.page"
       :limit.sync="listQuery.limit"
       @pagination="getList"
-    />
+    /> -->
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form
@@ -88,8 +88,8 @@
         label-width="100px"
         style="width: 400px; margin-left: 50px"
       >
-        <el-form-item label="分组名称" prop="name">
-          <el-input v-model="temp.name" />
+        <el-form-item label="分组名称" prop="group_name">
+          <el-input v-model="temp.group_name" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -122,21 +122,21 @@ export default {
       listQuery: {
         page: 1,
         limit: 10,
-        name: undefined,
+        group_name: undefined,
         sort: '+id'
       },
       dialogStatus: '',
       dialogFormVisible: false,
       temp: {
         id: undefined,
-        name: ''
+        group_name: ''
       },
       textMap: {
         update: '修改',
         create: '新增'
       },
       rules: {
-        name: [{ required: true, message: '请输入分组名称', trigger: 'blur' }]
+        group_name: [{ required: true, message: '请输入分组名称', trigger: 'blur' }]
       }
     }
   },
@@ -147,7 +147,7 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then((response) => {
-        this.list = response.data.items
+        this.list = response.data.list
         this.total = response.data.total
 
         // Just to simulate the time of the request
@@ -163,7 +163,7 @@ export default {
     resetTemp() {
       this.temp = {
         id: undefined,
-        name: ''
+        group_name: ''
       }
     },
     handleUpdate(row) {

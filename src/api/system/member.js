@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function fetchList(params) {
   return request({
-    url: '/vue-admin-template/system/member/list',
+    url: '/api/setting/userList',
     method: 'post',
     params
   })
@@ -10,7 +10,7 @@ export function fetchList(params) {
 
 export function fetchAllMember(params) {
   return request({
-    url: '/vue-admin-template/system/member/all',
+    url: '/api/setting/userAll',
     method: 'post',
     params
   })
@@ -18,7 +18,7 @@ export function fetchAllMember(params) {
 
 export function createMember(data) {
   return request({
-    url: '/vue-element-admin/system/member/create',
+    url: '/api/setting/userAdd',
     method: 'post',
     data
   })
@@ -26,7 +26,15 @@ export function createMember(data) {
 
 export function updateMember(data) {
   return request({
-    url: '/vue-element-admin/system/member/update',
+    url: '/api/setting/userEdit',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteMember(data) {
+  return request({
+    url: '/api/setting/userDel',
     method: 'post',
     data
   })

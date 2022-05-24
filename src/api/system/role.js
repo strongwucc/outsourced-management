@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function fetchList(params) {
   return request({
-    url: '/vue-admin-template/system/role/list',
+    url: '/api/setting/groupList',
     method: 'post',
     params
   })
@@ -10,7 +10,7 @@ export function fetchList(params) {
 
 export function fetchAllRole(params) {
   return request({
-    url: '/vue-admin-template/system/role/all',
+    url: '/api/setting/groupList',
     method: 'post',
     params
   })
@@ -18,7 +18,7 @@ export function fetchAllRole(params) {
 
 export function updateRole(data) {
   return request({
-    url: '/vue-element-admin/system/role/update',
+    url: '/api/setting/editGroup',
     method: 'post',
     data
   })

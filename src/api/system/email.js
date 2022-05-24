@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function fetchList(params) {
   return request({
-    url: '/vue-admin-template/system/email/list',
+    url: '/api/setting/emailList',
     method: 'post',
     params
   })
@@ -10,7 +10,7 @@ export function fetchList(params) {
 
 export function createEmail(data) {
   return request({
-    url: '/vue-element-admin/system/email/create',
+    url: '/api/setting/addEmail',
     method: 'post',
     data
   })
@@ -18,7 +18,15 @@ export function createEmail(data) {
 
 export function updateEmail(data) {
   return request({
-    url: '/vue-element-admin/system/email/update',
+    url: '/api/setting/addEmail',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteEmail(data) {
+  return request({
+    url: '/api/setting/delEmail',
     method: 'post',
     data
   })

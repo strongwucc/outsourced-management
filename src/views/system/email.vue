@@ -1,5 +1,21 @@
 <template>
   <div class="app-container">
+    <div class="filter-container">
+      <div class="filter-left" />
+      <div class="filter-right">
+        <el-button
+          class="filter-item"
+          style="margin-left: 10px"
+          type="primary"
+          icon="el-icon-plus"
+          size="mini"
+          @click="handleCreate"
+        >
+          添加邮箱
+        </el-button>
+      </div>
+    </div>
+
     <el-table
       v-loading="listLoading"
       element-loading-text="拼命加载中"
@@ -43,14 +59,15 @@
           >
             编辑
           </el-button>
-          <el-button
-            size="mini"
-            type="danger"
-            plain
-            @click="handleDelete(row, $index)"
+          <el-popconfirm
+            style="margin-left: 10px"
+            title="确定删除吗？"
+            @confirm="handleDelete(row, $index)"
           >
-            删除
-          </el-button>
+            <el-button slot="reference" size="mini" type="danger" plain>
+              删除
+            </el-button>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -96,7 +113,12 @@
 </template>
 
 <script>
-import { fetchList, createEmail, updateEmail } from '@/api/system/email'
+import {
+  fetchList,
+  createEmail,
+  updateEmail,
+  deleteEmail
+} from '@/api/system/email'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 
@@ -140,7 +162,7 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then((response) => {
-        this.list = response.data.items
+        this.list = response.data.list
         this.total = response.data.total
 
         // Just to simulate the time of the request
@@ -171,8 +193,9 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024
-          createEmail(this.temp).then(() => {
+          // this.temp.id = parseInt(Math.random() * 100) + 1024
+          createEmail(this.temp).then((response) => {
+            this.temp.id = response.data.id
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
             this.$notify({
@@ -211,13 +234,15 @@ export default {
       })
     },
     handleDelete(row, index) {
-      this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
+      deleteEmail({ id: row.id }).then(() => {
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.list.splice(index, 1)
       })
-      this.list.splice(index, 1)
     }
   }
 }

@@ -67,13 +67,13 @@
 
       <el-table-column label="用户分组" align="center" min-width="150px">
         <template slot-scope="{ row }">
-          {{ row.group_name }}
+          {{ row.group_name || "-" }}
         </template>
       </el-table-column>
 
       <el-table-column label="部门" align="center" min-width="150px">
         <template slot-scope="{ row }">
-          {{ row.dep_name }}
+          {{ row.dep_array | depText }}
         </template>
       </el-table-column>
 
@@ -112,15 +112,15 @@
           >
             编辑
           </el-button>
-          <el-button
-            v-if="row.status != 'deleted'"
-            size="mini"
-            type="danger"
-            plain
-            @click="handleDelete(row, $index)"
+          <el-popconfirm
+            style="margin-left: 10px"
+            title="确定删除吗？"
+            @confirm="handleDelete(row, $index)"
           >
-            删除
-          </el-button>
+            <el-button slot="reference" size="mini" type="danger" plain>
+              删除
+            </el-button>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -129,21 +129,22 @@
       v-show="total > 0"
       :total="total"
       :page.sync="listQuery.page"
-      :limit.sync="listQuery.limit"
+      :limit.sync="listQuery.page_num"
       @pagination="getList"
     />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form
         ref="dataForm"
+        class="dialog-form"
         :rules="rules"
         :model="temp"
         label-position="left"
         label-width="100px"
-        style="width: 400px; margin-left: 50px"
+        style="margin-left: 50px"
       >
         <el-form-item label="姓名:" prop="name">
-          <el-input v-model="temp.name" />
+          <el-input v-model="temp.name" class="dialog-form-item" />
         </el-form-item>
 
         <el-form-item label="用户分组:" prop="group_id">
@@ -155,16 +156,18 @@
             <el-option
               v-for="item in roles"
               :key="item.id"
-              :label="item.name"
+              :label="item.group_name"
               :value="item.id"
             />
           </el-select>
         </el-form-item>
 
-        <el-form-item label="部门:" prop="dep_id">
+        <el-form-item label="部门:" prop="dep_json">
           <el-select
-            v-model="temp.dep_id"
+            v-model="temp.dep_json"
             class="dialog-form-item"
+            multiple
+            collapse-tags
             placeholder="请选择"
           >
             <el-option
@@ -177,19 +180,23 @@
         </el-form-item>
 
         <el-form-item label="登录用户名:" prop="login_name">
-          <el-input v-model="temp.login_name" />
+          <el-input v-model="temp.login_name" class="dialog-form-item" />
         </el-form-item>
 
         <el-form-item label="密码:" prop="password">
-          <el-input v-model="temp.password" type="password" />
+          <el-input
+            v-model="temp.password"
+            type="password"
+            class="dialog-form-item"
+          />
         </el-form-item>
 
         <el-form-item label="手机号:" prop="mobile">
-          <el-input v-model="temp.mobile" />
+          <el-input v-model="temp.mobile" class="dialog-form-item" />
         </el-form-item>
 
         <el-form-item label="邮箱:" prop="email">
-          <el-input v-model="temp.email" />
+          <el-input v-model="temp.email" class="dialog-form-item" />
         </el-form-item>
 
         <el-form-item label="状态:" prop="status">
@@ -214,7 +221,7 @@
 </template>
 
 <script>
-import { fetchList, createMember, updateMember } from '@/api/system/member'
+import { fetchList, createMember, updateMember, deleteMember } from '@/api/system/member'
 import { fetchAllDepartment } from '@/api/system/department'
 import { fetchAllRole } from '@/api/system/role'
 import waves from '@/directive/waves'
@@ -238,6 +245,14 @@ export default {
         1: '启用'
       }
       return statusMap[status]
+    },
+    depText(depArray) {
+      if (depArray.length === 0) {
+        return '-'
+      }
+      return depArray.map(depItem => {
+        return depItem.name
+      }).join(',')
     }
   },
   data() {
@@ -262,7 +277,7 @@ export default {
       roles: [],
       listQuery: {
         page: 1,
-        limit: 10,
+        page_num: 10,
         keyword: undefined,
         sort: '+id'
       },
@@ -272,7 +287,8 @@ export default {
         id: undefined,
         name: '',
         group_id: '',
-        dep_id: '',
+        dep_json: '[]',
+        dep_array: [],
         login_name: '',
         password: '',
         mobile: '',
@@ -304,25 +320,21 @@ export default {
       this.listLoading = true
       if (this.departments.length === 0) {
         const departData = await fetchAllDepartment()
-        this.departments = departData.data.items
+        this.departments = departData.data.list
       }
       if (this.roles.length === 0) {
         const roleData = await fetchAllRole()
-        this.roles = roleData.data.items
+        this.roles = roleData.data.list
       }
       fetchList(this.listQuery).then((response) => {
-        this.list = response.data.items.map((item) => {
+        this.list = response.data.list.map((item) => {
           const newItem = Object.assign({}, item, {
             group_name: '',
             dep_name: ''
           })
 
-          this.departments.some((departItem) => {
-            if (departItem.id === item.dep_id) {
-              newItem.dep_name = departItem.name
-              return true
-            }
-            return false
+          newItem.dep_json = newItem.dep_array.map(depItem => {
+            return depItem.id
           })
 
           this.roles.some((roleItem) => {
@@ -351,7 +363,15 @@ export default {
     resetTemp() {
       this.temp = {
         id: undefined,
-        type_name: ''
+        name: '',
+        group_id: '',
+        dep_json: '[]',
+        dep_array: [],
+        login_name: '',
+        password: '',
+        mobile: '',
+        email: '',
+        status: 1
       }
     },
     handleCreate() {
@@ -365,9 +385,12 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          const temp = Object.assign({}, this.temp)
-          temp.id = parseInt(Math.random() * 100) + 1024
-          createMember(temp).then(() => {
+          const temp = JSON.parse(JSON.stringify(this.temp))
+          const postTemp = JSON.parse(JSON.stringify(this.temp))
+          postTemp.dep_json = JSON.stringify(temp.dep_json)
+          // temp.id = parseInt(Math.random() * 100) + 1024
+          createMember(postTemp).then((response) => {
+            temp.id = response.data.id
             this.roles.some((roleItem) => {
               if (roleItem.id === temp.group_id) {
                 temp.group_name = roleItem.name
@@ -375,13 +398,13 @@ export default {
               }
               return false
             })
-            this.departments.some((departItem) => {
-              if (departItem.id === temp.dep_id) {
-                temp.dep_name = departItem.name
-                return true
-              }
-              return false
+            temp.dep_array = temp.dep_json.map((dep_item_id) => {
+              const depIndex = this.departments.findIndex(
+                (dep) => dep.id === dep_item_id
+              )
+              return this.departments[depIndex] || null
             })
+
             this.list.unshift(temp)
             this.dialogFormVisible = false
             this.$notify({
@@ -395,7 +418,7 @@ export default {
       })
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row)
+      this.temp = JSON.parse(JSON.stringify(row))
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -405,24 +428,25 @@ export default {
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          updateMember(tempData).then(() => {
+          const temp = JSON.parse(JSON.stringify(this.temp))
+          const postTemp = JSON.parse(JSON.stringify(this.temp))
+          postTemp.dep_json = JSON.stringify(temp.dep_json)
+          updateMember(postTemp).then(() => {
             this.roles.some((roleItem) => {
-              if (roleItem.id === tempData.group_id) {
-                tempData.group_name = roleItem.name
+              if (roleItem.id === temp.group_id) {
+                temp.group_name = roleItem.name
                 return true
               }
               return false
             })
-            this.departments.some((departItem) => {
-              if (departItem.id === tempData.dep_id) {
-                tempData.dep_name = departItem.name
-                return true
-              }
-              return false
+            temp.dep_array = temp.dep_json.map((dep_item_id) => {
+              const depIndex = this.departments.findIndex(
+                (dep) => dep.id === dep_item_id
+              )
+              return this.departments[depIndex] || null
             })
-            const index = this.list.findIndex((v) => v.id === tempData.id)
-            this.list.splice(index, 1, tempData)
+            const index = this.list.findIndex((v) => v.id === temp.id)
+            this.list.splice(index, 1, temp)
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -435,13 +459,15 @@ export default {
       })
     },
     handleDelete(row, index) {
-      this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
+      deleteMember({ id: row.id }).then(() => {
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.list.splice(index, 1)
       })
-      this.list.splice(index, 1)
     }
   }
 }
@@ -471,6 +497,11 @@ export default {
     }
   }
   .list-container {
+  }
+  .dialog-form {
+    .dialog-form-item {
+      width: 400px;
+    }
   }
 }
 </style>

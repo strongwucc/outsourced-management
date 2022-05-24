@@ -96,17 +96,19 @@
           >
             编辑
           </el-button>
-          <el-button
-            v-if="row.status != 'deleted'"
-            size="mini"
-            type="danger"
-            plain
-            @click="handleDelete(row, $index)"
+          <el-popconfirm
+            style="margin-left: 10px"
+            title="确定删除吗？"
+            @confirm="handleDelete(row, $index)"
           >
-            删除
-          </el-button>
+            <el-button slot="reference" size="mini" type="danger" plain>
+              删除
+            </el-button>
+          </el-popconfirm>
+
           <el-button
             v-if="tag === 2"
+            style="margin-left: 10px"
             size="mini"
             type="primary"
             plain
@@ -122,7 +124,7 @@
       v-show="total > 0"
       :total="total"
       :page.sync="listQuery.page"
-      :limit.sync="listQuery.limit"
+      :limit.sync="listQuery.page_num"
       @pagination="getList"
     />
 
@@ -142,14 +144,14 @@
           <el-input v-model="temp.name" />
         </el-form-item>
         <el-form-item
-          v-if="dialogStatus === 'manage'"
+          v-if="tag === 2 || dialogStatus === 'manage'"
           label="预算经费:"
           prop="name"
         >
           <el-input v-model="temp.budget" />
         </el-form-item>
         <el-form-item
-          v-if="dialogStatus === 'manage'"
+          v-if="tag === 2 || dialogStatus === 'manage'"
           label="预警阈值:"
           prop="name"
         >
@@ -183,7 +185,8 @@
 import {
   fetchList,
   createDepartment,
-  updateDepartment
+  updateDepartment,
+  deleteDepartment
 } from '@/api/system/department'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
@@ -201,7 +204,7 @@ export default {
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 10,
+        page_num: 10,
         name: undefined,
         tag: 0,
         sort: '+id'
@@ -248,7 +251,7 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then((response) => {
-        this.list = response.data.items
+        this.list = response.data.list
         this.total = response.data.total
 
         // Just to simulate the time of the request
@@ -283,8 +286,9 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024
-          createDepartment(this.temp).then(() => {
+          // this.temp.id = parseInt(Math.random() * 100) + 1024
+          createDepartment(this.temp).then((response) => {
+            this.temp.id = response.data.id
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
             this.$notify({
@@ -332,13 +336,15 @@ export default {
       })
     },
     handleDelete(row, index) {
-      this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
+      deleteDepartment({ id: row.id }).then(() => {
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.list.splice(index, 1)
       })
-      this.list.splice(index, 1)
     }
   }
 }
