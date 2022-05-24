@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function fetchList(params) {
   return request({
-    url: '/vue-admin-template/project/list',
+    url: '/api/project/list',
     method: 'post',
     params
   })

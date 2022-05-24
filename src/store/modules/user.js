@@ -30,16 +30,18 @@ const mutations = {
 const actions = {
   // user login
   login({ commit }, userInfo) {
-    const { username, password } = userInfo
+    const { login_name, password } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
-        const { data } = response
-        commit('SET_TOKEN', data.token)
-        setToken(data.token)
-        resolve()
-      }).catch(error => {
-        reject(error)
-      })
+      login({ login_name: login_name.trim(), password: password })
+        .then((response) => {
+          const { data } = response
+          commit('SET_TOKEN', data.access_token)
+          setToken(data.access_token)
+          resolve()
+        })
+        .catch((error) => {
+          reject(error)
+        })
     })
   },
 
@@ -50,13 +52,16 @@ const actions = {
         const { data } = response
 
         if (!data) {
-          return reject('Verification failed, please Login again.')
+          return reject('登录失败，请重新登录')
         }
 
-        const { name, avatar } = data
+        const { name } = data
 
         commit('SET_NAME', name)
-        commit('SET_AVATAR', avatar)
+        commit(
+          'SET_AVATAR',
+          'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif'
+        )
         resolve(data)
       }).catch(error => {
         reject(error)

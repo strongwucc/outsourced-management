@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function fetchList(params) {
   return request({
-    url: '/vue-admin-template/system/category/list',
+    url: '/api/needs/queryCat',
     method: 'post',
     params
   })
@@ -10,7 +10,7 @@ export function fetchList(params) {
 
 export function fetchAllCategory(params) {
   return request({
-    url: '/vue-admin-template/system/category/all',
+    url: '/api/needs/queryParentCat',
     method: 'post',
     params
   })
@@ -18,7 +18,7 @@ export function fetchAllCategory(params) {
 
 export function createCategory(data) {
   return request({
-    url: '/vue-element-admin/system/category/create',
+    url: '/api/needs/addCat',
     method: 'post',
     data
   })
@@ -26,7 +26,7 @@ export function createCategory(data) {
 
 export function updateCategory(data) {
   return request({
-    url: '/vue-element-admin/system/category/update',
+    url: '/api/needs/addCat',
     method: 'post',
     data
   })
@@ -34,7 +34,7 @@ export function updateCategory(data) {
 
 export function createCategoryProp(data) {
   return request({
-    url: '/vue-element-admin/system/category/prop/create',
+    url: '/api/needs/addProperty',
     method: 'post',
     data
   })
@@ -42,7 +42,15 @@ export function createCategoryProp(data) {
 
 export function updateCategoryProp(data) {
   return request({
-    url: '/vue-element-admin/system/category/prop/update',
+    url: '/api/needs/addProperty',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteCategory(data) {
+  return request({
+    url: '/api/needs/delCat',
     method: 'post',
     data
   })

@@ -99,7 +99,7 @@
             icon="el-icon-info"
             icon-color="red"
             title="确认要删除吗？"
-            @onConfirm="handleDelete(row, $index)"
+            @confirm="handleDelete(row, $index)"
           >
             <el-button slot="reference" size="mini" plain type="danger">
               删除
@@ -317,6 +317,7 @@ import {
   fetchAllCategory,
   updateCategory,
   createCategory,
+  deleteCategory,
   updateCategoryProp,
   createCategoryProp
 } from '@/api/system/category'
@@ -530,7 +531,7 @@ export default {
     },
     getParents() {
       fetchAllCategory().then((response) => {
-        this.parents = response.data.items.map((parent) => {
+        this.parents = response.data.list.map((parent) => {
           const children = parent.children.map((child) => {
             return {
               label: child.category_name,
@@ -556,7 +557,30 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then((response) => {
-        this.list = response.data.items
+        this.list = response.data.list.map((firstItem) => {
+          firstItem.children = firstItem.children.map((secondItem) => {
+            secondItem.children = secondItem.children.map((thirdItem) => {
+              thirdItem.property_json = JSON.stringify(
+                thirdItem.property_array.map((property) => {
+                  return property.property_id
+                })
+              )
+              return thirdItem
+            })
+            secondItem.property_json = JSON.stringify(
+              secondItem.property_array.map((property) => {
+                return property.property_id
+              })
+            )
+            return secondItem
+          })
+          firstItem.property_json = JSON.stringify(
+            firstItem.property_array.map((property) => {
+              return property.property_id
+            })
+          )
+          return firstItem
+        })
         this.total = response.data.total
 
         // Just to simulate the time of the request
@@ -590,9 +614,20 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          const temp = Object.assign({}, this.temp)
-          temp.cat_id = parseInt(Math.random() * 100) + 1024
-          createCategory(temp).then(() => {
+          const temp = JSON.parse(JSON.stringify(this.temp))
+          if (temp.cat_path === 3 && temp.property_json === '[]') {
+            this.$notify({
+              title: '失败',
+              message: '请选择关联属性',
+              type: 'error',
+              duration: 2000
+            })
+            return false
+          }
+          const postTemp = JSON.parse(JSON.stringify(this.temp))
+          delete postTemp.property_array
+          createCategory(postTemp).then((response) => {
+            temp.cat_id = response.data.cat_id
             temp.children = []
             this.updateListData(temp)
             this.dialogFormVisible = false
@@ -602,12 +637,15 @@ export default {
               type: 'success',
               duration: 2000
             })
+            if (temp.cat_path < 3) {
+              this.getParents()
+            }
           })
         }
       })
     },
     handleUpdate(row) {
-      this.temp = Object.assign({}, row)
+      this.temp = JSON.parse(JSON.stringify(row))
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -618,8 +656,11 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
+          delete tempData.children
+          delete tempData.created_at
+          delete tempData.updated_at
           updateCategory(tempData).then(() => {
-            this.updateListData(tempData)
+            this.updateListData(this.temp)
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -628,82 +669,88 @@ export default {
               duration: 2000
             })
           })
+          if (this.temp.cat_path < 3) {
+            this.getParents()
+          }
         }
       })
     },
     handleDelete(row, index) {
-      this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
-      })
-      if (row.cat_path === 1) {
-        this.list.splice(index, 1)
-        return true
-      }
-      if (row.cat_path === 2) {
-        let updateFirstIndex = -1
-        let updateSecondIndex = -1
-        this.list.some((first, firstIndex) => {
-          if (first.cat_id === row.parent_id) {
-            updateFirstIndex = firstIndex
-            first.children.some((second, secondIndex) => {
-              if (second.cat_id === row.cat_id) {
-                updateSecondIndex = secondIndex
-                return true
-              }
+      deleteCategory({ cat_id: row.cat_id }).then((response) => {
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+        if (row.cat_path === 1) {
+          this.list.splice(index, 1)
+          return true
+        }
+        if (row.cat_path === 2) {
+          let updateFirstIndex = -1
+          let updateSecondIndex = -1
+          this.list.some((first, firstIndex) => {
+            if (first.cat_id === row.parent_id) {
+              updateFirstIndex = firstIndex
+              first.children.some((second, secondIndex) => {
+                if (second.cat_id === row.cat_id) {
+                  updateSecondIndex = secondIndex
+                  return true
+                }
+                return false
+              })
+              return true
+            } else {
               return false
-            })
-            return true
-          } else {
+            }
+          })
+          if (updateFirstIndex < 0) {
             return false
           }
-        })
-        if (updateFirstIndex < 0) {
-          return false
+          this.list[updateFirstIndex].children.splice(updateSecondIndex, 1)
+          return true
         }
-        this.list[updateFirstIndex].children.splice(updateSecondIndex, 1)
-        return true
-      }
-      if (row.cat_path === 3) {
-        let updateFirstIndex = -1
-        let updateSecondIndex = -1
-        let updateThirdIndex = -1
-        this.list.some((first, firstIndex) => {
-          if (
-            first.children.some((second, secondIndex) => {
-              if (second.cat_id === row.parent_id) {
-                updateSecondIndex = secondIndex
-                second.children.some((third, thirdIndex) => {
-                  if (third.cat_id === row.cat_id) {
-                    updateThirdIndex = thirdIndex
-                    return true
-                  }
+        if (row.cat_path === 3) {
+          let updateFirstIndex = -1
+          let updateSecondIndex = -1
+          let updateThirdIndex = -1
+          this.list.some((first, firstIndex) => {
+            if (
+              first.children.some((second, secondIndex) => {
+                if (second.cat_id === row.parent_id) {
+                  updateSecondIndex = secondIndex
+                  second.children.some((third, thirdIndex) => {
+                    if (third.cat_id === row.cat_id) {
+                      updateThirdIndex = thirdIndex
+                      return true
+                    }
+                    return false
+                  })
+                  return true
+                } else {
                   return false
-                })
-                return true
-              } else {
-                return false
-              }
-            })
-          ) {
-            updateFirstIndex = firstIndex
-            return true
-          }
-          return false
-        })
+                }
+              })
+            ) {
+              updateFirstIndex = firstIndex
+              return true
+            }
+            return false
+          })
 
-        if (updateFirstIndex < 0 || updateSecondIndex < 0) {
-          return false
+          if (updateFirstIndex < 0 || updateSecondIndex < 0) {
+            return false
+          }
+          this.list[updateFirstIndex].children[
+            updateSecondIndex
+          ].children.splice(updateThirdIndex, 1)
+          return true
         }
-        this.list[updateFirstIndex].children[updateSecondIndex].children.splice(
-          updateThirdIndex,
-          1
-        )
-        return true
-      }
-      return false
+        if (row.cat_path < 3) {
+          this.getParents()
+        }
+      })
     },
     resetPropTemp() {
       this.propTemp = {
@@ -727,14 +774,15 @@ export default {
       this.$refs['propDataForm'].validate((valid) => {
         if (valid) {
           const propTemp = Object.assign({}, this.propTemp)
-          propTemp.id = parseInt(Math.random() * 100) + 1024
+          // propTemp.id = parseInt(Math.random() * 100) + 1024
           propTemp.extend_value = propTemp.extend_options
             .map((option) => {
               return option.text
             })
             .join(',')
           delete propTemp.extend_options
-          createCategoryProp(propTemp).then(() => {
+          createCategoryProp(propTemp).then((response) => {
+            propTemp.id = response.data.id
             const property_json_arr = JSON.parse(this.temp.property_json) || []
             property_json_arr.push(propTemp.id)
             const property_json = JSON.stringify(property_json_arr)
