@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function fetchRegion(params) {
   return request({
-    url: '/vue-admin-template/region/all',
+    url: '/api/tools/area',
     method: 'post',
     params
   })
@@ -10,7 +10,7 @@ export function fetchRegion(params) {
 
 export function fetchSubject(params) {
   return request({
-    url: '/vue-admin-template/subject/all',
+    url: '/api/project/subQuery',
     method: 'post',
     params
   })
@@ -18,7 +18,7 @@ export function fetchSubject(params) {
 
 export function fetchList(params) {
   return request({
-    url: '/vue-admin-template/provider/list',
+    url: '/api/supply/queryList',
     method: 'post',
     params
   })
@@ -26,7 +26,7 @@ export function fetchList(params) {
 
 export function fetchAllProvider(params) {
   return request({
-    url: '/vue-admin-template/provider/all',
+    url: '/api/supply/queryAll',
     method: 'post',
     params
   })
@@ -34,7 +34,7 @@ export function fetchAllProvider(params) {
 
 export function createProvider(data) {
   return request({
-    url: '/vue-element-admin/provider/create',
+    url: '/api/supply/add',
     method: 'post',
     data
   })
@@ -42,7 +42,15 @@ export function createProvider(data) {
 
 export function updateProvider(data) {
   return request({
-    url: '/vue-element-admin/provider/update',
+    url: '/api/supply/add',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteProvider(data) {
+  return request({
+    url: '/api/supply/del',
     method: 'post',
     data
   })

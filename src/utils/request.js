@@ -84,7 +84,6 @@ service.interceptors.response.use(
     // }
   },
   (error) => {
-    console.log('error', error) // for debug
     console.log('response', error.response)
 
     if (error.response.status === 401) {
@@ -98,7 +97,7 @@ service.interceptors.response.use(
       })
     }
 
-    // return Promise.reject(error)
+    return Promise.reject(error)
   }
 )
 

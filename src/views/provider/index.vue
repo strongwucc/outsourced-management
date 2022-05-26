@@ -96,15 +96,15 @@
           >
             编辑
           </el-button>
-          <el-button
-            v-if="row.status != 'deleted'"
-            size="mini"
-            type="danger"
-            plain
-            @click="handleDelete(row, $index)"
+          <el-popconfirm
+            style="margin-left: 10px"
+            title="确定删除吗？"
+            @confirm="handleDelete(row, $index)"
           >
-            删除
-          </el-button>
+            <el-button slot="reference" size="mini" type="danger" plain>
+              删除
+            </el-button>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -146,11 +146,19 @@
           />
         </el-form-item>
 
-        <el-form-item label="供应商登录账户:" prop="login_name">
+        <el-form-item
+          v-if="dialogStatus === 'create'"
+          label="供应商登录账户:"
+          prop="login_name"
+        >
           <el-input v-model="temp.login_name" class="dialog-form-item" />
         </el-form-item>
 
-        <el-form-item label="密码:" prop="pass_word">
+        <el-form-item
+          v-if="dialogStatus === 'create'"
+          label="密码:"
+          prop="pass_word"
+        >
           <el-input
             v-model="temp.pass_word"
             type="password"
@@ -174,9 +182,9 @@
           >
             <el-option
               v-for="item in areas"
-              :key="item.id"
-              :label="item.name"
-              :value="item.name"
+              :key="item.area_id"
+              :label="item.area_name"
+              :value="item.area_name"
             />
           </el-select>
         </el-form-item>
@@ -193,29 +201,6 @@
             border
             highlight-current-row
           >
-            <el-table-column label="需求类型" align="center">
-              <template slot-scope="scope">
-                <el-form-item
-                  label-width="0"
-                  :prop="`cat_array.${scope.$index}.type_id`"
-                  :rules="rules.type_id"
-                >
-                  <el-select
-                    v-model="scope.row.type_id"
-                    placeholder="请选择"
-                    style="width: 100%"
-                  >
-                    <el-option
-                      v-for="item in types"
-                      :key="item.id"
-                      :label="item.type_name"
-                      :value="item.id"
-                    />
-                  </el-select>
-                </el-form-item>
-              </template>
-            </el-table-column>
-
             <el-table-column label="需求品类" align="center">
               <template slot-scope="scope">
                 <el-form-item
@@ -223,18 +208,15 @@
                   :prop="`cat_array.${scope.$index}.cat_id`"
                   :rules="rules.cat_id"
                 >
-                  <el-select
+                  <el-cascader
+                    ref="categoryCascader"
                     v-model="scope.row.cat_id"
-                    placeholder="请选择"
+                    :options="categories"
+                    :props="{ emitPath: false }"
+                    collapse-tags
+                    clearable
                     style="width: 100%"
-                  >
-                    <el-option
-                      v-for="item in categories"
-                      :key="item.id"
-                      :label="item.category_name"
-                      :value="item.id"
-                    />
-                  </el-select>
+                  />
                 </el-form-item>
               </template>
             </el-table-column>
@@ -290,10 +272,10 @@
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
-                  :prop="`contact_array.${scope.$index}.name`"
-                  :rules="rules.name"
+                  :prop="`contact_array.${scope.$index}.contact_name`"
+                  :rules="rules.contact_name"
                 >
-                  <el-input v-model="scope.row.name" />
+                  <el-input v-model="scope.row.contact_name" />
                 </el-form-item>
               </template>
             </el-table-column>
@@ -302,10 +284,10 @@
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
-                  :prop="`contact_array.${scope.$index}.mobile`"
-                  :rules="rules.mobile"
+                  :prop="`contact_array.${scope.$index}.contact_mobile`"
+                  :rules="rules.contact_mobile"
                 >
-                  <el-input v-model="scope.row.mobile" />
+                  <el-input v-model="scope.row.contact_mobile" />
                 </el-form-item>
               </template>
             </el-table-column>
@@ -314,9 +296,9 @@
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
-                  :prop="`contact_array.${scope.$index}.qq`"
+                  :prop="`contact_array.${scope.$index}.contact_qq`"
                 >
-                  <el-input v-model="scope.row.qq" />
+                  <el-input v-model="scope.row.contact_qq" />
                 </el-form-item>
               </template>
             </el-table-column>
@@ -325,9 +307,20 @@
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
-                  :prop="`contact_array.${scope.$index}.wx`"
+                  :prop="`contact_array.${scope.$index}.contact_wx`"
                 >
-                  <el-input v-model="scope.row.wx" />
+                  <el-input v-model="scope.row.contact_wx" />
+                </el-form-item>
+              </template>
+            </el-table-column>
+
+            <el-table-column label="邮箱" align="center">
+              <template slot-scope="scope">
+                <el-form-item
+                  label-width="0"
+                  :prop="`contact_array.${scope.$index}.contact_email`"
+                >
+                  <el-input v-model="scope.row.contact_email" />
                 </el-form-item>
               </template>
             </el-table-column>
@@ -336,9 +329,9 @@
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
-                  :prop="`contact_array.${scope.$index}.position`"
+                  :prop="`contact_array.${scope.$index}.contact_position`"
                 >
-                  <el-input v-model="scope.row.position" />
+                  <el-input v-model="scope.row.contact_position" />
                 </el-form-item>
               </template>
             </el-table-column>
@@ -351,7 +344,6 @@
             >
               <template slot-scope="{ row, $index }">
                 <el-button
-                  v-if="row.status != 'deleted'"
                   size="mini"
                   type="danger"
                   @click="handleDeleteContact($index)"
@@ -386,6 +378,62 @@
         </el-button>
       </div>
     </el-dialog>
+
+    <!--供应商详情-->
+    <el-dialog
+      title="供应商详情"
+      :visible.sync="dialogDetailVisible"
+      width="65%"
+      class="detail-dialog"
+    >
+      <el-descriptions
+        title="基本信息"
+        class="margin-top"
+        :column="1"
+        :label-style="{ 'font-weight': 'bold', width: '150px' }"
+      >
+        <el-descriptions-item label="供应商名称">{{
+          temp.supplier_name
+        }}</el-descriptions-item>
+        <el-descriptions-item label="简介">{{
+          temp.brief
+        }}</el-descriptions-item>
+        <el-descriptions-item label="登录账户">
+          {{ temp.login_name }}
+        </el-descriptions-item>
+        <el-descriptions-item label="抄送邮件">
+          {{ temp.email }}
+        </el-descriptions-item>
+        <el-descriptions-item label="区域">{{
+          temp.area
+        }}</el-descriptions-item>
+      </el-descriptions>
+      <el-descriptions
+        title="需求品类单价"
+        class="margin-top detail-title"
+        :column="1"
+        :label-style="{ 'font-weight': 'bold', width: '150px' }"
+      >
+        <el-descriptions-item
+          v-for="(category, categoryIndex) in temp.cat_array"
+          :key="categoryIndex"
+          :label="category.category | categoryPath"
+        >{{ category.price }}</el-descriptions-item>
+      </el-descriptions>
+      <el-descriptions
+        title="联系人列表"
+        class="margin-top detail-title"
+        :label-style="{ 'font-weight': 'bold' }"
+      />
+      <el-table :data="temp.contact_array" border style="width: 100%">
+        <el-table-column prop="contact_name" label="姓名" align="center" />
+        <el-table-column prop="contact_mobile" label="电话" align="center" />
+        <el-table-column prop="contact_email" label="邮箱" align="center" />
+        <el-table-column prop="contact_qq" label="qq" align="center" />
+        <el-table-column prop="contact_wx" label="微信" align="center" />
+        <el-table-column prop="contact_position" label="职位" align="center" />
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 
@@ -394,9 +442,9 @@ import {
   fetchList,
   createProvider,
   updateProvider,
-  fetchRegion
+  fetchRegion,
+  deleteProvider
 } from '@/api/provider/index'
-import { fetchAllType } from '@/api/system/type'
 import { fetchAllCategory } from '@/api/system/category'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
@@ -419,11 +467,24 @@ export default {
   name: 'Type',
   components: { Pagination },
   directives: { waves },
-  filters: {},
+  filters: {
+    categoryPath: function(category) {
+      const path = []
+      if (category.category_name) {
+        path.push(category.category_name)
+        if (category.parent && category.parent.category_name) {
+          path.push(category.parent.category_name)
+          if (category.parent.parent && category.parent.parent.category_name) {
+            path.push(category.parent.parent.category_name)
+          }
+        }
+      }
+      return path.join('/')
+    }
+  },
   data() {
     return {
       areas: [],
-      types: [],
       categories: [],
       list: null,
       total: 0,
@@ -455,7 +516,8 @@ export default {
         update: '修改供应商',
         create: '添加供应商',
         view: '供应商详情'
-      }
+      },
+      dialogDetailVisible: false
     }
   },
   computed: {
@@ -469,9 +531,6 @@ export default {
         ],
         brief: [
           { required: true, message: '请输入供应商简介', trigger: 'blur' }
-        ],
-        type_id: [
-          { required: true, message: '请选择需求类型', trigger: 'change' }
         ],
         cat_id: [
           { required: true, message: '请选择需求品类', trigger: 'change' }
@@ -497,37 +556,53 @@ export default {
       this.listLoading = true
       if (this.areas.length === 0) {
         const areaData = await fetchRegion()
-        this.areas = areaData.data.items
-      }
-      if (this.types.length === 0) {
-        const typeData = await fetchAllType()
-        this.types = typeData.data.items
+        this.areas = areaData.data
       }
       if (this.categories.length === 0) {
         const categoryData = await fetchAllCategory()
-        this.categories = categoryData.data.items
-      }
-      fetchList(this.listQuery).then((response) => {
-        this.list = response.data.items.map((item) => {
-          const newItem = Object.assign({}, item)
-          newItem.cat_json = JSON.stringify(item.cat)
-          newItem.cat_array = item.cat
-          newItem.contact_array = item.contacts
-          newItem.contacts = JSON.stringify(item.contacts)
-          newItem.supplier_id = item.id
-          newItem.supplier_name = item.name
-          delete newItem.cat
-          delete newItem.id
-          delete newItem.name
-          return newItem
+        this.categories = categoryData.data.list.map((first) => {
+          const seconds = first.children.map((second) => {
+            const thirds = second.children.map((third) => {
+              return {
+                label: third.category_name,
+                value: third.cat_id
+              }
+            })
+            return {
+              label: second.category_name,
+              value: second.cat_id,
+              children: thirds
+            }
+          })
+          return {
+            label: first.category_name,
+            value: first.cat_id,
+            children: seconds
+          }
         })
-        this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
+      }
+      fetchList(this.listQuery)
+        .then((response) => {
           this.listLoading = false
-        }, 1.5 * 1000)
-      })
+          this.list = response.data.list.map((item) => {
+            const newItem = Object.assign({}, item)
+            newItem.cat_json = JSON.stringify(item.cat)
+            newItem.cat_array = item.cat
+            newItem.contact_array = item.contacts
+            newItem.contacts = JSON.stringify(item.contacts)
+            newItem.supplier_id = item.id
+            newItem.supplier_name = item.name
+            delete newItem.cat
+            delete newItem.id
+            delete newItem.name
+            return newItem
+          })
+          this.total = response.data.total
+        })
+        .catch((error) => {
+          console.log(error)
+          this.listLoading = false
+        })
     },
     handleFilter() {
       this.listQuery.page = 1
@@ -550,12 +625,7 @@ export default {
     },
     handleShow(row) {
       this.temp = JSON.parse(JSON.stringify(row))
-      this.dialogStatus = 'view'
-      this.dialogFormVisible = true
-      this.dialogFormDisabled = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+      this.dialogDetailVisible = true
     },
     handleCreate() {
       this.resetTemp()
@@ -570,23 +640,26 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.temp))
-          temp.supplier_id = parseInt(Math.random() * 100) + 1024
+          // temp.supplier_id = parseInt(Math.random() * 100) + 1024
           temp.cat_json = JSON.stringify(temp.cat_array)
           temp.contacts = JSON.stringify(temp.contact_array)
 
           const postTemp = Object.assign({}, temp)
           delete postTemp.cat_array
           delete postTemp.contact_array
-          createProvider(postTemp).then(() => {
-            this.list.unshift(temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
+          createProvider(postTemp)
+            .then((response) => {
+              temp.supplier_id = response.data.id
+              this.list.unshift(temp)
+              this.dialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '创建成功',
+                type: 'success',
+                duration: 2000
+              })
             })
-          })
+            .catch((error) => {})
         }
       })
     },
@@ -609,39 +682,52 @@ export default {
           const postTemp = JSON.parse(JSON.stringify(temp))
           delete postTemp.cat_array
           delete postTemp.contact_array
-          updateProvider(postTemp).then(() => {
-            const index = this.list.findIndex(
-              (v) => v.supplier_id === temp.supplier_id
-            )
-            this.list.splice(index, 1, temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '修改成功',
-              type: 'success',
-              duration: 2000
+          updateProvider(postTemp)
+            .then(() => {
+              const index = this.list.findIndex(
+                (v) => v.supplier_id === temp.supplier_id
+              )
+              this.list.splice(index, 1, temp)
+              this.dialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '修改成功',
+                type: 'success',
+                duration: 2000
+              })
             })
-          })
+            .catch((error) => {})
         }
       })
     },
     handleDelete(row, index) {
-      this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
-      })
-      this.list.splice(index, 1)
+      deleteProvider({ supplier_id: row.supplier_id })
+        .then(() => {
+          this.$notify({
+            title: '成功',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.list.splice(index, 1)
+        })
+        .catch((error) => {})
     },
     handleCreateCategory() {
-      const newCategory = { type_id: '', cat_id: '', price: '' }
+      const newCategory = { cat_id: '', price: '' }
       const categoryArray = this.temp.cat_array
       categoryArray.push(newCategory)
       this.temp = Object.assign({}, this.temp, { cat_array: categoryArray })
     },
     handleCreateContact() {
-      const newContact = { name: '', mobile: '', qq: '', wx: '', position: '' }
+      const newContact = {
+        contact_name: '',
+        contact_mobile: '',
+        contact_email: '',
+        contact_qq: '',
+        contact_wx: '',
+        contact_position: ''
+      }
       const contactArray = this.temp.contact_array
       contactArray.push(newContact)
       this.temp = Object.assign({}, this.temp, { contact_array: contactArray })
@@ -697,6 +783,11 @@ export default {
         opacity: 0.8;
         cursor: pointer;
       }
+    }
+  }
+  .detail-dialog {
+    .detail-title {
+      margin-top: 20px;
     }
   }
 }

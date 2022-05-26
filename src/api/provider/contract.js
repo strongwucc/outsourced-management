@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function fetchList(params) {
   return request({
-    url: '/vue-admin-template/provider/contract/list',
+    url: '/api/supply/queryPact',
     method: 'post',
     params
   })
@@ -10,7 +10,7 @@ export function fetchList(params) {
 
 export function createContract(data) {
   return request({
-    url: '/vue-element-admin/provider/contract/create',
+    url: '/api/supply/addPact',
     method: 'post',
     data
   })
@@ -18,23 +18,15 @@ export function createContract(data) {
 
 export function updateContract(data) {
   return request({
-    url: '/vue-element-admin/provider/contract/update',
+    url: '/api/supply/addPact',
     method: 'post',
     data
   })
 }
 
-export function recoverContract(data) {
+export function changeContractStatus(data) {
   return request({
-    url: '/vue-element-admin/provider/contract/recover',
-    method: 'post',
-    data
-  })
-}
-
-export function pauseContract(data) {
-  return request({
-    url: '/vue-element-admin/provider/contract/pause',
+    url: '/api/supply/editPactStatus',
     method: 'post',
     data
   })

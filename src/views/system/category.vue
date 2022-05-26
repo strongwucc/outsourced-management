@@ -552,11 +552,12 @@ export default {
           children: [],
           cat_path: 0
         })
-      })
+      }).catch(error => {})
     },
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then((response) => {
+        this.listLoading = false
         this.list = response.data.list.map((firstItem) => {
           firstItem.children = firstItem.children.map((secondItem) => {
             secondItem.children = secondItem.children.map((thirdItem) => {
@@ -582,11 +583,9 @@ export default {
           return firstItem
         })
         this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+      }).catch(error => {
+        console.log(error)
+        this.listLoading = false
       })
     },
     handleFilter() {
@@ -640,7 +639,7 @@ export default {
             if (temp.cat_path < 3) {
               this.getParents()
             }
-          })
+          }).catch(error => {})
         }
       })
     },
@@ -668,7 +667,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-          })
+          }).catch(error => {})
           if (this.temp.cat_path < 3) {
             this.getParents()
           }
@@ -750,7 +749,7 @@ export default {
         if (row.cat_path < 3) {
           this.getParents()
         }
-      })
+      }).catch(error => {})
     },
     resetPropTemp() {
       this.propTemp = {
@@ -799,7 +798,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-          })
+          }).catch(error => {})
         }
       })
     },
@@ -853,7 +852,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-          })
+          }).catch(error => {})
         }
       })
     },

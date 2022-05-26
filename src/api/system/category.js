@@ -10,7 +10,7 @@ export function fetchList(params) {
 
 export function fetchAllCategory(params) {
   return request({
-    url: '/api/needs/queryParentCat',
+    url: '/api/needs/queryAllCat',
     method: 'post',
     params
   })

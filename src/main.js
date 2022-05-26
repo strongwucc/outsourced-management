@@ -37,6 +37,8 @@ Vue.use(ElSelectTree)
 
 Vue.config.productionTip = false
 
+Vue.prototype.$baseUrl = process.env.VUE_APP_BASE_API
+
 new Vue({
   el: '#app',
   router,

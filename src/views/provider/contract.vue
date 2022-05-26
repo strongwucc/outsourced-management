@@ -37,9 +37,9 @@
         >
           <el-option
             v-for="item in areas"
-            :key="item.id"
-            :label="item.name"
-            :value="item.name"
+            :key="item.area_id"
+            :label="item.area_name"
+            :value="item.area_name"
           />
         </el-select>
         <el-select
@@ -107,7 +107,7 @@
       </el-table-column>
       <el-table-column label="签约主体" align="center" min-width="150px">
         <template slot-scope="{ row }">
-          {{ row.subject_name }}
+          {{ row.sub_name }}
         </template>
       </el-table-column>
       <el-table-column label="区域" align="center" min-width="150px">
@@ -157,14 +157,14 @@
             编辑
           </el-button>
           <el-popconfirm
-            v-if="row.status === 3"
+            v-if="row.status === 2"
             style="margin-left: 10px"
             confirm-button-text="好的"
             cancel-button-text="不用了"
             icon="el-icon-info"
             icon-color="red"
             title="确认恢复合作吗？"
-            @onConfirm="handleRecoverContract(row, $index)"
+            @confirm="handleChangeContractStatus(row, $index, 1)"
           >
             <el-button slot="reference" size="mini" plain type="success">
               恢复合作
@@ -172,14 +172,14 @@
           </el-popconfirm>
 
           <el-popconfirm
-            v-else
+            v-else-if="row.status === 1"
             style="margin-left: 10px"
             confirm-button-text="好的"
             cancel-button-text="不用了"
             icon="el-icon-info"
             icon-color="red"
             title="确认暂停合作吗？"
-            @onConfirm="handlePauseContract(row, $index)"
+            @confirm="handleChangeContractStatus(row, $index, 2)"
           >
             <el-button slot="reference" size="mini" plain type="danger">
               暂停合作
@@ -264,8 +264,9 @@
         <el-form-item label="上传合同附件" prop="file">
           <el-upload
             class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
+            :action="`${$baseUrl}/api/tools/upfile`"
             :on-success="handleAddFileSucc"
+            :on-remove="handleFileChange"
             :file-list="fileList"
           >
             <el-button size="small" type="primary">上传</el-button>
@@ -310,7 +311,7 @@
           <div>{{ temp.supplier_name }}</div>
         </el-form-item>
         <el-form-item label="签约主体:">
-          <div>{{ temp.subject_name }}</div>
+          <div>{{ temp.sub_name }}</div>
         </el-form-item>
         <el-form-item label="合同号:">
           <div>{{ temp.bn }}</div>
@@ -318,7 +319,23 @@
         <el-form-item label="合同有效时间:">
           <div>{{ temp.period_start }}至{{ temp.period_end }}</div>
         </el-form-item>
-        <el-form-item label="合同附件" />
+        <el-form-item label="合同附件">
+          <div class="file-box">
+            <div
+              v-for="(file, fileIndex) in temp.files"
+              :key="fileIndex"
+              class="file-item"
+            >
+              <div class="file-name">{{ file.name }}</div>
+              <el-button
+                type="primary"
+                size="mini"
+                plain
+                @click="downLoadContract(file.name, file.url)"
+              >下载</el-button>
+            </div>
+          </div>
+        </el-form-item>
         <el-form-item label="备注">
           <div>{{ temp.remark }}</div>
         </el-form-item>
@@ -337,8 +354,7 @@ import {
   fetchList,
   createContract,
   updateContract,
-  recoverContract,
-  pauseContract
+  changeContractStatus
 } from '@/api/provider/contract'
 import {
   fetchAllProvider,
@@ -347,12 +363,13 @@ import {
 } from '@/api/provider/index'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
+import { downloadFile } from '@/utils/index'
 
 const statList = [
   { id: 0, name: '未生效' },
   { id: 1, name: '正常' },
-  { id: 2, name: '已过期' },
-  { id: 3, name: '已停用' }
+  { id: 2, name: '已停用' },
+  { id: 3, name: '已过期' }
 ]
 
 export default {
@@ -450,34 +467,42 @@ export default {
   },
   created() {
     this.getList()
+    console.log()
   },
   methods: {
     async getList() {
       this.listLoading = true
       if (this.areas.length === 0) {
         const areaData = await fetchRegion()
-        this.areas = areaData.data.items
+        this.areas = areaData.data
       }
-      fetchList(this.listQuery).then((response) => {
-        this.list = response.data.items.map((item) => {
-          const newItem = Object.assign({}, item)
-          newItem.period_date = [item.period_start, item.period_end]
-          return newItem
-        })
-        this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
+      fetchList(this.listQuery)
+        .then((response) => {
           this.listLoading = false
-        }, 1.5 * 1000)
-      })
+          this.list = response.data.list.map((item) => {
+            const newItem = Object.assign({}, item)
+            newItem.pact_id = item.id
+            newItem.period_date = [item.period_start, item.period_end]
+            newItem.sub_name = item.sub && item.sub.name ? item.sub.name : ''
+            newItem.supplier_name =
+              item.supplier && item.supplier.name ? item.supplier.name : ''
+            newItem.area =
+              item.supplier && item.supplier.area ? item.supplier.area : ''
+            return newItem
+          })
+          this.total = response.data.total
+        })
+        .catch((error) => {
+          console.log(error)
+          this.listLoading = false
+        })
     },
     fetchProviderList(query) {
       if (query !== '') {
         this.providerLoading = true
         fetchAllProvider({ name: query }).then((response) => {
           this.providerLoading = false
-          this.providers = response.data.items
+          this.providers = response.data.list
         })
       } else {
         this.providers = []
@@ -486,9 +511,9 @@ export default {
     fetchSubjectList(query) {
       if (query !== '') {
         this.subjectLoading = true
-        fetchSubject({ name: query }).then((response) => {
+        fetchSubject({ company_name: query }).then((response) => {
           this.subjectLoading = false
-          this.subjects = response.data.items
+          this.subjects = response.data
         })
       } else {
         this.subjects = []
@@ -513,6 +538,7 @@ export default {
     },
     handleCreate() {
       this.resetTemp()
+      this.fileList = []
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -523,7 +549,7 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.temp))
-          temp.pact_id = parseInt(Math.random() * 100) + 1024
+          // temp.pact_id = parseInt(Math.random() * 100) + 1024
           temp.period_start = this.temp.period_date[0] || ''
           temp.period_end = this.temp.period_date[1] || ''
           temp.status = 0
@@ -548,7 +574,8 @@ export default {
           delete postTemp.subject_name
           delete postTemp.period_date
 
-          createContract(postTemp).then(() => {
+          createContract(postTemp).then((response) => {
+            temp.pact_id = response.data.id
             this.list.unshift(temp)
             this.dialogFormVisible = false
             this.$notify({
@@ -570,6 +597,17 @@ export default {
       this.temp = JSON.parse(JSON.stringify(row))
       this.fetchProviderList(this.temp.supplier_name)
       this.fetchSubjectList(this.temp.subject_name)
+      this.fileList = this.temp.files.map((file) => {
+        return {
+          name: file.name,
+          url: file.url,
+          response: {
+            data: {
+              file_id: file.file_id
+            }
+          }
+        }
+      })
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -621,41 +659,49 @@ export default {
         }
       })
     },
-    handleRecoverContract(row, index) {
+    handleChangeContractStatus(row, index, status) {
       const temp = JSON.parse(JSON.stringify(row))
-      temp.status = 1
-      const postTemp = { bn: temp.bn }
-      recoverContract(postTemp).then(() => {
+      temp.status = status
+      const postTemp = { pact_id: temp.pact_id, status: temp.status }
+      changeContractStatus(postTemp).then(() => {
         this.list.splice(index, 1, temp)
+        // const statusIndex = statList.findIndex((stat) => stat.id === status)
+        // const statusTxt = statList[statusIndex] ? statList[statusIndex].name : ''
         this.$notify({
           title: '成功',
-          message: '恢复成功',
-          type: 'success',
-          duration: 2000
-        })
-      })
-    },
-    handlePauseContract(row, index) {
-      const temp = JSON.parse(JSON.stringify(row))
-      temp.status = 3
-      const postTemp = { bn: temp.bn }
-      pauseContract(postTemp).then(() => {
-        this.list.splice(index, 1, temp)
-        this.$notify({
-          title: '成功',
-          message: '暂停成功',
           type: 'success',
           duration: 2000
         })
       })
     },
     handleAddFileSucc(response, file, fileList) {
-      const files = fileList
+      this.handleFileChange(file, fileList)
+    },
+    handleFileChange(file, fileList) {
+      this.fileList = fileList
+      const fileStr = fileList
         .map((fileItem) => {
-          return fileItem.name
+          return fileItem.response.data.file_id
         })
         .join(',')
-      this.temp = Object.assign({}, this.temp, { file: files })
+      const fileArr = fileList.map((fileItem) => {
+        return {
+          name: fileItem.name,
+          url: fileItem.url,
+          response: {
+            data: {
+              file_id: fileItem.response.data.file_id
+            }
+          }
+        }
+      })
+      this.temp = Object.assign({}, this.temp, {
+        file: fileStr,
+        files: fileArr
+      })
+    },
+    downLoadContract(fileName, filePath) {
+      downloadFile(fileName, filePath)
     }
   }
 }
@@ -696,6 +742,13 @@ export default {
       &:hover {
         opacity: 0.8;
         cursor: pointer;
+      }
+    }
+    .file-box {
+      .file-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
     }
   }

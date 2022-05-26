@@ -251,13 +251,12 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then((response) => {
+        this.listLoading = false
         this.list = response.data.list
         this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+      }).catch(error => {
+        console.log(error)
+        this.listLoading = false
       })
     },
     handleFilter() {
@@ -297,7 +296,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-          })
+          }).catch(error => {})
         }
       })
     },
@@ -323,7 +322,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-          })
+          }).catch(error => {})
         }
       })
     },
@@ -344,7 +343,7 @@ export default {
           duration: 2000
         })
         this.list.splice(index, 1)
-      })
+      }).catch(error => {})
     }
   }
 }
