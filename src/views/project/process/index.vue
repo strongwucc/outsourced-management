@@ -95,13 +95,13 @@
     >
       <el-table-column label="ID" align="center" width="80">
         <template slot-scope="{ row }">
-          {{ row.id }}
+          {{ row.process_id }}
         </template>
       </el-table-column>
 
       <el-table-column label="主项目" align="center">
         <template slot-scope="{ row }">
-          {{ row.project_name }}
+          {{ row.project | projectText }}
         </template>
       </el-table-column>
 
@@ -125,25 +125,25 @@
 
       <el-table-column label="预算使用方" align="center">
         <template slot-scope="{ row }">
-          {{ row.budget_dep_name }}
+          {{ row.budget_dep | budgetDepText }}
         </template>
       </el-table-column>
 
       <el-table-column label="发起部门" align="center">
         <template slot-scope="{ row }">
-          {{ row.launch_dep_name }}
+          {{ row.launch_dep | launchDepText }}
         </template>
       </el-table-column>
 
       <el-table-column label="合同主体" align="center">
         <template slot-scope="{ row }">
-          {{ row.sub_name }}
+          {{ row.sub | subText }}
         </template>
       </el-table-column>
 
       <el-table-column label="核算部门" align="center">
         <template slot-scope="{ row }">
-          {{ row.account_dep_name }}
+          {{ row.account_dep | accountDepText }}
         </template>
       </el-table-column>
 
@@ -206,9 +206,9 @@
           >
             <el-option
               v-for="item in projects"
-              :key="item.id"
+              :key="item.project_id"
               :label="item.project_name"
-              :value="item.id"
+              :value="item.project_id"
             />
           </el-select>
         </el-form-item>
@@ -378,9 +378,11 @@
                     filterable
                     remote
                     placeholder="请输入关键词"
-                    :remote-method="(query) => fetchMemberList(query)"
+                    :remote-method="
+                      (query) => fetchMemberList(query, '1,2,3,4,5,6')
+                    "
                     :loading="memberLoading"
-                    @focus="fetchMemberList('')"
+                    @focus="fetchMemberList('', '1,2,3,4,5,6')"
                   >
                     <el-option
                       v-for="member in members"
@@ -455,10 +457,10 @@
               remote
               multiple
               placeholder="请输入关键词"
-              :remote-method="(query) => fetchMemberList(query)"
+              :remote-method="(query) => fetchMemberList(query, '3,4')"
               :loading="memberLoading"
               :multiple-limit="2"
-              @focus="fetchMemberList('')"
+              @focus="fetchMemberList('', '3,4')"
             >
               <el-option
                 v-for="member in members"
@@ -570,7 +572,7 @@
         <el-form-item label="验收资源:" prop="check_json">
           <div class="check-source-box json-normal-box">
             <div
-              v-for="(item, itemIndex) in temp.order_verify_json"
+              v-for="(item, itemIndex) in temp.check_json"
               :key="itemIndex"
               class="item-member"
             >
@@ -619,9 +621,9 @@
                   filterable
                   remote
                   :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
-                  :remote-method="(query) => fetchMemberList(query)"
+                  :remote-method="(query) => fetchMemberList(query, 2)"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('')"
+                  @focus="fetchMemberList('', 2)"
                 >
                   <el-option
                     v-for="member in members"
@@ -654,9 +656,9 @@
                   filterable
                   remote
                   :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
-                  :remote-method="(query) => fetchMemberList(query)"
+                  :remote-method="(query) => fetchMemberList(query, '3,4')"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('')"
+                  @focus="fetchMemberList('', '3,4')"
                 >
                   <el-option
                     v-for="member in members"
@@ -691,9 +693,9 @@
                   filterable
                   remote
                   :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
-                  :remote-method="(query) => fetchMemberList(query)"
+                  :remote-method="(query) => fetchMemberList(query, 4)"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('')"
+                  @focus="fetchMemberList('', 4)"
                 >
                   <el-option
                     v-for="member in members"
@@ -894,7 +896,23 @@ export default {
   name: 'Type',
   components: { Pagination },
   directives: { waves },
-  filters: {},
+  filters: {
+    projectText: function(project) {
+      return project && project.project_name ? project.project_name : '-'
+    },
+    budgetDepText: function(budget_dep) {
+      return budget_dep && budget_dep.name ? budget_dep.name : '-'
+    },
+    launchDepText: function(launch_dep) {
+      return launch_dep && launch_dep.name ? launch_dep.name : '-'
+    },
+    accountDepText: function(account_dep) {
+      return account_dep && account_dep.name ? account_dep.name : '-'
+    },
+    subText: function(sub) {
+      return sub && sub.name ? sub.name : '-'
+    }
+  },
   data() {
     // 表单验证函数
     const validateJson = (rule, value, callback) => {
@@ -1203,9 +1221,6 @@ export default {
   },
   computed: {},
   created() {
-    this.getCategory()
-    this.getAllDepart()
-    this.getAllMember()
     this.getList()
   },
   methods: {
@@ -1222,7 +1237,7 @@ export default {
     },
     getCategory() {
       fetchAllCategory().then((response) => {
-        this.categorys = response.data.items.map((first) => {
+        this.categorys = response.data.list.map((first) => {
           const seconds = first.children.map((second) => {
             const thirds = second.children.map((third) => {
               return {
@@ -1246,24 +1261,23 @@ export default {
     },
     getAllDepart() {
       fetchAllDepartment().then((response) => {
-        this.allDeparts = response.data.items
+        this.allDeparts = response.data.list
       })
     },
     getAllMember() {
       fetchAllMember().then((response) => {
-        this.allMembers = response.data.items
+        this.allMembers = response.data.list
       })
     },
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then((response) => {
-        this.list = response.data.items
+        this.listLoading = false
+        this.list = response.data.list
         this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+      }).catch(error => {
+        console.log(error)
+        this.listLoading = false
       })
     },
     handleFilter() {
@@ -1303,6 +1317,10 @@ export default {
       }
     },
     handleCreate() {
+      this.getCategory()
+      this.getAllDepart()
+      this.getAllMember()
+
       this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
@@ -1314,7 +1332,7 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.temp))
-          temp.id = parseInt(Math.random() * 100) + 1024
+          // temp.id = parseInt(Math.random() * 100) + 1024
 
           const postTemp = JSON.parse(JSON.stringify(temp))
           postTemp.project_producer_json = JSON.stringify(
@@ -1382,7 +1400,8 @@ export default {
             })
           )
 
-          createProcess(postTemp).then(() => {
+          createProcess(postTemp).then((response) => {
+            temp.process_id = response.data.id
             // 获取关联字段名称
             this.allProjects.some((project) => {
               if (project.id === temp.project_id) {
@@ -1427,15 +1446,15 @@ export default {
       })
     },
     handleDetail(row) {
-      this.$router.push(`/project/process/detail/${row.id}`)
+      this.$router.push(`/project/process/detail/${row.process_id}`)
     },
     fetchProjectList(query) {
       this.projectLoading = true
       fetchAllProject({ project_name: query }).then((response) => {
         this.projectLoading = false
-        this.projects = response.data.items
+        this.projects = response.data.list
         if (query === '' && this.allProjects.length === 0) {
-          this.allProjects = response.data.items
+          this.allProjects = response.data.list
         }
       })
     },
@@ -1443,16 +1462,16 @@ export default {
       this.departLoading = true
       fetchAllDepartment({ name: query, tag }).then((response) => {
         this.departLoading = false
-        this.departs = response.data.items
+        this.departs = response.data.list
       })
     },
     fetchSubList(query) {
       this.subLoading = true
       fetchAllSub({ name: query }).then((response) => {
         this.subLoading = false
-        this.subs = response.data.items
+        this.subs = response.data.list
         if (query === '' && this.allSubs.length === 0) {
-          this.allSubs = response.data.items
+          this.allSubs = response.data.list
         }
       })
     },
@@ -1460,7 +1479,16 @@ export default {
       this.memberLoading = true
       fetchAllMember({ keyword: query, group_id }).then((response) => {
         this.memberLoading = false
-        this.members = response.data.items
+        this.members = response.data.list.filter(member => {
+          if (member.group) {
+            return true
+          }
+          return false
+        }).map(member => {
+          const newMember = JSON.parse(JSON.stringify(member))
+          newMember.group_name = member.group.group_name
+          return newMember
+        })
       })
     },
     addNeedsCreateItem() {

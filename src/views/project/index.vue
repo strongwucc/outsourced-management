@@ -48,7 +48,7 @@
     >
       <el-table-column label="ID" align="center">
         <template slot-scope="{ row }">
-          {{ row.id }}
+          {{ row.project_id }}
         </template>
       </el-table-column>
 
@@ -65,16 +65,16 @@
       <el-table-column label="项目预算" align="center" min-width="120">
         <template slot-scope="{ row }">
           <div class="budget-cost-box">
-            <div class="text">{{ row.used_cost }}/{{ row.budget_cost }}</div>
+            <div class="text">{{ row.budget_used }}/{{ row.budget_cost }}</div>
             <div class="progress">
               <el-progress
                 :text-inside="true"
                 :stroke-width="18"
                 :percentage="
-                  Math.round((row.used_cost / row.budget_cost) * 100)
+                  Math.round((row.budget_used / row.budget_cost) * 100)
                 "
                 :status="
-                  row.used_cost > row.warning_cost ? 'warning' : 'success'
+                  row.budget_used > row.warning_cost ? 'warning' : 'success'
                 "
               />
             </div>
@@ -183,7 +183,7 @@
         <el-form-item label="预算经费：" prop="budget_cost">
           <div class="budget-cost-box">
             <el-input v-model="costTemp.budget_cost" class="form-item-input" />
-            <div class="used-notice">已使用：{{ costTemp.used_cost }}</div>
+            <div class="used-notice">已使用：{{ costTemp.budget_used }}</div>
           </div>
         </el-form-item>
 
@@ -228,7 +228,7 @@ export default {
       dialogStatus: '',
       dialogFormVisible: false,
       temp: {
-        id: undefined,
+        project_id: undefined,
         project_name: '',
         bn: '',
         brief: '',
@@ -261,7 +261,7 @@ export default {
         project_name: '',
         budget_cost: '',
         warning_cost: '',
-        used_cost: ''
+        budget_used: ''
       }
     }
   },
@@ -286,7 +286,7 @@ export default {
     },
     resetTemp() {
       this.temp = {
-        id: undefined,
+        project_id: undefined,
         project_name: '',
         bn: '',
         brief: '',
@@ -306,9 +306,11 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024
-          createProject(this.temp).then(() => {
-            this.temp.create_at = parseTime(new Date())
+          // this.temp.id = parseInt(Math.random() * 100) + 1024
+          createProject(this.temp).then((response) => {
+            this.temp.project_id = response.data.id
+            this.temp.created_at = parseTime(new Date())
+            this.temp.budget_used = 0
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
             this.$notify({
@@ -325,11 +327,11 @@ export default {
       this.costTemp = Object.assign(
         {},
         {
-          id: row.id,
+          project_id: row.project_id,
           project_name: row.project_name,
           budget_cost: row.budget_cost,
           warning_cost: row.warning_cost,
-          used_cost: row.used_cost
+          budget_used: row.budget_used
         }
       )
       this.dialogCostVisible = true
@@ -342,9 +344,9 @@ export default {
         if (valid) {
           const tempData = Object.assign({}, this.costTemp)
           delete tempData.project_name
-          delete tempData.used_cost
+          delete tempData.budget_used
           updateProject(tempData).then(() => {
-            const index = this.list.findIndex((v) => v.id === tempData.id)
+            const index = this.list.findIndex((v) => v.project_id === tempData.project_id)
             const newItem = Object.assign({}, this.list[index], {
               budget_cost: tempData.budget_cost,
               warning_cost: tempData.warning_cost

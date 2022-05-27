@@ -67,7 +67,7 @@
 
       <el-table-column label="用户分组" align="center" min-width="150px">
         <template slot-scope="{ row }">
-          {{ row.group_name || "-" }}
+          {{ row.group | groupText }}
         </template>
       </el-table-column>
 
@@ -253,6 +253,12 @@ export default {
       return depArray.map(depItem => {
         return depItem.name
       }).join(',')
+    },
+    groupText(group) {
+      if (!group) {
+        return '-'
+      }
+      return group.group_name
     }
   },
   data() {
@@ -287,7 +293,7 @@ export default {
         id: undefined,
         name: '',
         group_id: '',
-        dep_json: '[]',
+        dep_json: [],
         dep_array: [],
         login_name: '',
         password: '',
@@ -364,7 +370,7 @@ export default {
         id: undefined,
         name: '',
         group_id: '',
-        dep_json: '[]',
+        dep_json: [],
         dep_array: [],
         login_name: '',
         password: '',
@@ -392,7 +398,7 @@ export default {
             temp.id = response.data.id
             this.roles.some((roleItem) => {
               if (roleItem.id === temp.group_id) {
-                temp.group_name = roleItem.name
+                temp.group = roleItem
                 return true
               }
               return false

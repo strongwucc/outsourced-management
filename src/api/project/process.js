@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function fetchList(params) {
   return request({
-    url: '/vue-admin-template/project/process/list',
+    url: '/api/project/processList',
     method: 'post',
     params
   })
@@ -10,7 +10,7 @@ export function fetchList(params) {
 
 export function createProcess(data) {
   return request({
-    url: '/vue-element-admin/project/process/create',
+    url: '/api/project/createProcess',
     method: 'post',
     data
   })
@@ -18,7 +18,7 @@ export function createProcess(data) {
 
 export function fetchDetail(data) {
   return request({
-    url: '/vue-element-admin/project/process/detail',
+    url: '/api/project/processDetail',
     method: 'post',
     data
   })
@@ -26,7 +26,7 @@ export function fetchDetail(data) {
 
 export function fetchAllProcess(params) {
   return request({
-    url: '/vue-admin-template/project/process/all',
+    url: '/api/project/processAll',
     method: 'post',
     params
   })

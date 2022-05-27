@@ -10,7 +10,7 @@ export function fetchList(params) {
 
 export function fetchAllProject(params) {
   return request({
-    url: '/vue-admin-template/project/all',
+    url: '/api/project/queryAll',
     method: 'post',
     params
   })
@@ -18,7 +18,7 @@ export function fetchAllProject(params) {
 
 export function createProject(data) {
   return request({
-    url: '/vue-element-admin/project/create',
+    url: '/api/project/add',
     method: 'post',
     data
   })
@@ -26,7 +26,7 @@ export function createProject(data) {
 
 export function updateProject(data) {
   return request({
-    url: '/vue-element-admin/project/update',
+    url: '/api/project/changeProjectFunds',
     method: 'post',
     data
   })

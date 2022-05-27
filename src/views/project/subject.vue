@@ -79,15 +79,15 @@
           >
             编辑
           </el-button>
-          <el-button
-            v-if="row.status != 'deleted'"
-            size="mini"
-            plain
-            type="danger"
-            @click="handleDelete(row, $index)"
+          <el-popconfirm
+            style="margin-left: 10px"
+            title="确定删除吗？"
+            @confirm="handleDelete(row, $index)"
           >
-            删除
-          </el-button>
+            <el-button slot="reference" size="mini" type="danger" plain>
+              删除
+            </el-button>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -133,7 +133,7 @@
 </template>
 
 <script>
-import { fetchList, createSub, updateSub } from '@/api/project/sub'
+import { fetchList, createSub, updateSub, deleteSub } from '@/api/project/sub'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 
@@ -181,13 +181,12 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then((response) => {
-        this.list = response.data.items
+        this.listLoading = false
+        this.list = response.data.list
         this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+      }).catch(error => {
+        console.log(error)
+        this.listLoading = false
       })
     },
     handleFilter() {
@@ -197,7 +196,8 @@ export default {
     resetTemp() {
       this.temp = {
         id: undefined,
-        type_name: ''
+        name: '',
+        bn: ''
       }
     },
     handleCreate() {
@@ -211,8 +211,9 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024
-          createSub(this.temp).then(() => {
+          // this.temp.id = parseInt(Math.random() * 100) + 1024
+          createSub(this.temp).then((response) => {
+            this.temp.id = response.data.id
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
             this.$notify({
@@ -221,7 +222,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-          })
+          }).catch(error => {})
         }
       })
     },
@@ -247,18 +248,20 @@ export default {
               type: 'success',
               duration: 2000
             })
-          })
+          }).catch(error => {})
         }
       })
     },
     handleDelete(row, index) {
-      this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
-      })
-      this.list.splice(index, 1)
+      deleteSub({ id: row.id }).then(() => {
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.list.splice(index, 1)
+      }).catch(error => {})
     }
   }
 }
