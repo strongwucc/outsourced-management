@@ -23,3 +23,11 @@ export function updateRole(data) {
     data
   })
 }
+
+export function fetchGroupRoutes(params) {
+  return request({
+    url: '/api/setting/groupRoutes',
+    method: 'post',
+    params
+  })
+}

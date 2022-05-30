@@ -947,41 +947,41 @@ export default {
             children: seconds
           }
         })
-      })
+      }).catch(error => {})
     },
     getAllDepart() {
       fetchAllDepartment().then((response) => {
         this.allDeparts = response.data.items
-      })
+      }).catch(error => {})
     },
     getAllMember() {
       fetchAllMember().then((response) => {
         this.allMembers = response.data.items
-      })
+      }).catch(error => {})
     },
     getAllProject() {
       fetchAllProject().then((response) => {
         this.allProjects = response.data.items
-      })
+      }).catch(error => {})
     },
     getAllSub(query) {
       fetchAllSub({ name: query }).then((response) => {
         this.allSubs = response.data.items
-      })
+      }).catch(error => {})
     },
     fetchMemberList(query, group_id = 0) {
       this.memberLoading = true
       fetchAllMember({ keyword: query, group_id }).then((response) => {
         this.memberLoading = false
         this.members = response.data.items
-      })
+      }).catch(error => {})
     },
     getDetail(id) {
       fetchDetail({ process_id: id }).then((response) => {
         this.loaded = true
         this.detail = Object.assign({}, this.detail, response.data)
         this.$nextTick(() => {})
-      })
+      }).catch(error => {})
     },
     addNeedsCreateItem() {
       const newItem = { user_id: '', cat_id: [] }
@@ -1055,7 +1055,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-          })
+          }).catch(error => {})
         }
       })
     }

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
-import { getToken } from '@/utils/auth'
+import { getToken, setToken } from '@/utils/auth'
 import router from '@/router'
 
 // create an axios instance
@@ -20,7 +20,7 @@ service.interceptors.request.use(
       // let each request carry token
       // ['X-Token'] is a custom headers key
       // please modify it according to the actual situation
-      config.headers['Authorization'] = 'bearer ' + getToken()
+      config.headers['Authorization'] = getToken()
     }
     return config
   },
@@ -44,6 +44,15 @@ service.interceptors.response.use(
    * You can also judge the status by HTTP Status Code
    */
   (response) => {
+    // 更新access_token
+    if (router.currentRoute.fullPath.indexOf('login') === -1) {
+      const { Authorization } = response.config.headers
+      if (Authorization) {
+        store.commit('user/SET_TOKEN', Authorization)
+        setToken(Authorization)
+      }
+    }
+
     const res = response.data
 
     if (response.status !== 200) {
@@ -87,8 +96,11 @@ service.interceptors.response.use(
     console.log('response', error.response)
 
     if (error.response.status === 401) {
-      const backtoUrl = encodeURIComponent(router.currentRoute.fullPath)
-      router.push('/login?redirect=' + backtoUrl)
+      if (router.currentRoute.fullPath.indexOf('login') === -1) {
+        const backtoUrl = encodeURIComponent(router.currentRoute.fullPath)
+        store.dispatch('user/resetToken')
+        router.push('/login?redirect=' + backtoUrl)
+      }
     } else {
       Message({
         message: '哎呀，系统出错啦',

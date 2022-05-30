@@ -1257,17 +1257,17 @@ export default {
             children: seconds
           }
         })
-      })
+      }).catch(error => {})
     },
     getAllDepart() {
       fetchAllDepartment().then((response) => {
         this.allDeparts = response.data.list
-      })
+      }).catch(error => {})
     },
     getAllMember() {
       fetchAllMember().then((response) => {
         this.allMembers = response.data.list
-      })
+      }).catch(error => {})
     },
     getList() {
       this.listLoading = true
@@ -1441,7 +1441,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-          })
+          }).catch(error => {})
         }
       })
     },
@@ -1456,14 +1456,14 @@ export default {
         if (query === '' && this.allProjects.length === 0) {
           this.allProjects = response.data.list
         }
-      })
+      }).catch(error => {})
     },
     fetchDepartList(query, tag = 0) {
       this.departLoading = true
       fetchAllDepartment({ name: query, tag }).then((response) => {
         this.departLoading = false
         this.departs = response.data.list
-      })
+      }).catch(error => {})
     },
     fetchSubList(query) {
       this.subLoading = true
@@ -1473,7 +1473,7 @@ export default {
         if (query === '' && this.allSubs.length === 0) {
           this.allSubs = response.data.list
         }
-      })
+      }).catch(error => {})
     },
     fetchMemberList(query, group_id = 0) {
       this.memberLoading = true
@@ -1489,7 +1489,7 @@ export default {
           newMember.group_name = member.group.group_name
           return newMember
         })
-      })
+      }).catch(error => {})
     },
     addNeedsCreateItem() {
       const newItem = { user_id: '', cat_id: [] }

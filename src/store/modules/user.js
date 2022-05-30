@@ -6,7 +6,8 @@ const getDefaultState = () => {
   return {
     token: getToken(),
     name: '',
-    avatar: ''
+    avatar: '',
+    roles: []
   }
 }
 
@@ -24,6 +25,9 @@ const mutations = {
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
+  },
+  SET_ROLES: (state, roles) => {
+    state.roles = roles
   }
 }
 
@@ -35,8 +39,8 @@ const actions = {
       login({ login_name: login_name.trim(), password: password })
         .then((response) => {
           const { data } = response
-          commit('SET_TOKEN', data.access_token)
-          setToken(data.access_token)
+          commit('SET_TOKEN', `bearer ${data.access_token}`)
+          setToken(`bearer ${data.access_token}`)
           resolve()
         })
         .catch((error) => {
@@ -55,8 +59,14 @@ const actions = {
           return reject('登录失败，请重新登录')
         }
 
-        const { name } = data
+        const { name, roles } = data
 
+        // roles must be a non-empty array
+        if (!roles || roles.length <= 0) {
+          reject('getInfo: roles must be a non-null array!')
+        }
+
+        commit('SET_ROLES', roles)
         commit('SET_NAME', name)
         commit(
           'SET_AVATAR',
@@ -73,9 +83,11 @@ const actions = {
   logout({ commit, state }) {
     return new Promise((resolve, reject) => {
       logout(state.token).then(() => {
-        removeToken() // must remove  token  first
+        commit('SET_TOKEN', '')
+        commit('SET_ROLES', [])
+        removeToken()
         resetRouter()
-        commit('RESET_STATE')
+
         resolve()
       }).catch(error => {
         reject(error)
@@ -86,8 +98,9 @@ const actions = {
   // remove token
   resetToken({ commit }) {
     return new Promise(resolve => {
-      removeToken() // must remove  token  first
-      commit('RESET_STATE')
+      commit('SET_TOKEN', '')
+      commit('SET_ROLES', [])
+      removeToken()
       resolve()
     })
   }
