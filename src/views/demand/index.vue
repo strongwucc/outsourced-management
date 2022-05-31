@@ -56,6 +56,7 @@
       </div>
       <div class="filter-right">
         <el-button
+          v-permission="[0, 1, 2, 3, 4, 5]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -66,6 +67,7 @@
           新建需求
         </el-button>
         <el-button
+          v-permission="[0, 1, 2, 3, 4, 5]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -75,6 +77,7 @@
           确认
         </el-button>
         <el-button
+          v-permission="[0, 1, 2, 3, 4, 5]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -84,6 +87,7 @@
           驳回
         </el-button>
         <el-button
+          v-permission="[0, 1, 2, 3, 4, 5]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -93,6 +97,7 @@
           生成订单
         </el-button>
         <el-button
+          v-permission="[0, 1, 2, 3, 4, 5]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -369,6 +374,7 @@
         <el-form-item label="选择项目流程:" prop="process_id">
           <el-select
             v-model="temp.process_id"
+            clearable
             filterable
             remote
             placeholder="请输入关键词"
@@ -376,12 +382,13 @@
             :loading="processLoading"
             class="dialog-form-item"
             @focus="fetchProcessList('')"
+            @change="demandProcessChange"
           >
             <el-option
               v-for="item in process"
-              :key="item.id"
+              :key="item.process_id"
               :label="item.flow_name"
-              :value="item.id"
+              :value="item.process_id"
             />
           </el-select>
         </el-form-item>
@@ -411,7 +418,7 @@
           />
         </el-form-item>
 
-        <el-form-item label="审核人:" prop="verify_id">
+        <el-form-item v-permission="[3]" label="审核人:" prop="verify_id">
           <el-select
             v-model="temp.verify_id"
             filterable
@@ -431,10 +438,10 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="需求品类:" prop="category_id">
+        <el-form-item label="需求品类:" prop="cat_id">
           <el-cascader
             ref="categoryCascader"
-            v-model="temp.category_id"
+            v-model="temp.cat_id"
             :options="categorys"
             :props="{ emitPath: false }"
             collapse-tags
@@ -446,18 +453,19 @@
         <el-form-item label="需求附件" prop="file">
           <el-upload
             class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :on-success="handleAddFileSucc"
-            :file-list="fileList"
+            :action="`${$baseUrl}/api/tools/upfile`"
+            :on-success="handleAddDemandFileSucc"
+            :on-remove="handleDemandFileChange"
+            :file-list="demandFileList"
           >
-            <el-button size="small" type="primary">上传附件</el-button>
+            <el-button size="mini" type="primary">上传附件</el-button>
           </el-upload>
         </el-form-item>
 
-        <el-form-item label="意向供应商:" prop="supplier_id">
+        <el-form-item label="意向供应商:" prop="supplier">
           <div class="has-secret-notice">
             <el-select
-              v-model="temp.supplier_id"
+              v-model="temp.supplier"
               filterable
               remote
               placeholder="请输入关键词"
@@ -491,8 +499,8 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <template v-if="dialogStatus === 'create'">
-          <el-button @click="createData(0)"> 保存为模板 </el-button>
-          <el-button type="primary" @click="createData(1)">
+          <el-button size="mini" @click="createData(0)"> 保存为模板 </el-button>
+          <el-button type="primary" size="mini" @click="createData(1)">
             提报需求
           </el-button>
         </template>
@@ -1135,12 +1143,13 @@ import {
   fetchDemandDetail
 } from '@/api/demand/index'
 import { createTask, updateTask, fetchTaskDetail } from '@/api/demand/task'
-import { fetchAllProcess } from '@/api/project/process'
+import { fetchAllProcess, fetchProcessCategory } from '@/api/project/process'
 import { fetchAllMember } from '@/api/system/member'
 import { fetchAllProvider } from '@/api/provider/index'
 import { fetchAllCategory } from '@/api/system/category'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
+import permission from '@/directive/permission/index.js' // 权限判断指令
 
 const tagList = [
   { id: 0, name: '正式包' },
@@ -1152,7 +1161,7 @@ const tagList = [
 export default {
   name: 'Type',
   components: { Pagination },
-  directives: { waves },
+  directives: { waves, permission },
   filters: {
     statusColor(status) {
       const statusMap = {
@@ -1238,7 +1247,7 @@ export default {
         verify_id: '',
         cat_id: '',
         file: '',
-        supplier_id: '',
+        supplier: '',
         remark: '',
         status: 0
       },
@@ -1258,9 +1267,6 @@ export default {
           { required: true, message: '请选择项目流程', trigger: 'change' }
         ],
         name: [{ required: true, message: '请输入需求名称', trigger: 'blur' }],
-        verify_id: [
-          { required: true, message: '请选择项审核人', trigger: 'change' }
-        ],
         category_id: [
           { required: true, message: '请选择需求品类', trigger: 'change' }
         ]
@@ -1326,11 +1332,12 @@ export default {
       importTaskRules: {},
       dialogTaskDetailVisible: false,
       tempTaskDetail: {},
-      dialogStopReasonVisible: false
+      dialogStopReasonVisible: false,
+      demandFileList: []
     }
   },
   created() {
-    this.fetchCategorys()
+    // this.fetchCategorys();
     this.getList()
   },
   methods: {
@@ -1345,16 +1352,17 @@ export default {
     getList() {
       this.listLoading = true
 
-      fetchList(this.listQuery).then((response) => {
-        this.total = response.data.total
-        this.list = response.data.items
-        this.updateCheckedAllBtnStatus(false)
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
+      fetchList(this.listQuery)
+        .then((response) => {
           this.listLoading = false
-        }, 1.5 * 1000)
-      })
+          this.total = response.data.total
+          this.list = response.data.list
+          this.updateCheckedAllBtnStatus(false)
+        })
+        .catch((error) => {
+          console.log(error)
+          this.listLoading = false
+        })
     },
     /**
      * 查询过滤
@@ -1376,7 +1384,7 @@ export default {
         verify_id: '',
         cat_id: '',
         file: '',
-        supplier_id: '',
+        supplier: '',
         remark: '',
         status: 0
       }
@@ -1386,67 +1394,138 @@ export default {
      */
     fetchProcessList(query) {
       this.processLoading = true
-      fetchAllProcess({ name: query }).then((response) => {
-        this.processLoading = false
-        this.process = response.data.items
-      })
+      fetchAllProcess({ flow_name: query, create_needs_permission: 1 })
+        .then((response) => {
+          this.processLoading = false
+          this.process = response.data.list
+        })
+        .catch((error) => {})
     },
     /**
      * 获取会员列表
      */
     fetchMemberList(query) {
       this.memberLoading = true
-      fetchAllMember({ keyword: query }).then((response) => {
-        this.memberLoading = false
-        this.members = response.data.items
-      })
+      fetchAllMember({ keyword: query })
+        .then((response) => {
+          this.memberLoading = false
+          this.members = response.data.list
+        })
+        .catch((error) => {})
     },
     /**
      * 获取供应商列表
      */
     fetchProviderList(query) {
       this.providerLoading = true
-      fetchAllProvider({ name: query }).then((response) => {
-        this.providerLoading = false
-        this.providers = response.data.items
-      })
+      fetchAllProvider({ name: query })
+        .then((response) => {
+          this.providerLoading = false
+          this.providers = response.data.list
+        })
+        .catch((error) => {})
+    },
+    demandProcessChange(process) {
+      fetchProcessCategory({ process_id: process })
+        .then((response) => {
+          this.categorys = response.data.list.map((first) => {
+            const seconds = first.children.map((second) => {
+              const thirds = second.children.map((third) => {
+                return {
+                  label: third.category_name,
+                  value: third.cat_id
+                }
+              })
+              return {
+                label: second.category_name,
+                value: second.cat_id,
+                children: thirds
+              }
+            })
+            return {
+              label: first.category_name,
+              value: first.cat_id,
+              children: seconds
+            }
+          })
+        })
+        .catch((error) => {})
     },
     /**
      * 获取属性列表
      */
     fetchCategorys() {
-      fetchAllCategory().then((response) => {
-        this.categorys = response.data.items.map((first) => {
-          const seconds = first.children.map((second) => {
-            const thirds = second.children.map((third) => {
+      fetchAllCategory()
+        .then((response) => {
+          this.categorys = response.data.list.map((first) => {
+            const seconds = first.children.map((second) => {
+              const thirds = second.children.map((third) => {
+                return {
+                  label: third.category_name,
+                  value: third.cat_id
+                }
+              })
               return {
-                label: third.category_name,
-                value: third.cat_id
+                label: second.category_name,
+                value: second.cat_id,
+                children: thirds
               }
             })
             return {
-              label: second.category_name,
-              value: second.cat_id,
-              children: thirds
+              label: first.category_name,
+              value: first.cat_id,
+              children: seconds
             }
           })
-          return {
-            label: first.category_name,
-            value: first.cat_id,
-            children: seconds
-          }
         })
-      })
+        .catch((error) => {})
     },
     /**
      * 增加需求弹窗
      */
     handleCreate() {
       this.resetTemp()
+      if (this.$store.getters.roles === [3]) {
+        this.rules = Object.assign({}, this.rules, {
+          verify_id: [
+            { required: true, message: '请选择项审核人', trigger: 'change' }
+          ]
+        })
+      } else {
+        if (this.rules.verify_id) {
+          delete this.rules.verify_id
+        }
+      }
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
+      })
+    },
+    handleAddDemandFileSucc(response, file, fileList) {
+      this.handleDemandFileChange(file, fileList)
+    },
+    handleDemandFileChange(file, fileList) {
+      this.demandFileList = fileList
+      const fileStr = fileList
+        .map((fileItem) => {
+          return fileItem.response.data.file_id
+        })
+        .join(',')
+      const fileArr = fileList.map((fileItem) => {
+        return {
+          name: fileItem.name,
+          url: fileItem.url,
+          response: {
+            data: {
+              file_id: fileItem.response.data.file_id
+            }
+          }
+        }
+      })
+      this.temp = Object.assign({}, this.temp, {
+        file: fileStr,
+        files: fileArr
       })
     },
     /**
@@ -1456,25 +1535,31 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const temp = Object.assign({}, this.temp)
-          temp.demand_id = parseInt(Math.random() * 100) + 1024
+          const postTemp = Object.assign({}, this.temp)
+          delete postTemp.files
+          // temp.demand_id = parseInt(Math.random() * 100) + 1024
           temp.status = status
-          createDemand(temp).then(() => {
-            const checkedNodes = this.$refs.categoryCascader.getCheckedNodes()
-            if (checkedNodes.length > 0) {
-              temp.category_name = checkedNodes[0].pathLabels[2]
-            } else {
-              temp.category_name = ''
-            }
-            temp.handler = '当前处理人'
-            this.list.unshift(temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
+          createDemand(postTemp)
+            .then((response) => {
+              temp.demand_id = response.data.id
+              const checkedNodes =
+                this.$refs.categoryCascader.getCheckedNodes()
+              if (checkedNodes.length > 0) {
+                temp.category_name = checkedNodes[0].pathLabels[2]
+              } else {
+                temp.category_name = ''
+              }
+              temp.handler = '当前处理人'
+              this.list.unshift(temp)
+              this.dialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '创建成功',
+                type: 'success',
+                duration: 2000
+              })
             })
-          })
+            .catch((error) => {})
         }
       })
     },
@@ -1496,25 +1581,28 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
-          updateDemand(tempData).then(() => {
-            const index = this.list.findIndex(
-              (v) => v.demand_id === tempData.demand_id
-            )
-            const checkedNodes = this.$refs.categoryCascader.getCheckedNodes()
-            if (checkedNodes.length > 0) {
-              tempData.category_name = checkedNodes[0].pathLabels[2]
-            } else {
-              tempData.category_name = ''
-            }
-            this.list.splice(index, 1, tempData)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '修改成功',
-              type: 'success',
-              duration: 2000
+          updateDemand(tempData)
+            .then(() => {
+              const index = this.list.findIndex(
+                (v) => v.demand_id === tempData.demand_id
+              )
+              const checkedNodes =
+                this.$refs.categoryCascader.getCheckedNodes()
+              if (checkedNodes.length > 0) {
+                tempData.category_name = checkedNodes[0].pathLabels[2]
+              } else {
+                tempData.category_name = ''
+              }
+              this.list.splice(index, 1, tempData)
+              this.dialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '修改成功',
+                type: 'success',
+                duration: 2000
+              })
             })
-          })
+            .catch((error) => {})
         }
       })
     },
@@ -1754,31 +1842,33 @@ export default {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempTask))
           temp.task_id = parseInt(Math.random() * 100) + 1024
-          createTask(temp).then(() => {
-            let demandIndex = -1
-            this.list.some((listItem, listIndex) => {
-              if (listItem.demand_id === temp.demand_id) {
-                demandIndex = listIndex
-                return true
-              }
-              return false
-            })
+          createTask(temp)
+            .then(() => {
+              let demandIndex = -1
+              this.list.some((listItem, listIndex) => {
+                if (listItem.demand_id === temp.demand_id) {
+                  demandIndex = listIndex
+                  return true
+                }
+                return false
+              })
 
-            if (demandIndex >= 0) {
-              temp.category_id = this.tempTaskCategory.category_id
-              temp.category_name = this.tempTaskCategory.category_name
-              temp.work_price = 10
-              temp.work_amount = 10 * temp.work_num
-              this.list[demandIndex].tasks.unshift(temp)
-            }
-            this.dialogTaskVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
+              if (demandIndex >= 0) {
+                temp.category_id = this.tempTaskCategory.category_id
+                temp.category_name = this.tempTaskCategory.category_name
+                temp.work_price = 10
+                temp.work_amount = 10 * temp.work_num
+                this.list[demandIndex].tasks.unshift(temp)
+              }
+              this.dialogTaskVisible = false
+              this.$notify({
+                title: '成功',
+                message: '创建成功',
+                type: 'success',
+                duration: 2000
+              })
             })
-          })
+            .catch((error) => {})
         }
       })
     },
@@ -1789,23 +1879,25 @@ export default {
       this.$refs['taskDataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempTask))
-          updateTask(temp).then(() => {
-            const demandIndex = this.list.findIndex(
-              (v) => v.demand_id === temp.demand_id
-            )
-            const taskIndex = this.list[demandIndex].tasks.findIndex(
-              (v) => v.task_id === temp.task_id
-            )
+          updateTask(temp)
+            .then(() => {
+              const demandIndex = this.list.findIndex(
+                (v) => v.demand_id === temp.demand_id
+              )
+              const taskIndex = this.list[demandIndex].tasks.findIndex(
+                (v) => v.task_id === temp.task_id
+              )
 
-            this.list[demandIndex].tasks.splice(taskIndex, 1, temp)
-            this.dialogTaskVisible = false
-            this.$notify({
-              title: '成功',
-              message: '修改成功',
-              type: 'success',
-              duration: 2000
+              this.list[demandIndex].tasks.splice(taskIndex, 1, temp)
+              this.dialogTaskVisible = false
+              this.$notify({
+                title: '成功',
+                message: '修改成功',
+                type: 'success',
+                duration: 2000
+              })
             })
-          })
+            .catch((error) => {})
         }
       })
     },

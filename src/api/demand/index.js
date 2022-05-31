@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function fetchList(params) {
   return request({
-    url: '/vue-admin-template/demand/list',
+    url: '/api/needs/queryList',
     method: 'post',
     params
   })
@@ -10,7 +10,7 @@ export function fetchList(params) {
 
 export function fetchDemandDetail(params) {
   return request({
-    url: '/vue-admin-template/demand/detail',
+    url: '/api/needs/detail',
     method: 'post',
     params
   })
@@ -18,7 +18,7 @@ export function fetchDemandDetail(params) {
 
 export function createDemand(data) {
   return request({
-    url: '/vue-element-admin/demand/create',
+    url: '/api/needs/create',
     method: 'post',
     data
   })
@@ -26,7 +26,7 @@ export function createDemand(data) {
 
 export function updateDemand(data) {
   return request({
-    url: '/vue-element-admin/demand/update',
+    url: '/api/needs/create',
     method: 'post',
     data
   })

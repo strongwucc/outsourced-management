@@ -31,3 +31,11 @@ export function fetchAllProcess(params) {
     params
   })
 }
+
+export function fetchProcessCategory(params) {
+  return request({
+    url: '/api/project/processCategory',
+    method: 'post',
+    params
+  })
+}
