@@ -379,10 +379,10 @@
                     remote
                     placeholder="请输入关键词"
                     :remote-method="
-                      (query) => fetchMemberList(query, '1,2,3,4,5,6')
+                      (query) => fetchMemberList(query, '1,2,3,4')
                     "
                     :loading="memberLoading"
-                    @focus="fetchMemberList('', '1,2,3,4,5,6')"
+                    @focus="fetchMemberList('', '1,2,3,4')"
                   >
                     <el-option
                       v-for="member in members"
@@ -430,9 +430,9 @@
                   filterable
                   remote
                   :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
-                  :remote-method="(query) => fetchMemberList(query)"
+                  :remote-method="(query) => fetchMemberList(query, 2)"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('')"
+                  @focus="fetchMemberList('', 2)"
                 >
                   <el-option
                     v-for="member in members"
@@ -493,9 +493,9 @@
                   :placeholder="
                     itemIndex === 0 ? '一级审批系统默认' : '二级审批'
                   "
-                  :remote-method="(query) => fetchMemberList(query)"
+                  :remote-method="(query) => fetchMemberList(query, 1)"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('')"
+                  @focus="fetchMemberList('', 1)"
                 >
                   <el-option
                     v-for="member in members"
@@ -520,10 +520,10 @@
               remote
               multiple
               placeholder="请输入关键词"
-              :remote-method="(query) => fetchMemberList(query)"
+              :remote-method="(query) => fetchMemberList(query, 3)"
               :loading="memberLoading"
               :multiple-limit="2"
-              @focus="fetchMemberList('')"
+              @focus="fetchMemberList('', 3)"
             >
               <el-option
                 v-for="member in members"
@@ -551,9 +551,9 @@
                   filterable
                   remote
                   :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
-                  :remote-method="(query) => fetchMemberList(query)"
+                  :remote-method="(query) => fetchMemberList(query, 4)"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('')"
+                  @focus="fetchMemberList('', 4)"
                 >
                   <el-option
                     v-for="member in members"
@@ -586,9 +586,9 @@
                   :placeholder="
                     itemIndex === 0 ? '一级审批系统默认' : '二级审批'
                   "
-                  :remote-method="(query) => fetchMemberList(query)"
+                  :remote-method="(query) => fetchMemberList(query, 1)"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('')"
+                  @focus="fetchMemberList('', 1)"
                 >
                   <el-option
                     v-for="member in members"
@@ -656,9 +656,9 @@
                   filterable
                   remote
                   :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
-                  :remote-method="(query) => fetchMemberList(query, '3,4')"
+                  :remote-method="(query) => fetchMemberList(query, 3)"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('', '3,4')"
+                  @focus="fetchMemberList('', 3)"
                 >
                   <el-option
                     v-for="member in members"
@@ -720,10 +720,10 @@
               remote
               multiple
               placeholder="请输入关键词"
-              :remote-method="(query) => fetchMemberList(query)"
+              :remote-method="(query) => fetchMemberList(query, 3)"
               :loading="memberLoading"
               :multiple-limit="2"
-              @focus="fetchMemberList('')"
+              @focus="fetchMemberList('', 3)"
             >
               <el-option
                 v-for="member in members"
@@ -756,9 +756,9 @@
                   :placeholder="
                     itemIndex === 0 ? '一级审批系统默认' : '二级审批'
                   "
-                  :remote-method="(query) => fetchMemberList(query)"
+                  :remote-method="(query) => fetchMemberList(query, 1)"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('')"
+                  @focus="fetchMemberList('', 1)"
                 >
                   <el-option
                     v-for="member in members"
@@ -788,9 +788,9 @@
                   filterable
                   remote
                   :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
-                  :remote-method="(query) => fetchMemberList(query)"
+                  :remote-method="(query) => fetchMemberList(query, 3)"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('')"
+                  @focus="fetchMemberList('', 3)"
                 >
                   <el-option
                     v-for="member in members"
@@ -822,9 +822,9 @@
                   filterable
                   remote
                   :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
-                  :remote-method="(query) => fetchMemberList(query)"
+                  :remote-method="(query) => fetchMemberList(query, 2)"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('')"
+                  @focus="fetchMemberList('', 2)"
                 >
                   <el-option
                     v-for="member in members"
@@ -840,7 +840,7 @@
             </div>
           </div>
         </el-form-item>
-        <el-form-item label="验收变更审核:" prop="change_check_verify_json">
+        <!-- <el-form-item label="验收变更审核:" prop="change_check_verify_json">
           <div class="change-check-verify-box json-normal-box">
             <div
               v-for="(item, itemIndex) in temp.change_check_verify_json"
@@ -854,9 +854,9 @@
                   filterable
                   remote
                   :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
-                  :remote-method="(query) => fetchMemberList(query)"
+                  :remote-method="(query) => fetchMemberList(query, 2)"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('')"
+                  @focus="fetchMemberList('', 2)"
                 >
                   <el-option
                     v-for="member in members"
@@ -871,7 +871,7 @@
               </div>
             </div>
           </div>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false"> 取消 </el-button>
@@ -955,8 +955,8 @@ export default {
         // 判断有没有品类
         if (
           value.some((valueItem) => {
-            const group_id = this.getMemberGroupId(valueItem.user_id)
-            if ([3, 4].indexOf(group_id) < 0 && valueItem.cat_id.length === 0) {
+            const group_type = this.getMemberGroupType(valueItem.user_id)
+            if ([1, 3].indexOf(group_type) < 0 && valueItem.cat_id.length === 0) {
               return true
             }
             return false
@@ -967,9 +967,8 @@ export default {
 
         if (
           value.some((valueItem) => {
-            const group_id = this.getMemberGroupId(valueItem.user_id)
-            console.log('=========', group_id)
-            if ([1, 2].indexOf(group_id) >= 0) {
+            const group_type = this.getMemberGroupType(valueItem.user_id)
+            if ([1].indexOf(group_type) >= 0) {
               return true
             }
             return false
@@ -1030,8 +1029,8 @@ export default {
         push_settle_json: [], // 推送申请
         change_verify_json: [{ id: '' }, { id: '' }], // 变更审批
         change_review_json: [{ id: '' }, { id: '' }], // 变更复审
-        change_check_json: [{ id: '' }, { id: '' }], // 验收变更
-        change_check_verify_json: [{ id: '' }, { id: '' }] // 验收变更审核
+        change_check_json: [{ id: '' }, { id: '' }] // 验收变更
+        // change_check_verify_json: [{ id: '' }, { id: '' }] // 验收变更审核
       },
       textMap: {
         update: '修改流程',
@@ -1224,16 +1223,16 @@ export default {
     this.getList()
   },
   methods: {
-    getMemberGroupId(member_id) {
-      let group_id = 0
+    getMemberGroupType(member_id) {
+      let group_type = ''
       this.allMembers.some((member) => {
         if (member.id === member_id) {
-          group_id = member.group_id
+          group_type = member.group && member.group.type >= 0 ? member.group.type : ''
           return true
         }
         return false
       })
-      return group_id
+      return group_type
     },
     getCategory() {
       fetchAllCategory().then((response) => {
@@ -1312,8 +1311,8 @@ export default {
         push_settle_json: [],
         change_verify_json: [{ id: '' }, { id: '' }],
         change_review_json: [{ id: '' }, { id: '' }],
-        change_check_json: [{ id: '' }, { id: '' }],
-        change_check_verify_json: [{ id: '' }, { id: '' }]
+        change_check_json: [{ id: '' }, { id: '' }]
+        // change_check_verify_json: [{ id: '' }, { id: '' }]
       }
     },
     handleCreate() {
@@ -1348,8 +1347,8 @@ export default {
             temp.assign_supplier_json
           )
           postTemp.wj_verify_json = JSON.stringify(
-            temp.wj_verify_json.map((item) => {
-              return item.id
+            temp.wj_verify_json.map((item, itemIndex) => {
+              return itemIndex === 0 ? 'default' : item.id
             })
           )
           postTemp.order_create_json = JSON.stringify(temp.order_create_json)
@@ -1359,8 +1358,8 @@ export default {
             })
           )
           postTemp.check_json = JSON.stringify(
-            temp.check_json.map((item) => {
-              return item.id
+            temp.check_json.map((item, itemIndex) => {
+              return itemIndex === 0 ? 'default' : item.id
             })
           )
           postTemp.check_confirm_pro_json = JSON.stringify(
@@ -1380,8 +1379,8 @@ export default {
           )
           postTemp.push_settle_json = JSON.stringify(temp.push_settle_json)
           postTemp.change_verify_json = JSON.stringify(
-            temp.change_verify_json.map((item) => {
-              return item.id
+            temp.change_verify_json.map((item, itemIndex) => {
+              return itemIndex === 0 ? 'default' : item.id
             })
           )
           postTemp.change_review_json = JSON.stringify(
@@ -1394,18 +1393,18 @@ export default {
               return item.id
             })
           )
-          postTemp.change_check_verify_json = JSON.stringify(
-            temp.change_check_verify_json.map((item) => {
-              return item.id
-            })
-          )
+          // postTemp.change_check_verify_json = JSON.stringify(
+          //   temp.change_check_verify_json.map((item) => {
+          //     return item.id
+          //   })
+          // )
 
           createProcess(postTemp).then((response) => {
             temp.process_id = response.data.id
             // 获取关联字段名称
             this.allProjects.some((project) => {
-              if (project.id === temp.project_id) {
-                temp.project_name = project.project_name
+              if (project.project_id === temp.project_id) {
+                temp.project = project
                 return true
               }
               return false
@@ -1413,19 +1412,19 @@ export default {
 
             this.allDeparts.forEach((dep) => {
               if (dep.id === temp.budget_dep_id) {
-                temp.budget_dep_name = dep.name
+                temp.budget_dep = dep
               }
               if (dep.id === temp.launch_dep_id) {
-                temp.launch_dep_name = dep.name
+                temp.launch_dep = dep
               }
               if (dep.id === temp.account_dep_id) {
-                temp.account_dep_name = dep.name
+                temp.account_dep = dep
               }
             })
 
             this.allSubs.some((sub) => {
               if (sub.id === temp.sub_id) {
-                temp.sub_name = sub.name
+                temp.sub = sub
                 return true
               }
               return false

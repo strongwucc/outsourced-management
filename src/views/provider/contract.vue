@@ -513,7 +513,7 @@ export default {
         this.subjectLoading = true
         fetchSubject({ company_name: query }).then((response) => {
           this.subjectLoading = false
-          this.subjects = response.data
+          this.subjects = response.data.list
         })
       } else {
         this.subjects = []
@@ -563,7 +563,7 @@ export default {
           })
           this.subjects.some((subject) => {
             if (subject.id === temp.sub_id) {
-              temp.subject_name = subject.name
+              temp.sub_name = subject.name
               return true
             }
             return false

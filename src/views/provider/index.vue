@@ -469,6 +469,9 @@ export default {
   directives: { waves },
   filters: {
     categoryPath: function(category) {
+      if (!category) {
+        return ''
+      }
       const path = []
       if (category.category_name) {
         path.push(category.category_name)
