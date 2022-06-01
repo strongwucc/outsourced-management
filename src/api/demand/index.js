@@ -47,3 +47,11 @@ export function toVerifyDemand(data) {
     data
   })
 }
+
+export function verifyDemand(data) {
+  return request({
+    url: '/api/needs/verify',
+    method: 'post',
+    data
+  })
+}

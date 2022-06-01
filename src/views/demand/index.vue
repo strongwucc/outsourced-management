@@ -72,7 +72,7 @@
           style="margin-left: 10px"
           type="primary"
           size="mini"
-          @click="handleResolve"
+          @click="handleResolve(true)"
         >
           确认
         </el-button>
@@ -82,7 +82,7 @@
           style="margin-left: 10px"
           type="primary"
           size="mini"
-          @click="handleReject"
+          @click="handleResolve(false)"
         >
           驳回
         </el-button>
@@ -308,7 +308,7 @@
             详情
           </el-button>
           <el-button
-            v-if="row.is_creator === 1 && [0, 1].indexOf(row.status) >= 0"
+            v-if="row.is_creator === 1 && [0, 2].indexOf(row.status) >= 0"
             type="primary"
             size="mini"
             plain
@@ -317,32 +317,12 @@
           >
             编辑
           </el-button>
-          <el-popconfirm
-            v-if="row.is_creator === 1 && [0, 1].indexOf(row.status) >= 0"
-            style="margin-left: 10px"
-            title="确定删除吗？"
-            @confirm="handleDelete(row, $index)"
-          >
-            <el-button slot="reference" size="mini" type="danger" plain>
-              删除
-            </el-button>
-          </el-popconfirm>
-          <el-popconfirm
-            v-if="row.is_creator === 1 && [0, 1].indexOf(row.status) >= 0"
-            style="margin-left: 10px"
-            title="确定提交审核吗？"
-            @confirm="handleToVerify(row, $index)"
-          >
-            <el-button slot="reference" size="mini" type="primary" plain>
-              提交审核
-            </el-button>
-          </el-popconfirm>
           <el-button
-            v-if="row.is_creator === 1 && [1].indexOf(row.status) >= 0"
+            v-if="row.is_creator === 1 && [2].indexOf(row.status) >= 0"
             type="primary"
             size="mini"
             plain
-            @click="showReason('')"
+            @click="showReason(row, $index)"
           >
             驳回原因
           </el-button>
@@ -373,6 +353,26 @@
           >
             导入物件
           </el-button>
+          <el-popconfirm
+            v-if="row.is_creator === 1 && [0, 2].indexOf(row.status) >= 0"
+            style="margin-left: 10px"
+            title="确定删除吗？"
+            @confirm="handleDelete(row, $index)"
+          >
+            <el-button slot="reference" size="mini" type="danger" plain>
+              删除
+            </el-button>
+          </el-popconfirm>
+          <el-popconfirm
+            v-if="row.is_creator === 1 && [0, 2].indexOf(row.status) >= 0"
+            style="margin-left: 10px"
+            title="确定提交审核吗？"
+            @confirm="handleToVerify(row, $index)"
+          >
+            <el-button slot="reference" size="mini" type="primary" plain>
+              提交审核
+            </el-button>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -544,12 +544,10 @@
       width="600px"
     >
       <div class="reason-box">
-        <div class="content">
-          品类改为3D品类改为3D品类改为3D品类改为3D品类改为3D
-        </div>
-        <div class="user-info">
-          <div>驳回人：tom</div>
-          <div>驳回时间：2022-05-05 12:00:00</div>
+        <div class="content">{{ temp.reason || "" }}</div>
+        <div v-if="temp.verify || temp.creator" class="user-info">
+          <div>驳回人：{{ temp.verify.name || temp.creator.name }}</div>
+          <div>驳回时间：{{ temp.updated_at }}</div>
         </div>
       </div>
     </el-dialog>
@@ -678,6 +676,7 @@
         ref="verifyDataForm"
         class="dialog-form"
         :model="tempVerify"
+        :rules="verifyRules"
         label-position="left"
         label-width="150px"
         style="margin: 0 50px"
@@ -1200,7 +1199,8 @@ import {
   updateDemand,
   fetchDemandDetail,
   toVerifyDemand,
-  deleteDemand
+  deleteDemand,
+  verifyDemand
 } from '@/api/demand/index'
 import { createTask, updateTask, fetchTaskDetail } from '@/api/demand/task'
 import {
@@ -1263,8 +1263,8 @@ export default {
     statusText(status) {
       const statusMap = {
         0: '待提报',
-        1: '审核未通过',
-        2: '审核中',
+        1: '审核中',
+        2: '审核未通过',
         3: '待分配供应商',
         4: '待填写物件',
         5: '物件审核中',
@@ -1386,7 +1386,7 @@ export default {
       tempVerify: {
         reason: ''
       },
-      verifyReason: '',
+      verifyRules: {},
       dialogProviderVisible: false,
       providerRules: {
         id: [{ required: true, message: '请选择供应商', trigger: 'change' }]
@@ -1800,7 +1800,7 @@ export default {
             type: 'success',
             duration: 2000
           })
-          this.$set(this.list[index], 'status', 2)
+          this.$set(this.list[index], 'status', 1)
         })
         .catch((error) => {})
     },
@@ -1834,8 +1834,11 @@ export default {
     /**
      * 查看驳回原因
      */
-    showReason() {
-      this.dialogReasonVisible = true
+    showReason(row, index) {
+      this.temp = JSON.parse(JSON.stringify(row))
+      this.$nextTick(() => {
+        this.dialogReasonVisible = true
+      })
     },
     /**
      * 需求详情弹窗
@@ -1867,24 +1870,94 @@ export default {
       )
     },
     /**
-     * 审批通过弹窗
+     * 审批弹窗
      */
-    handleResolve() {
-      this.dialogStatus = 'resolve'
-      this.dialogVerifyVisible = true
-    },
-    /**
-     * 审批驳回弹窗
-     */
-    handleReject() {
-      this.dialogStatus = 'reject'
+    handleResolve(ok) {
+      const checkeds = []
+      if (
+        !this.list.some((listItem) => {
+          if (listItem.checked) {
+            if (listItem.status !== 1) {
+              const errorName = `[${listItem.name}] 该需求并不是待审核状态，无法审核`
+              this.$message.error(errorName)
+              return true
+            }
+            checkeds.push(listItem.demand_id)
+            return false
+          }
+          return false
+        })
+      ) {
+        if (checkeds.length <= 0) {
+          this.$message.error('请先选择需求')
+          return false
+        }
+      } else {
+        return false
+      }
+
+      this.dialogStatus = ok === true ? 'resolve' : 'reject'
+      if (ok) {
+        if (this.verifyRules.reason) {
+          delete this.verifyRules.reason
+        }
+      } else {
+        this.verifyRules = Object.assign({}, this.verifyRules, {
+          reason: [
+            { required: true, message: '请输入驳回原因', trigger: 'blur' }
+          ]
+        })
+      }
       this.dialogVerifyVisible = true
     },
     /**
      * 审批确认
      */
     confirmVerify() {
-      this.dialogVerifyVisible = false
+      this.$refs['verifyDataForm'].validate((valid) => {
+        if (valid) {
+          const checkeds = []
+          const checkedIndexs = []
+          if (
+            !this.list.some((listItem, listIndex) => {
+              if (listItem.checked) {
+                if (listItem.status !== 1) {
+                  const errorName = `[${listItem.name}] 该需求并不是待审核状态，无法审核`
+                  this.$message.error(errorName)
+                  return true
+                }
+                checkeds.push(listItem.demand_id)
+                checkedIndexs.push(listIndex)
+                return false
+              }
+              return false
+            })
+          ) {
+            if (checkeds.length <= 0) {
+              this.$message.error('请先选择需求')
+              return false
+            }
+          } else {
+            return false
+          }
+
+          const status = this.dialogStatus === 'resolve' ? 3 : 2
+
+          verifyDemand({
+            demand_id: checkeds,
+            status,
+            reason: this.tempVerify.reason
+          })
+            .then(() => {
+              checkedIndexs.forEach((listCheckedIndex) => {
+                this.$set(this.list[listCheckedIndex], 'status', status)
+              })
+              this.dialogVerifyVisible = false
+              this.$message.success('审批成功')
+            })
+            .catch((error) => {})
+        }
+      })
     },
     /**
      * 分配供应商弹窗
