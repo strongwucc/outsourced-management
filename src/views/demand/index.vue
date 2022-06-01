@@ -1793,14 +1793,14 @@ export default {
      */
     handleToVerify(row, index) {
       toVerifyDemand({ demand_id: row.demand_id })
-        .then(() => {
+        .then((response) => {
           this.$notify({
             title: '成功',
             message: '提交成功',
             type: 'success',
             duration: 2000
           })
-          this.$set(this.list[index], 'status', 1)
+          this.$set(this.list[index], 'status', response.data.status)
         })
         .catch((error) => {})
     },
