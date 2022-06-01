@@ -56,7 +56,7 @@
       </div>
       <div class="filter-right">
         <el-button
-          v-permission="[0, 1, 2, 3, 4, 5]"
+          v-permission="[1, 3]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -67,7 +67,7 @@
           新建需求
         </el-button>
         <el-button
-          v-permission="[0, 1, 2, 3, 4, 5]"
+          v-permission="[2]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -77,7 +77,7 @@
           确认
         </el-button>
         <el-button
-          v-permission="[0, 1, 2, 3, 4, 5]"
+          v-permission="[2]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -87,7 +87,7 @@
           驳回
         </el-button>
         <el-button
-          v-permission="[0, 1, 2, 3, 4, 5]"
+          v-permission="[3]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -97,7 +97,7 @@
           生成订单
         </el-button>
         <el-button
-          v-permission="[0, 1, 2, 3, 4, 5]"
+          v-permission="[3]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -180,7 +180,11 @@
                 prop="category_name"
                 label="物件品类"
                 align="center"
-              />
+              >
+                <template slot-scope="scope">
+                  {{ scope.row.category | categoryText }}
+                </template>
+              </el-table-column>
               <el-table-column
                 prop="deliver_date"
                 label="交付日期"
@@ -257,25 +261,25 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="需求名称" align="center" width="100">
+      <el-table-column label="需求名称" align="center" width="200">
         <template slot-scope="{ row }">
           {{ row.name }}
         </template>
       </el-table-column>
 
-      <el-table-column label="需求品类" align="center" width="100">
+      <el-table-column label="需求品类" align="center" width="200">
         <template slot-scope="{ row }">
-          {{ row.category_name }}
+          {{ row.category | categoryText }}
         </template>
       </el-table-column>
 
       <el-table-column label="停留时间" align="center" width="80">
-        <template slot-scope="{ row }"> {{ row.stay_time }}小时 </template>
+        <template slot-scope="{ row }"> {{ row.stay_time || 0 }}小时 </template>
       </el-table-column>
 
-      <el-table-column label="当前处理人" align="center" width="90">
+      <el-table-column label="当前处理人" align="center" width="120">
         <template slot-scope="{ row }">
-          {{ row.handler }}
+          {{ row.status | operatorText }}
         </template>
       </el-table-column>
 
@@ -304,26 +308,46 @@
             详情
           </el-button>
           <el-button
+            v-if="row.is_creator === 1 && [0, 1].indexOf(row.status) >= 0"
             type="primary"
             size="mini"
             plain
-            @click="handleUpdate(row)"
+            :loading="row.editLoading"
+            @click="handleUpdate(row, $index)"
           >
             编辑
           </el-button>
-          <el-button
-            size="mini"
-            type="danger"
-            plain
-            @click="handleDelete(row, $index)"
+          <el-popconfirm
+            v-if="row.is_creator === 1 && [0, 1].indexOf(row.status) >= 0"
+            style="margin-left: 10px"
+            title="确定删除吗？"
+            @confirm="handleDelete(row, $index)"
           >
-            删除
-          </el-button>
-          <el-button type="primary" size="mini" plain> 提交审核 </el-button>
-          <el-button type="primary" size="mini" plain @click="showReason('')">
+            <el-button slot="reference" size="mini" type="danger" plain>
+              删除
+            </el-button>
+          </el-popconfirm>
+          <el-popconfirm
+            v-if="row.is_creator === 1 && [0, 1].indexOf(row.status) >= 0"
+            style="margin-left: 10px"
+            title="确定提交审核吗？"
+            @confirm="handleToVerify(row, $index)"
+          >
+            <el-button slot="reference" size="mini" type="primary" plain>
+              提交审核
+            </el-button>
+          </el-popconfirm>
+          <el-button
+            v-if="row.is_creator === 1 && [1].indexOf(row.status) >= 0"
+            type="primary"
+            size="mini"
+            plain
+            @click="showReason('')"
+          >
             驳回原因
           </el-button>
           <el-button
+            v-if="row.can_assign_supplier === 1"
             type="primary"
             size="mini"
             plain
@@ -332,6 +356,7 @@
             分配供应商
           </el-button>
           <el-button
+            v-if="row.can_add_task === 1"
             type="primary"
             size="mini"
             plain
@@ -340,6 +365,7 @@
             新增物件
           </el-button>
           <el-button
+            v-if="row.can_add_task === 1"
             type="primary"
             size="mini"
             plain
@@ -421,16 +447,11 @@
         <el-form-item v-permission="[3]" label="审核人:" prop="verify_id">
           <el-select
             v-model="temp.verify_id"
-            filterable
-            remote
-            placeholder="请输入关键词"
-            :remote-method="fetchMemberList"
-            :loading="memberLoading"
+            clearable
             class="dialog-form-item"
-            @focus="fetchMemberList('')"
           >
             <el-option
-              v-for="item in members"
+              v-for="item in demandVerifyMembers"
               :key="item.id"
               :label="item.name"
               :value="item.id"
@@ -500,8 +521,17 @@
       <div slot="footer" class="dialog-footer">
         <template v-if="dialogStatus === 'create'">
           <el-button size="mini" @click="createData(0)"> 保存为模板 </el-button>
-          <el-button type="primary" size="mini" @click="createData(1)">
+          <el-button type="primary" size="mini" @click="createData(2)">
             提报需求
+          </el-button>
+        </template>
+        <template v-if="dialogStatus === 'update'">
+          <el-button
+            size="mini"
+            type="primary"
+            @click="createData(temp.status)"
+          >
+            确认
           </el-button>
         </template>
       </div>
@@ -534,22 +564,24 @@
             :label-style="{ 'font-weight': 'bold' }"
           >
             <el-descriptions-item label="项目代码">{{
-              tempDetail.project_bn
+              tempDetail.project ? tempDetail.project.project_name : ""
             }}</el-descriptions-item>
             <el-descriptions-item label="发起部门">{{
-              tempDetail.launch_dep_name
+              tempDetail.flow ? tempDetail.flow.launch_dep.name : ""
             }}</el-descriptions-item>
             <el-descriptions-item label="核算部门">{{
-              tempDetail.account_dep_name
+              tempDetail.flow ? tempDetail.flow.account_dep.name : ""
             }}</el-descriptions-item>
             <el-descriptions-item label="经费使用">
-              {{ tempDetail.budget_used }}/{{ tempDetail.budget }}
+              {{ tempDetail.project ? tempDetail.project.budget_used : 0 }}/{{
+                tempDetail.project ? tempDetail.project.budget_cost : 0
+              }}
             </el-descriptions-item>
             <el-descriptions-item label="需求创建人">{{
-              tempDetail.create_user_name
+              tempDetail.creator ? tempDetail.creator.name : ""
             }}</el-descriptions-item>
             <el-descriptions-item label="创建时间" span="3">{{
-              tempDetail.create_at
+              tempDetail.created_at
             }}</el-descriptions-item>
             <el-descriptions-item label="需求名称" span="3">
               <span>{{ tempDetail.name }}</span>
@@ -567,13 +599,27 @@
               tempDetail.introduce
             }}</el-descriptions-item>
             <el-descriptions-item label="需求品类" span="4">{{
-              tempDetail.category_name
+              tempDetail.category | categoryText
             }}</el-descriptions-item>
-            <el-descriptions-item label="需求附件" span="4">{{
-              tempDetail.file
-            }}</el-descriptions-item>
+            <el-descriptions-item label="需求附件" span="4">
+              <div class="file-box" style="width: 50%">
+                <div
+                  v-for="(file, fileIndex) in tempDetail.files"
+                  :key="fileIndex"
+                  class="file-item"
+                >
+                  <div class="file-name">{{ file.name }}</div>
+                  <el-button
+                    type="primary"
+                    size="mini"
+                    plain
+                    @click="downLoadContract(file.name, file.url)"
+                  >下载</el-button>
+                </div>
+              </div>
+            </el-descriptions-item>
             <el-descriptions-item label="意向供应商" span="4">{{
-              tempDetail.supplier_name
+              tempDetail.supplier ? tempDetail.supplier.name : ""
             }}</el-descriptions-item>
             <el-descriptions-item label="备注说明" span="4">{{
               tempDetail.remark
@@ -594,18 +640,30 @@
               align="center"
             />
             <el-table-column
-              prop="title"
+              prop="content"
               label="内容"
               width="180"
               align="center"
             />
-            <el-table-column prop="datetime" label="操作时间" align="center" />
-            <el-table-column prop="stay_time" label="耗时" align="center" />
+            <el-table-column
+              prop="created_at"
+              label="操作时间"
+              align="center"
+            />
+            <el-table-column prop="time" label="耗时" align="center" />
           </el-table>
         </el-tab-pane>
       </el-tabs>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" size="mini" @click="createData(1)">
+        <el-button
+          v-if="
+            tempDetail.is_creator === 1 &&
+              [0, 1].indexOf(tempDetail.status) >= 0
+          "
+          type="primary"
+          size="mini"
+          @click="createData(1)"
+        >
           提报需求
         </el-button>
       </div>
@@ -1140,16 +1198,23 @@ import {
   fetchList,
   createDemand,
   updateDemand,
-  fetchDemandDetail
+  fetchDemandDetail,
+  toVerifyDemand,
+  deleteDemand
 } from '@/api/demand/index'
 import { createTask, updateTask, fetchTaskDetail } from '@/api/demand/task'
-import { fetchAllProcess, fetchProcessCategory } from '@/api/project/process'
+import {
+  fetchAllProcess,
+  fetchProcessCategory,
+  fetchProcessVerifyMember
+} from '@/api/project/process'
 import { fetchAllMember } from '@/api/system/member'
 import { fetchAllProvider } from '@/api/provider/index'
 import { fetchAllCategory } from '@/api/system/category'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 import permission from '@/directive/permission/index.js' // 权限判断指令
+import { downloadFile } from '@/utils/index'
 
 const tagList = [
   { id: 0, name: '正式包' },
@@ -1163,6 +1228,22 @@ export default {
   components: { Pagination },
   directives: { waves, permission },
   filters: {
+    categoryText(category) {
+      if (!category) {
+        return '-'
+      }
+      if (typeof category === 'string') {
+        return category
+      }
+      let name = category.category_name
+      if (category.parent) {
+        name = `${category.parent.category_name}/${name}`
+      }
+      if (category.parent.parent) {
+        name = `${category.parent.parent.category_name}/${name}`
+      }
+      return name
+    },
     statusColor(status) {
       const statusMap = {
         0: '#67c23a',
@@ -1195,10 +1276,26 @@ export default {
       }
       return statusMap[status]
     },
+    operatorText(status) {
+      const statusMap = {
+        0: '项目组',
+        1: '项目组',
+        2: '项目组负责人',
+        3: '供管',
+        4: '供应商',
+        5: '项目组',
+        6: '供应商',
+        7: '供管',
+        8: '供管负责人',
+        9: '供管',
+        10: '-'
+      }
+      return statusMap[status]
+    },
     tagText(tag) {
       let text = tag
       tagList.some((tagItem) => {
-        if (tagItem.id === tag) {
+        if (tagItem.id === parseInt(tag)) {
           text = tagItem.name
           return true
         }
@@ -1275,6 +1372,7 @@ export default {
       process: [],
       memberLoading: false,
       members: [],
+      demandVerifyMembers: [],
       providerLoading: false,
       providers: [],
       categorys: [],
@@ -1402,18 +1500,6 @@ export default {
         .catch((error) => {})
     },
     /**
-     * 获取会员列表
-     */
-    fetchMemberList(query) {
-      this.memberLoading = true
-      fetchAllMember({ keyword: query })
-        .then((response) => {
-          this.memberLoading = false
-          this.members = response.data.list
-        })
-        .catch((error) => {})
-    },
-    /**
      * 获取供应商列表
      */
     fetchProviderList(query) {
@@ -1426,6 +1512,11 @@ export default {
         .catch((error) => {})
     },
     demandProcessChange(process) {
+      if (!process) {
+        this.categorys = []
+        this.demandVerifyMembers = []
+        return false
+      }
       fetchProcessCategory({ process_id: process })
         .then((response) => {
           this.categorys = response.data.list.map((first) => {
@@ -1448,6 +1539,12 @@ export default {
               children: seconds
             }
           })
+        })
+        .catch((error) => {})
+
+      fetchProcessVerifyMember({ process_id: process })
+        .then((response) => {
+          this.demandVerifyMembers = response.data.list
         })
         .catch((error) => {})
     },
@@ -1485,7 +1582,7 @@ export default {
      */
     handleCreate() {
       this.resetTemp()
-      if (this.$store.getters.roles === [3]) {
+      if (this.$store.getters.roles.indexOf(3) >= 0) {
         this.rules = Object.assign({}, this.rules, {
           verify_id: [
             { required: true, message: '请选择项审核人', trigger: 'change' }
@@ -1536,28 +1633,42 @@ export default {
         if (valid) {
           const temp = Object.assign({}, this.temp)
           const postTemp = Object.assign({}, this.temp)
-          delete postTemp.files
+          postTemp.status = status
           // temp.demand_id = parseInt(Math.random() * 100) + 1024
           temp.status = status
           createDemand(postTemp)
             .then((response) => {
-              temp.demand_id = response.data.id
               const checkedNodes =
                 this.$refs.categoryCascader.getCheckedNodes()
               if (checkedNodes.length > 0) {
-                temp.category_name = checkedNodes[0].pathLabels[2]
+                temp.category = `${checkedNodes[0].pathLabels[0]}/${checkedNodes[0].pathLabels[1]}/${checkedNodes[0].pathLabels[2]}`
               } else {
-                temp.category_name = ''
+                temp.category = ''
               }
-              temp.handler = '当前处理人'
-              this.list.unshift(temp)
-              this.dialogFormVisible = false
-              this.$notify({
-                title: '成功',
-                message: '创建成功',
-                type: 'success',
-                duration: 2000
-              })
+
+              if (this.dialogStatus === 'create') {
+                temp.demand_id = response.data.id
+                this.list.unshift(temp)
+                this.dialogFormVisible = false
+                this.$notify({
+                  title: '成功',
+                  message: '创建成功',
+                  type: 'success',
+                  duration: 2000
+                })
+              } else if (this.dialogStatus === 'update') {
+                const index = this.list.findIndex(
+                  (v) => v.demand_id === temp.demand_id
+                )
+                this.list.splice(index, 1, temp)
+                this.dialogFormVisible = false
+                this.$notify({
+                  title: '成功',
+                  message: '修改成功',
+                  type: 'success',
+                  duration: 2000
+                })
+              }
             })
             .catch((error) => {})
         }
@@ -1566,8 +1677,79 @@ export default {
     /**
      * 修改需求弹窗
      */
-    handleUpdate(row) {
-      this.temp = Object.assign({}, row)
+    async handleUpdate(row, index) {
+      this.list.splice(index, 1, Object.assign({}, row, { editLoading: true }))
+      try {
+        const processData = await fetchAllProcess({
+          create_needs_permission: 1
+        })
+        this.process = processData.data.list || []
+
+        const categoryData = await fetchProcessCategory({
+          process_id: row.process_id
+        })
+        this.categorys = categoryData.data.list.map((first) => {
+          const seconds = first.children.map((second) => {
+            const thirds = second.children.map((third) => {
+              return {
+                label: third.category_name,
+                value: third.cat_id
+              }
+            })
+            return {
+              label: second.category_name,
+              value: second.cat_id,
+              children: thirds
+            }
+          })
+          return {
+            label: first.category_name,
+            value: first.cat_id,
+            children: seconds
+          }
+        })
+
+        const verifyMemberData = await fetchProcessVerifyMember({
+          process_id: row.process_id
+        })
+        this.demandVerifyMembers = verifyMemberData.data.list
+
+        const providerData = await fetchAllProvider()
+        this.providers = providerData.data.list
+      } catch (error) {
+        console.log(error)
+        this.list.splice(
+          index,
+          1,
+          Object.assign({}, row, { editLoading: false })
+        )
+        this.$notify({
+          title: '失败',
+          message: '修改失败',
+          type: 'error',
+          duration: 2000
+        })
+      }
+      this.list.splice(
+        index,
+        1,
+        Object.assign({}, row, { editLoading: false })
+      )
+      this.temp = Object.assign({}, row, {
+        tag: parseInt(row.tag),
+        supplier: parseInt(row.supplier)
+      })
+      this.demandFileList = this.temp.files.map((file) => {
+        return {
+          name: file.name,
+          url: file.url,
+          response: {
+            data: {
+              file_id: file.file_id
+            }
+          }
+        }
+      })
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -1607,16 +1789,36 @@ export default {
       })
     },
     /**
+     * 提交审核
+     */
+    handleToVerify(row, index) {
+      toVerifyDemand({ demand_id: row.demand_id })
+        .then(() => {
+          this.$notify({
+            title: '成功',
+            message: '提交成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.$set(this.list[index], 'status', 2)
+        })
+        .catch((error) => {})
+    },
+    /**
      * 删除需求
      */
     handleDelete(row, index) {
-      this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
-      })
-      this.list.splice(index, 1)
+      deleteDemand({ demand_id: row.demand_id })
+        .then(() => {
+          this.$notify({
+            title: '成功',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.list.splice(index, 1)
+        })
+        .catch((error) => {})
     },
     /**
      * 上传文件成功
@@ -1644,25 +1846,25 @@ export default {
         1,
         Object.assign({}, row, { detailLoading: true })
       )
-      const detailData = await fetchDemandDetail({ demand_id: row.demand_id })
-      if (detailData.code === 200) {
-        this.temp = Object.assign({}, row)
-        this.tempDetail = Object.assign({}, detailData.data)
-        this.dialogDetailVisible = true
+      const detailData = await fetchDemandDetail({
+        demand_id: row.demand_id
+      }).catch((error) => {
+        console.log(error)
         this.list.splice(
           index,
           1,
           Object.assign({}, row, { detailLoading: false })
         )
-      } else {
-        this.list.splice(
-          index,
-          1,
-          Object.assign({}, row, { detailLoading: false })
-        )
+      })
 
-        this.$message.error(detailData.message || '哎呀，出错啦')
-      }
+      this.temp = Object.assign({}, row)
+      this.tempDetail = Object.assign({}, detailData.data)
+      this.dialogDetailVisible = true
+      this.list.splice(
+        index,
+        1,
+        Object.assign({}, row, { detailLoading: false })
+      )
     },
     /**
      * 审批通过弹窗
@@ -2017,6 +2219,9 @@ export default {
      */
     handleStopTaskReason(task, taskIndex, demandIndex) {
       this.dialogStopReasonVisible = true
+    },
+    downLoadContract(fileName, filePath) {
+      downloadFile(fileName, filePath)
     }
   }
 }
@@ -2119,6 +2324,13 @@ export default {
   }
   .user-info {
     margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+.file-box {
+  .file-item {
     display: flex;
     justify-content: space-between;
     align-items: center;

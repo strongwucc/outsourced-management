@@ -39,3 +39,11 @@ export function fetchProcessCategory(params) {
     params
   })
 }
+
+export function fetchProcessVerifyMember(params) {
+  return request({
+    url: '/api/project/processVerifyMember',
+    method: 'post',
+    params
+  })
+}

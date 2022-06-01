@@ -31,3 +31,19 @@ export function updateDemand(data) {
     data
   })
 }
+
+export function deleteDemand(data) {
+  return request({
+    url: '/api/needs/delDemand',
+    method: 'post',
+    data
+  })
+}
+
+export function toVerifyDemand(data) {
+  return request({
+    url: '/api/needs/toVerify',
+    method: 'post',
+    data
+  })
+}
