@@ -55,3 +55,11 @@ export function verifyDemand(data) {
     data
   })
 }
+
+export function assignSupplier(data) {
+  return request({
+    url: '/api/needs/choiceSupplier',
+    method: 'post',
+    data
+  })
+}

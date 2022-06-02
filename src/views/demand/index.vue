@@ -327,11 +327,12 @@
             驳回原因
           </el-button>
           <el-button
-            v-if="row.can_assign_supplier === 1"
+            v-if="row.can_assign_supplier === 1 && [3].indexOf(row.status) >= 0"
             type="primary"
             size="mini"
             plain
-            @click="handleProvider(row)"
+            :loading="row.assignLoading"
+            @click="handleProvider(row, $index)"
           >
             分配供应商
           </el-button>
@@ -488,12 +489,9 @@
             <el-select
               v-model="temp.supplier"
               filterable
-              remote
+              clearable
               placeholder="请输入关键词"
-              :remote-method="fetchProviderList"
-              :loading="providerLoading"
               class="dialog-form-item"
-              @focus="fetchProviderList('')"
             >
               <el-option
                 v-for="item in providers"
@@ -726,16 +724,13 @@
         label-width="150px"
         style="margin: 0 50px"
       >
-        <el-form-item label="供应商:" prop="id">
+        <el-form-item label="供应商:" prop="supplier_id">
           <el-select
-            v-model="tempProvider.id"
+            v-model="tempProvider.supplier_id"
             filterable
-            remote
+            clearable
             placeholder="请输入关键词"
-            :remote-method="fetchProviderList"
-            :loading="providerLoading"
             class="dialog-form-item"
-            @focus="fetchProviderList('')"
           >
             <el-option
               v-for="item in providers"
@@ -746,20 +741,21 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="上传附件" prop="file">
+        <el-form-item label="上传附件" prop="supplier_file">
           <el-upload
             class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :on-success="handleAddFileSucc"
-            :file-list="fileList"
+            :action="`${$baseUrl}/api/tools/upfile`"
+            :on-success="handleAddDemandSupplierFileSucc"
+            :on-remove="handleDemandSupplierFileChange"
+            :file-list="demandSupplierFileList"
           >
-            <el-button size="small" type="primary">上传</el-button>
+            <el-button size="mini" type="primary">上传</el-button>
           </el-upload>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogProviderVisible = false"> 取消 </el-button>
-        <el-button type="primary" @click="confirmProvider"> 确认 </el-button>
+        <el-button size="mini" @click="dialogProviderVisible = false"> 取消 </el-button>
+        <el-button type="primary" size="mini" @click="confirmProvider"> 确认 </el-button>
       </div>
     </el-dialog>
 
@@ -1200,7 +1196,8 @@ import {
   fetchDemandDetail,
   toVerifyDemand,
   deleteDemand,
-  verifyDemand
+  verifyDemand,
+  assignSupplier
 } from '@/api/demand/index'
 import { createTask, updateTask, fetchTaskDetail } from '@/api/demand/task'
 import {
@@ -1370,10 +1367,8 @@ export default {
       },
       processLoading: false,
       process: [],
-      memberLoading: false,
       members: [],
       demandVerifyMembers: [],
-      providerLoading: false,
       providers: [],
       categorys: [],
       fileList: [],
@@ -1392,8 +1387,9 @@ export default {
         id: [{ required: true, message: '请选择供应商', trigger: 'change' }]
       },
       tempProvider: {
-        id: '',
-        file: ''
+        demand_id: '',
+        supplier_id: '',
+        supplier_file: ''
       },
       dialogFinishVisible: false,
       finishRules: {
@@ -1431,7 +1427,8 @@ export default {
       dialogTaskDetailVisible: false,
       tempTaskDetail: {},
       dialogStopReasonVisible: false,
-      demandFileList: []
+      demandFileList: [],
+      demandSupplierFileList: []
     }
   },
   created() {
@@ -1499,18 +1496,6 @@ export default {
         })
         .catch((error) => {})
     },
-    /**
-     * 获取供应商列表
-     */
-    fetchProviderList(query) {
-      this.providerLoading = true
-      fetchAllProvider({ name: query })
-        .then((response) => {
-          this.providerLoading = false
-          this.providers = response.data.list
-        })
-        .catch((error) => {})
-    },
     demandProcessChange(process) {
       if (!process) {
         this.categorys = []
@@ -1545,6 +1530,12 @@ export default {
       fetchProcessVerifyMember({ process_id: process })
         .then((response) => {
           this.demandVerifyMembers = response.data.list
+        })
+        .catch((error) => {})
+
+      fetchAllProvider({ process_id: process })
+        .then((response) => {
+          this.providers = response.data.list
         })
         .catch((error) => {})
     },
@@ -1593,6 +1584,7 @@ export default {
           delete this.rules.verify_id
         }
       }
+      this.providers = []
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -1715,7 +1707,9 @@ export default {
         })
         this.demandVerifyMembers = verifyMemberData.data.list
 
-        const providerData = await fetchAllProvider()
+        const providerData = await fetchAllProvider({
+          process_id: row.process_id
+        })
         this.providers = providerData.data.list
       } catch (error) {
         console.log(error)
@@ -1972,18 +1966,89 @@ export default {
     /**
      * 分配供应商弹窗
      */
-    handleProvider() {
-      this.tempProvider = Object.assign({}, this.tempProvider, {
-        id: '',
-        file: ''
+    async handleProvider(row, index) {
+      this.list.splice(
+        index,
+        1,
+        Object.assign({}, row, { assignLoading: true })
+      )
+      try {
+        const providerData = await fetchAllProvider({
+          process_id: row.process_id
+        })
+        this.providers = providerData.data.list
+        this.list.splice(
+          index,
+          1,
+          Object.assign({}, row, { assignLoading: false })
+        )
+        this.tempProvider = Object.assign({}, this.tempProvider, {
+          demand_id: row.demand_id,
+          supplier_id: '',
+          supplier_file: ''
+        })
+        this.dialogProviderVisible = true
+      } catch (error) {
+        console.log(error)
+        this.list.splice(
+          index,
+          1,
+          Object.assign({}, row, { assignLoading: false })
+        )
+        this.$notify({
+          title: '失败',
+          message: '分配供应商失败',
+          type: 'error',
+          duration: 2000
+        })
+      }
+    },
+    handleAddDemandSupplierFileSucc(response, file, fileList) {
+      this.handleDemandSupplierFileChange(file, fileList)
+    },
+    handleDemandSupplierFileChange(file, fileList) {
+      this.demandSupplierFileList = fileList
+      const fileStr = fileList
+        .map((fileItem) => {
+          return fileItem.response.data.file_id
+        })
+        .join(',')
+      const fileArr = fileList.map((fileItem) => {
+        return {
+          name: fileItem.name,
+          url: fileItem.url,
+          response: {
+            data: {
+              file_id: fileItem.response.data.file_id
+            }
+          }
+        }
       })
-      this.dialogProviderVisible = true
+      this.tempProvider = Object.assign({}, this.tempProvider, {
+        supplier_file: fileStr,
+        files: fileArr
+      })
     },
     /**
      * 确认供应商
      */
     confirmProvider() {
-      this.dialogProviderVisible = false
+      this.$refs['providerDataForm'].validate((valid) => {
+        if (valid) {
+          const temp = Object.assign({}, this.tempProvider)
+
+          assignSupplier(temp)
+            .then((response) => {
+              const index = this.list.findIndex(listItem => listItem.demand_id === this.tempProvider.demand_id)
+              if (index >= 0) {
+                this.$set(this.list[index], 'status', 4)
+              }
+              this.dialogProviderVisible = false
+              this.$message.success('分配成功')
+            })
+            .catch((error) => {})
+        }
+      })
     },
     /**
      * 全选所有
