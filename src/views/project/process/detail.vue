@@ -183,7 +183,7 @@
                     :value="member.id"
                   >
                     <span style="float: left">{{ member.name }}</span>
-                    <span style="float: right">{{ member.group_name }}</span>
+                    <span style="float: right">{{ member.group.group_name }}</span>
                   </el-option>
                 </el-select>
               </div>

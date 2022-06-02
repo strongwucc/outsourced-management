@@ -521,7 +521,7 @@
       <div slot="footer" class="dialog-footer">
         <template v-if="dialogStatus === 'create'">
           <el-button size="mini" @click="createData(0)"> 保存为模板 </el-button>
-          <el-button type="primary" size="mini" @click="createData(2)">
+          <el-button type="primary" size="mini" @click="createData(1)">
             提报需求
           </el-button>
         </template>
@@ -543,11 +543,11 @@
       :visible.sync="dialogReasonVisible"
       width="600px"
     >
-      <div class="reason-box">
-        <div class="content">{{ temp.reason || "" }}</div>
-        <div v-if="temp.verify || temp.creator" class="user-info">
-          <div>驳回人：{{ temp.verify.name || temp.creator.name }}</div>
-          <div>驳回时间：{{ temp.updated_at }}</div>
+      <div v-if="temp.reject" class="reason-box">
+        <div class="content">{{ temp.reject.reason || "" }}</div>
+        <div class="user-info">
+          <div>驳回人：{{ temp.reject.user }}</div>
+          <div>驳回时间：{{ temp.reject.created_at }}</div>
         </div>
       </div>
     </el-dialog>
@@ -1279,8 +1279,8 @@ export default {
     operatorText(status) {
       const statusMap = {
         0: '项目组',
-        1: '项目组',
-        2: '项目组负责人',
+        1: '项目组负责人',
+        2: '项目组',
         3: '供管',
         4: '供应商',
         5: '项目组',
@@ -1648,6 +1648,7 @@ export default {
 
               if (this.dialogStatus === 'create') {
                 temp.demand_id = response.data.id
+                temp.is_creator = 1
                 this.list.unshift(temp)
                 this.dialogFormVisible = false
                 this.$notify({
@@ -1835,6 +1836,10 @@ export default {
      * 查看驳回原因
      */
     showReason(row, index) {
+      if (!row.reject) {
+        this.$message.error('对不起，没有驳回原因')
+        return false
+      }
       this.temp = JSON.parse(JSON.stringify(row))
       this.$nextTick(() => {
         this.dialogReasonVisible = true
@@ -1948,9 +1953,14 @@ export default {
             status,
             reason: this.tempVerify.reason
           })
-            .then(() => {
-              checkedIndexs.forEach((listCheckedIndex) => {
-                this.$set(this.list[listCheckedIndex], 'status', status)
+            .then((response) => {
+              response.data.list.forEach((statusItem) => {
+                const index = this.list.findIndex(
+                  (listItem) => listItem.demand_id === statusItem.demand_id
+                )
+                if (index >= 0) {
+                  this.$set(this.list[index], 'status', statusItem.status)
+                }
               })
               this.dialogVerifyVisible = false
               this.$message.success('审批成功')
