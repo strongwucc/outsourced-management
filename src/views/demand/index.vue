@@ -160,7 +160,7 @@
                 <template slot-scope="scope">
                   <el-image
                     style="width: 50px; height: 50px"
-                    :src="scope.row.task_image"
+                    :src="scope.row.task_image_url"
                   >
                     <div slot="error" class="image-slot">
                       <i
@@ -176,7 +176,7 @@
                 label="物件名称"
                 align="center"
               />
-              <el-table-column
+              <!-- <el-table-column
                 prop="category_name"
                 label="物件品类"
                 align="center"
@@ -184,7 +184,7 @@
                 <template slot-scope="scope">
                   {{ scope.row.category | categoryText }}
                 </template>
-              </el-table-column>
+              </el-table-column> -->
               <el-table-column
                 prop="deliver_date"
                 label="交付日期"
@@ -202,7 +202,7 @@
               <el-table-column
                 label="操作"
                 align="center"
-                min-width="100"
+                min-width="350"
                 class-name="small-padding fixed-width"
               >
                 <template slot-scope="scope">
@@ -216,6 +216,7 @@
                     详情
                   </el-button>
                   <el-button
+                    v-permission="[0]"
                     type="primary"
                     size="mini"
                     plain
@@ -224,6 +225,7 @@
                     编辑
                   </el-button>
                   <el-button
+                    v-permission="[0]"
                     size="mini"
                     type="danger"
                     plain
@@ -232,6 +234,7 @@
                     删除
                   </el-button>
                   <el-button
+                    v-permission="[0]"
                     type="primary"
                     size="mini"
                     plain
@@ -240,6 +243,7 @@
                     复制
                   </el-button>
                   <el-button
+                    v-permission="[0]"
                     type="primary"
                     size="mini"
                     plain
@@ -270,6 +274,18 @@
       <el-table-column label="需求品类" align="center" width="200">
         <template slot-scope="{ row }">
           {{ row.category | categoryText }}
+        </template>
+      </el-table-column>
+
+      <el-table-column label="工作总量" align="center" width="100">
+        <template slot-scope="{ row }">
+          {{ row.work_num || 0 }}
+        </template>
+      </el-table-column>
+
+      <el-table-column label="总金额" align="center" width="100">
+        <template slot-scope="{ row }">
+          {{ row.work_amount || 0 }}
         </template>
       </el-table-column>
 
@@ -557,7 +573,7 @@
           <el-descriptions
             class="margin-top"
             :column="4"
-            :label-style="{ 'font-weight': 'bold' }"
+            :label-style="{ 'font-weight': 'bold', 'align-items': 'center' }"
           >
             <el-descriptions-item label="项目代码">{{
               tempDetail.project ? tempDetail.project.project_name : ""
@@ -597,7 +613,7 @@
             <el-descriptions-item label="需求品类" span="4">{{
               tempDetail.category | categoryText
             }}</el-descriptions-item>
-            <el-descriptions-item label="需求附件" span="4">
+            <el-descriptions-item label="需求附件" span="6">
               <div class="file-box" style="width: 50%">
                 <div
                   v-for="(file, fileIndex) in tempDetail.files"
@@ -754,8 +770,12 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button size="mini" @click="dialogProviderVisible = false"> 取消 </el-button>
-        <el-button type="primary" size="mini" @click="confirmProvider"> 确认 </el-button>
+        <el-button size="mini" @click="dialogProviderVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="confirmProvider">
+          确认
+        </el-button>
       </div>
     </el-dialog>
 
@@ -910,14 +930,14 @@
             <el-form-item prop="task_image" label-width="0">
               <el-upload
                 class="task-image-uploader"
-                action="https://jsonplaceholder.typicode.com/posts/"
+                :action="`${$baseUrl}/api/tools/upfile`"
                 :show-file-list="false"
                 :on-success="handleTaskImageSuccess"
-                :before-upload="beforeTaskImageUpload"
+                :on-change="handleTaskImageChange"
               >
                 <img
-                  v-if="tempDetail.task_image"
-                  :src="tempDetail.task_image"
+                  v-if="tempTask.task_image_url"
+                  :src="tempTask.task_image_url"
                   class="task-image"
                 >
                 <i v-else class="el-icon-plus task-image-uploader-icon" />
@@ -1009,22 +1029,40 @@
               {{ tempTaskDetail.demand.demand_id }}
             </el-descriptions-item>
             <el-descriptions-item label="发起部门">{{
-              tempTaskDetail.launch_dep_name
+              tempTaskDetail.process.launch_dep.name
             }}</el-descriptions-item>
             <el-descriptions-item label="核算部门" span="3">{{
-              tempTaskDetail.account_dep_name
+              tempTaskDetail.process.account_dep.name
             }}</el-descriptions-item>
             <el-descriptions-item label="需求说明" span="6">{{
               tempTaskDetail.demand.introduce
             }}</el-descriptions-item>
             <el-descriptions-item label="需求品类">{{
-              tempTaskDetail.demand.category.category_name
+              tempTaskDetail.category | categoryText
             }}</el-descriptions-item>
-            <el-descriptions-item label="需求附件" span="4">{{
-              tempTaskDetail.demand.file
-            }}</el-descriptions-item>
+            <el-descriptions-item
+              label="需求附件"
+              span="4"
+              :label-style="{ 'align-items': 'center' }"
+            >
+              <div class="file-box" style="width: 100%">
+                <div
+                  v-for="(file, fileIndex) in tempTaskDetail.demand.files"
+                  :key="fileIndex"
+                  class="file-item"
+                >
+                  <div class="file-name">{{ file.name }}</div>
+                  <el-button
+                    type="primary"
+                    size="mini"
+                    plain
+                    @click="downLoadContract(file.name, file.url)"
+                  >下载</el-button>
+                </div>
+              </div>
+            </el-descriptions-item>
           </el-descriptions>
-          <el-row :gutter="20">
+          <el-row :gutter="20" style="margin-top: 20px">
             <el-col :span="12">
               <el-descriptions
                 title="基础信息"
@@ -1034,8 +1072,9 @@
               >
                 <el-descriptions-item label="缩略图">
                   <img
-                    v-if="tempTaskDetail.task_image"
-                    :src="tempTaskDetail.task_image"
+                    v-if="tempTaskDetail.task_image_url"
+                    :src="tempTaskDetail.task_image_url"
+                    style="width: 250px; height: 250px"
                     class="task-image"
                   >
                 </el-descriptions-item>
@@ -1046,7 +1085,7 @@
                   tempTaskDetail.task_id
                 }}</el-descriptions-item>
                 <el-descriptions-item label="物件类别">{{
-                  tempTaskDetail.category_name
+                  tempTaskDetail.category | categoryText
                 }}</el-descriptions-item>
               </el-descriptions>
             </el-col>
@@ -1060,9 +1099,9 @@
                 <el-descriptions-item
                   v-for="(prop, propIndex) in tempTaskDetail.props"
                   :key="propIndex"
-                  :label="prop.name"
+                  :label="prop.extend_name"
                 >
-                  {{ prop.value }}
+                  {{ prop.extend_value }}
                 </el-descriptions-item>
               </el-descriptions>
             </el-col>
@@ -1070,30 +1109,27 @@
           <el-descriptions
             title="供应商及价格"
             class="margin-top"
+            style="margin-top: 20px"
             :column="4"
             :label-style="{ 'font-weight': 'bold' }"
           >
             <el-descriptions-item label="供应商名称">{{
-              tempTaskDetail.provider.name
+              tempTaskDetail.supplier.name
             }}</el-descriptions-item>
             <el-descriptions-item
               label="商务"
               span="3"
-            >(电话：{{ tempTaskDetail.provider.contact.phone }} QQ：{{
-              tempTaskDetail.provider.contact.qq
+            >（电话：{{
+              tempTaskDetail.supplier.contact.contact_mobile
             }}
-              微信：{{
-                tempTaskDetail.provider.contact.wx
-              }})</el-descriptions-item>
+              QQ：{{ tempTaskDetail.supplier.contact.contact_qq }} 微信：{{
+                tempTaskDetail.supplier.contact.contact_wx
+              }}）</el-descriptions-item>
             <el-descriptions-item label="合同号">{{
-              tempTaskDetail.provider.bn
+              tempTaskDetail.supplier.pact.bn
             }}</el-descriptions-item>
           </el-descriptions>
-          <el-table
-            :data="tempTaskDetail.provider.tasks"
-            border
-            style="width: 100%"
-          >
+          <el-table :data="[tempTaskDetail]" border>
             <el-table-column prop="work_unit" label="工作单位" align="center" />
             <el-table-column
               prop="work_num"
@@ -1108,34 +1144,52 @@
               label="交付日期"
               align="center"
             />
-            <el-table-column prop="create_at" label="创建时间" align="center" />
+            <el-table-column
+              prop="created_at"
+              label="创建时间"
+              align="center"
+            />
           </el-table>
           <el-descriptions
+            style="margin-top: 40px"
             title="展示图"
             class="margin-top task-detail-title"
             :label-style="{ 'font-weight': 'bold' }"
           />
-          <div class="plan-box">
+          <div class="file-box" style="width: 100%">
             <div
-              v-for="(planImage, planIndex) in tempTaskDetail.plan_images"
-              :key="planIndex"
-              class="plan-item"
+              v-for="(file, fileIndex) in tempTaskDetail.demand.files"
+              :key="fileIndex"
+              class="file-item"
             >
-              <span>{{ planImage }}</span><el-button size="mini">下载</el-button>
+              <div class="file-name">{{ file.name }}</div>
+              <el-button
+                type="primary"
+                size="mini"
+                plain
+                @click="downLoadContract(file.name, file.url)"
+              >下载</el-button>
             </div>
           </div>
           <el-descriptions
+            style="margin-top: 20px"
             title="作品"
             class="margin-top task-detail-title"
             :label-style="{ 'font-weight': 'bold' }"
           />
-          <div class="file-box">
+          <div class="file-box" style="width: 100%">
             <div
-              v-for="(file, fileIndex) in tempTaskDetail.files"
+              v-for="(file, fileIndex) in tempTaskDetail.demand.files"
               :key="fileIndex"
               class="file-item"
             >
-              <span>{{ file }}</span><el-button size="mini">下载</el-button>
+              <div class="file-name">{{ file.name }}</div>
+              <el-button
+                type="primary"
+                size="mini"
+                plain
+                @click="downLoadContract(file.name, file.url)"
+              >下载</el-button>
             </div>
           </div>
         </el-tab-pane>
@@ -1412,6 +1466,7 @@ export default {
         demand_id: '',
         task_name: '',
         task_image: '',
+        task_image_url: '',
         work_unit: '',
         work_num: '',
         deliver_date: '',
@@ -2039,7 +2094,9 @@ export default {
 
           assignSupplier(temp)
             .then((response) => {
-              const index = this.list.findIndex(listItem => listItem.demand_id === this.tempProvider.demand_id)
+              const index = this.list.findIndex(
+                (listItem) => listItem.demand_id === this.tempProvider.demand_id
+              )
               if (index >= 0) {
                 this.$set(this.list[index], 'status', 4)
               }
@@ -2154,6 +2211,7 @@ export default {
         demand_id: '',
         task_name: '',
         task_image: '',
+        task_image_url: '',
         work_unit: '',
         work_num: '',
         deliver_date: '',
@@ -2191,9 +2249,11 @@ export default {
       this.$refs['taskDataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempTask))
-          temp.task_id = parseInt(Math.random() * 100) + 1024
+          // temp.task_id = parseInt(Math.random() * 100) + 1024
           createTask(temp)
-            .then(() => {
+            .then((response) => {
+              const { id, work_price, work_amount } = response.data
+              temp.task_id = id
               let demandIndex = -1
               this.list.some((listItem, listIndex) => {
                 if (listItem.demand_id === temp.demand_id) {
@@ -2204,11 +2264,11 @@ export default {
               })
 
               if (demandIndex >= 0) {
-                temp.category_id = this.tempTaskCategory.category_id
-                temp.category_name = this.tempTaskCategory.category_name
-                temp.work_price = 10
-                temp.work_amount = 10 * temp.work_num
+                temp.category = this.tempTaskCategory
+                temp.work_price = work_price
+                temp.work_amount = work_amount
                 this.list[demandIndex].tasks.unshift(temp)
+                this.$set(this.list[demandIndex], 'status', 5)
               }
               this.dialogTaskVisible = false
               this.$notify({
@@ -2254,14 +2314,19 @@ export default {
     /**
      * 上传物件图片成功回调
      */
-    handleTaskImageSuccess(res, file) {
-      console.log(11111, res, file)
+    handleTaskImageSuccess(response, file) {
+      this.handleTaskImageChange(file)
     },
     /**
-     * 上传物件图片前回调
+     * 上传物件图片变化回调
      */
-    beforeTaskImageUpload(file) {
-      console.log(22222, file)
+    handleTaskImageChange(file) {
+      if (file.response) {
+        this.tempTask = Object.assign({}, this.tempTask, {
+          task_image: file.response.data.file_id,
+          task_image_url: URL.createObjectURL(file.raw)
+        })
+      }
     },
     /**
      * 导入物件弹窗
@@ -2284,8 +2349,8 @@ export default {
      */
     async handleShowTask(task, taskIndex, demandIndex) {
       this.$set(this.list[demandIndex].tasks[taskIndex], 'detailLoading', true)
-      const detailData = await fetchTaskDetail({ task_id: task.task_id })
-      if (detailData.code === 200) {
+      try {
+        const detailData = await fetchTaskDetail({ task_id: task.task_id })
         this.tempTaskDetail = Object.assign({}, detailData.data)
         this.dialogTaskDetailVisible = true
         this.$set(
@@ -2293,7 +2358,7 @@ export default {
           'detailLoading',
           false
         )
-      } else {
+      } catch (error) {
         this.$set(
           this.list[demandIndex].tasks[taskIndex],
           'detailLoading',

@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function fetchTaskDetail(data) {
   return request({
-    url: '/vue-admin-template/demand/task/detail',
+    url: '/api/needs/taskDetail',
     method: 'post',
     data
   })
@@ -10,7 +10,7 @@ export function fetchTaskDetail(data) {
 
 export function createTask(data) {
   return request({
-    url: '/vue-element-admin/demand/task/create',
+    url: '/api/needs/addTask',
     method: 'post',
     data
   })
@@ -18,7 +18,7 @@ export function createTask(data) {
 
 export function updateTask(data) {
   return request({
-    url: '/vue-element-admin/demand/task/update',
+    url: '/api/needs/addTask',
     method: 'post',
     data
   })
