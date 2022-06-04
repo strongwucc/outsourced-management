@@ -128,6 +128,7 @@ export function downloadFile(fileName, filePath) {
   ) {
     link = document.createElement('a')
     link.href = `${filePath}`
+    link.target = '_blank'
     link.setAttribute('download', fileName)
     link.click()
     URL.revokeObjectURL(filePath)

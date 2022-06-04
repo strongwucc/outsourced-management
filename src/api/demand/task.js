@@ -23,3 +23,19 @@ export function updateTask(data) {
     data
   })
 }
+
+export function verifyTask(data) {
+  return request({
+    url: '/api/needs/approveTask',
+    method: 'post',
+    data
+  })
+}
+
+export function finishTask(data) {
+  return request({
+    url: '/api/needs/stopTask',
+    method: 'post',
+    data
+  })
+}

@@ -87,6 +87,26 @@
           驳回
         </el-button>
         <el-button
+          v-permission="[1]"
+          class="filter-item"
+          style="margin-left: 10px"
+          type="primary"
+          size="mini"
+          @click="handleResolveTask(true)"
+        >
+          确认
+        </el-button>
+        <el-button
+          v-permission="[1]"
+          class="filter-item"
+          style="margin-left: 10px"
+          type="primary"
+          size="mini"
+          @click="handleResolveTask(false)"
+        >
+          驳回
+        </el-button>
+        <el-button
           v-permission="[3]"
           class="filter-item"
           style="margin-left: 10px"
@@ -124,7 +144,7 @@
       @expand-change="expandChange"
     >
       >
-      <el-table-column width="50" align="center">
+      <el-table-column width="50" align="center" fixed="left">
         <div slot="header" slot-scope="scope">
           <el-checkbox
             v-model="globelCheckedAll"
@@ -138,10 +158,10 @@
           />
         </template>
       </el-table-column>
-      <el-table-column type="expand" width="20">
+      <el-table-column type="expand" width="20" fixed="left">
         <template slot-scope="{ row, $index }">
           <div class="expand-table-box" style="padding-left: 50px">
-            <el-table class="task-list" border :data="row.tasks" fit stripe>
+            <el-table class="task-list" border :data="row.tasks" stripe>
               <el-table-column label="" width="50" align="center">
                 <template slot-scope="scope">
                   <el-checkbox
@@ -199,6 +219,13 @@
               <el-table-column prop="work_num" label="数量" align="center" />
               <el-table-column prop="work_price" label="单价" align="center" />
               <el-table-column prop="work_amount" label="总价" align="center" />
+              <el-table-column label="物件状态" align="center">
+                <template slot-scope="scope">
+                  <el-tag :type="scope.row.task_status | taskStatusFilter">
+                    {{ scope.row.task_status | taskStatusText }}
+                  </el-tag>
+                </template>
+              </el-table-column>
               <el-table-column
                 label="操作"
                 align="center"
@@ -216,6 +243,7 @@
                     详情
                   </el-button>
                   <el-button
+                    v-if="[4, 6].indexOf(row.status) >= 0"
                     v-permission="[0]"
                     type="primary"
                     size="mini"
@@ -225,6 +253,7 @@
                     编辑
                   </el-button>
                   <el-button
+                    v-if="[4, 6].indexOf(row.status) >= 0"
                     v-permission="[0]"
                     size="mini"
                     type="danger"
@@ -234,6 +263,7 @@
                     删除
                   </el-button>
                   <el-button
+                    v-if="[4, 6].indexOf(row.status) >= 0"
                     v-permission="[0]"
                     type="primary"
                     size="mini"
@@ -243,6 +273,7 @@
                     复制
                   </el-button>
                   <el-button
+                    v-if="scope.row.task_status === 1"
                     v-permission="[0]"
                     type="primary"
                     size="mini"
@@ -310,7 +341,8 @@
       <el-table-column
         label="操作"
         align="center"
-        min-width="100"
+        fixed="right"
+        min-width="400"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
@@ -335,6 +367,16 @@
           </el-button>
           <el-button
             v-if="row.is_creator === 1 && [2].indexOf(row.status) >= 0"
+            type="primary"
+            size="mini"
+            plain
+            @click="showReason(row, $index)"
+          >
+            驳回原因
+          </el-button>
+          <el-button
+            v-if="[6].indexOf(row.status) >= 0"
+            v-permission="[0]"
             type="primary"
             size="mini"
             plain
@@ -682,10 +724,7 @@
     </el-dialog>
 
     <!--审批驳回-->
-    <el-dialog
-      :title="textMap[dialogStatus]"
-      :visible.sync="dialogVerifyVisible"
-    >
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="verifyVisible">
       <el-form
         ref="verifyDataForm"
         class="dialog-form"
@@ -721,8 +760,18 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogVerifyVisible = false"> 取消 </el-button>
-        <el-button type="primary" @click="confirmVerify"> 确认 </el-button>
+        <el-button
+          size="mini"
+          @click="
+            dialogVerifyVisible = false;
+            dialogVerifyTaskVisible = false;
+          "
+        >
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="confirmVerify">
+          确认
+        </el-button>
       </div>
     </el-dialog>
 
@@ -805,17 +854,22 @@
         <el-form-item label="上传附件" prop="file">
           <el-upload
             class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :on-success="handleAddFileSucc"
-            :file-list="fileList"
+            :action="`${$baseUrl}/api/tools/upfile`"
+            :on-success="handleAddStopFileSucc"
+            :on-remove="handleStopFileChange"
+            :file-list="stopFileList"
           >
-            <el-button size="small" type="primary">上传</el-button>
+            <el-button size="mini" type="primary">上传</el-button>
           </el-upload>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFinishVisible = false"> 取消 </el-button>
-        <el-button type="primary" @click="confirmFinish"> 确认 </el-button>
+        <el-button size="mini" @click="dialogFinishVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="confirmFinish">
+          确认
+        </el-button>
       </div>
     </el-dialog>
 
@@ -988,13 +1042,17 @@
             :on-success="handleAddFileSucc"
             :file-list="fileList"
           >
-            <el-button size="small" type="primary">导入</el-button>
+            <el-button size="mini" type="primary">导入</el-button>
           </el-upload>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogImportTaskVisible = false"> 取消 </el-button>
-        <el-button type="primary" @click="confirmImportTask"> 确认 </el-button>
+        <el-button size="mini" @click="dialogImportTaskVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="confirmImportTask">
+          确认
+        </el-button>
       </div>
     </el-dialog>
 
@@ -1007,191 +1065,312 @@
     >
       <el-tabs v-if="tempTaskDetail.task_id">
         <el-tab-pane label="详情">
-          <el-descriptions
-            title="需求信息"
-            class="margin-top"
-            :column="3"
-            :label-style="{ 'font-weight': 'bold' }"
+          <el-form
+            ref="taskDetailForm"
+            class="dialog-form"
+            :disabled="!taskDetailEditable"
+            :model="tempTaskDetail"
+            label-position="left"
+            label-width="100px"
+            style="margin: 0 50px"
           >
-            <el-descriptions-item label="流程名称">{{
-              tempTaskDetail.process.flow_name
-            }}</el-descriptions-item>
-            <el-descriptions-item label="流程代码" span="3">{{
-              tempTaskDetail.process.bn
-            }}</el-descriptions-item>
-            <el-descriptions-item label="需求名称">
-              <span>{{ tempTaskDetail.demand.name }}</span>
-              <el-tag size="mini" style="margin-left: 10px">{{
-                tempTaskDetail.demand.tag | tagText
-              }}</el-tag>
-            </el-descriptions-item>
-            <el-descriptions-item label="需求单号">
-              {{ tempTaskDetail.demand.demand_id }}
-            </el-descriptions-item>
-            <el-descriptions-item label="发起部门">{{
-              tempTaskDetail.process.launch_dep.name
-            }}</el-descriptions-item>
-            <el-descriptions-item label="核算部门" span="3">{{
-              tempTaskDetail.process.account_dep.name
-            }}</el-descriptions-item>
-            <el-descriptions-item label="需求说明" span="6">{{
-              tempTaskDetail.demand.introduce
-            }}</el-descriptions-item>
-            <el-descriptions-item label="需求品类">{{
-              tempTaskDetail.category | categoryText
-            }}</el-descriptions-item>
-            <el-descriptions-item
-              label="需求附件"
-              span="4"
-              :label-style="{ 'align-items': 'center' }"
+            <el-descriptions
+              title="需求信息"
+              class="margin-top"
+              :column="3"
+              :label-style="{ 'font-weight': 'bold' }"
             >
-              <div class="file-box" style="width: 100%">
-                <div
-                  v-for="(file, fileIndex) in tempTaskDetail.demand.files"
-                  :key="fileIndex"
-                  class="file-item"
+              <el-descriptions-item label="流程名称">{{
+                tempTaskDetail.process.flow_name
+              }}</el-descriptions-item>
+              <el-descriptions-item label="流程代码" span="3">{{
+                tempTaskDetail.process.bn
+              }}</el-descriptions-item>
+              <el-descriptions-item label="需求名称">
+                <span>{{ tempTaskDetail.demand.name }}</span>
+                <el-tag size="mini" style="margin-left: 10px">{{
+                  tempTaskDetail.demand.tag | tagText
+                }}</el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item label="需求单号">
+                {{ tempTaskDetail.demand.demand_id }}
+              </el-descriptions-item>
+              <el-descriptions-item label="发起部门">{{
+                tempTaskDetail.process.launch_dep.name
+              }}</el-descriptions-item>
+              <el-descriptions-item label="核算部门" span="3">{{
+                tempTaskDetail.process.account_dep.name
+              }}</el-descriptions-item>
+              <el-descriptions-item label="需求说明" span="6">{{
+                tempTaskDetail.demand.introduce
+              }}</el-descriptions-item>
+              <el-descriptions-item label="需求品类">{{
+                tempTaskDetail.category | categoryText
+              }}</el-descriptions-item>
+              <el-descriptions-item
+                label="需求附件"
+                span="4"
+                :label-style="{ 'align-items': 'center' }"
+              >
+                <div class="file-box" style="width: 100%">
+                  <div
+                    v-for="(file, fileIndex) in tempTaskDetail.demand.files"
+                    :key="fileIndex"
+                    class="file-item"
+                  >
+                    <div class="file-name">{{ file.name }}</div>
+                    <el-button
+                      type="primary"
+                      :disabled="false"
+                      size="mini"
+                      plain
+                      @click="downLoadContract(file.name, file.url)"
+                    >下载</el-button>
+                  </div>
+                </div>
+              </el-descriptions-item>
+            </el-descriptions>
+            <el-row :gutter="20" style="margin-top: 20px">
+              <el-col :span="12">
+                <el-descriptions
+                  title="基础信息"
+                  class="margin-top"
+                  :column="1"
+                  :label-style="{ 'font-weight': 'bold' }"
                 >
-                  <div class="file-name">{{ file.name }}</div>
+                  <el-descriptions-item label="缩略图">
+                    <img
+                      v-if="tempTaskDetail.task_image_url"
+                      :src="tempTaskDetail.task_image_url"
+                      style="width: 250px; height: 250px"
+                      class="task-image"
+                    >
+                  </el-descriptions-item>
+                  <el-descriptions-item label="物件名称">{{
+                    tempTaskDetail.task_name
+                  }}</el-descriptions-item>
+                  <el-descriptions-item label="物件单号">{{
+                    tempTaskDetail.task_id
+                  }}</el-descriptions-item>
+                  <el-descriptions-item label="物件类别">{{
+                    tempTaskDetail.category | categoryText
+                  }}</el-descriptions-item>
+                </el-descriptions>
+              </el-col>
+              <el-col :span="12">
+                <el-descriptions
+                  title="属性"
+                  class="margin-top"
+                  :column="1"
+                  :label-style="{ 'font-weight': 'bold' }"
+                >
+                  <!-- <el-descriptions-item
+                    v-for="(prop, propIndex) in tempTaskDetail.props"
+                    :key="propIndex"
+                    :label="prop.extend_name"
+                  >
+                    {{ prop.extend_value }}
+                  </el-descriptions-item> -->
+                </el-descriptions>
+                <div class="prop-edit-box">
+                  <el-form-item
+                    v-for="(property, propIndex) in tempTaskDetail.extends"
+                    :key="propIndex"
+                    :label="`${property.name}:`"
+                  >
+                    <el-select
+                      v-if="property.type === 1"
+                      v-model="property.value"
+                      class="dialog-form-item"
+                      style="width: 100%"
+                    >
+                      <el-option
+                        v-for="(option, optionIndex) in property.options.split(
+                          ','
+                        )"
+                        :key="optionIndex"
+                        :label="option"
+                        :value="option"
+                      />
+                    </el-select>
+                    <el-input
+                      v-else
+                      v-model="property.value"
+                      :placeholder="`请输入${property.name}`"
+                      class="dialog-form-item"
+                    />
+                  </el-form-item>
+                </div>
+              </el-col>
+            </el-row>
+            <el-descriptions
+              title="供应商及价格"
+              class="margin-top"
+              style="margin-top: 20px"
+              :column="4"
+              :label-style="{ 'font-weight': 'bold' }"
+            >
+              <el-descriptions-item label="供应商名称">{{
+                tempTaskDetail.supplier.name
+              }}</el-descriptions-item>
+              <el-descriptions-item label="合同号">{{
+                tempTaskDetail.supplier.pact.bn
+              }}</el-descriptions-item>
+            </el-descriptions>
+
+            <el-table :data="tempTaskDetail.supplier.contacts" border>
+              <el-table-column
+                prop="contact_name"
+                label="姓名"
+                align="center"
+              />
+              <el-table-column
+                prop="contact_mobile"
+                label="电话"
+                width="180"
+                align="center"
+              />
+              <el-table-column prop="contact_qq" label="qq" align="center" />
+              <el-table-column prop="contact_wx" label="微信" align="center" />
+              <el-table-column
+                prop="contact_email"
+                label="邮箱"
+                align="center"
+              />
+              <el-table-column
+                prop="contact_position"
+                label="职位"
+                align="center"
+              />
+            </el-table>
+
+            <el-table :data="[tempTaskDetail]" border style="margin-top: 20px">
+              <el-table-column
+                prop="work_unit"
+                label="工作单位"
+                align="center"
+              />
+              <el-table-column
+                prop="work_num"
+                label="数量"
+                width="180"
+                align="center"
+              />
+              <el-table-column prop="work_price" label="单价" align="center" />
+              <el-table-column prop="work_amount" label="总价" align="center" />
+              <el-table-column
+                prop="deliver_date"
+                label="交付日期"
+                align="center"
+              />
+              <el-table-column
+                prop="created_at"
+                label="创建时间"
+                align="center"
+              />
+            </el-table>
+            <div class="file-title" style="margin-top: 20px">
+              <el-form-item prop="display_area" :disabled="false">
+                <span
+                  slot="label"
+                  style="font-size: 16px; font-weight: 700"
+                >展示图</span>
+                <el-upload
+                  v-if="taskDetailEditable"
+                  class="upload-demo"
+                  :action="`${$baseUrl}/api/tools/upfile`"
+                  :on-success="handleAddTaskDisplayAreaSucc"
+                  :show-file-list="false"
+                  :file-list="tempTaskDetail.display_area"
+                >
+                  <el-button size="mini" type="primary">上传</el-button>
+                </el-upload>
+              </el-form-item>
+            </div>
+            <div class="file-box" style="width: 100%">
+              <div
+                v-for="(file, fileIndex) in tempTaskDetail.display_area"
+                :key="fileIndex"
+                class="file-item"
+              >
+                <div class="file-name">{{ file.name }}</div>
+                <div class="btns">
                   <el-button
                     type="primary"
                     size="mini"
                     plain
                     @click="downLoadContract(file.name, file.url)"
                   >下载</el-button>
+                  <el-button
+                    v-if="taskDetailEditable"
+                    type="danger"
+                    size="mini"
+                    plain
+                    @click="deleteTaskDisplayArea(fileIndex)"
+                  >删除</el-button>
                 </div>
               </div>
-            </el-descriptions-item>
-          </el-descriptions>
-          <el-row :gutter="20" style="margin-top: 20px">
-            <el-col :span="12">
-              <el-descriptions
-                title="基础信息"
-                class="margin-top"
-                :column="1"
-                :label-style="{ 'font-weight': 'bold' }"
-              >
-                <el-descriptions-item label="缩略图">
-                  <img
-                    v-if="tempTaskDetail.task_image_url"
-                    :src="tempTaskDetail.task_image_url"
-                    style="width: 250px; height: 250px"
-                    class="task-image"
-                  >
-                </el-descriptions-item>
-                <el-descriptions-item label="物件名称">{{
-                  tempTaskDetail.task_name
-                }}</el-descriptions-item>
-                <el-descriptions-item label="物件单号">{{
-                  tempTaskDetail.task_id
-                }}</el-descriptions-item>
-                <el-descriptions-item label="物件类别">{{
-                  tempTaskDetail.category | categoryText
-                }}</el-descriptions-item>
-              </el-descriptions>
-            </el-col>
-            <el-col :span="12">
-              <el-descriptions
-                title="属性"
-                class="margin-top"
-                :column="1"
-                :label-style="{ 'font-weight': 'bold' }"
-              >
-                <el-descriptions-item
-                  v-for="(prop, propIndex) in tempTaskDetail.props"
-                  :key="propIndex"
-                  :label="prop.extend_name"
+            </div>
+            <div class="file-title" style="margin-top: 20px">
+              <el-form-item prop="finished_product" :disabled="false">
+                <span
+                  slot="label"
+                  style="font-size: 16px; font-weight: 700"
+                >作品</span>
+                <el-upload
+                  v-if="taskDetailEditable"
+                  class="upload-demo"
+                  :action="`${$baseUrl}/api/tools/upfile`"
+                  :on-success="handleAddTaskFinishedProductSucc"
+                  :show-file-list="false"
+                  :file-list="tempTaskDetail.finished_product"
                 >
-                  {{ prop.extend_value }}
-                </el-descriptions-item>
-              </el-descriptions>
-            </el-col>
-          </el-row>
-          <el-descriptions
-            title="供应商及价格"
-            class="margin-top"
-            style="margin-top: 20px"
-            :column="4"
-            :label-style="{ 'font-weight': 'bold' }"
-          >
-            <el-descriptions-item label="供应商名称">{{
-              tempTaskDetail.supplier.name
-            }}</el-descriptions-item>
-            <el-descriptions-item
-              label="商务"
-              span="3"
-            >（电话：{{
-              tempTaskDetail.supplier.contact.contact_mobile
-            }}
-              QQ：{{ tempTaskDetail.supplier.contact.contact_qq }} 微信：{{
-                tempTaskDetail.supplier.contact.contact_wx
-              }}）</el-descriptions-item>
-            <el-descriptions-item label="合同号">{{
-              tempTaskDetail.supplier.pact.bn
-            }}</el-descriptions-item>
-          </el-descriptions>
-          <el-table :data="[tempTaskDetail]" border>
-            <el-table-column prop="work_unit" label="工作单位" align="center" />
-            <el-table-column
-              prop="work_num"
-              label="数量"
-              width="180"
-              align="center"
-            />
-            <el-table-column prop="work_price" label="单价" align="center" />
-            <el-table-column prop="work_amount" label="总价" align="center" />
-            <el-table-column
-              prop="deliver_date"
-              label="交付日期"
-              align="center"
-            />
-            <el-table-column
-              prop="created_at"
-              label="创建时间"
-              align="center"
-            />
-          </el-table>
-          <el-descriptions
-            style="margin-top: 40px"
-            title="展示图"
-            class="margin-top task-detail-title"
-            :label-style="{ 'font-weight': 'bold' }"
-          />
-          <div class="file-box" style="width: 100%">
-            <div
-              v-for="(file, fileIndex) in tempTaskDetail.demand.files"
-              :key="fileIndex"
-              class="file-item"
-            >
-              <div class="file-name">{{ file.name }}</div>
-              <el-button
-                type="primary"
-                size="mini"
-                plain
-                @click="downLoadContract(file.name, file.url)"
-              >下载</el-button>
+                  <el-button size="mini" type="primary">上传</el-button>
+                </el-upload>
+              </el-form-item>
             </div>
-          </div>
-          <el-descriptions
-            style="margin-top: 20px"
-            title="作品"
-            class="margin-top task-detail-title"
-            :label-style="{ 'font-weight': 'bold' }"
-          />
-          <div class="file-box" style="width: 100%">
-            <div
-              v-for="(file, fileIndex) in tempTaskDetail.demand.files"
-              :key="fileIndex"
-              class="file-item"
-            >
-              <div class="file-name">{{ file.name }}</div>
-              <el-button
-                type="primary"
-                size="mini"
-                plain
-                @click="downLoadContract(file.name, file.url)"
-              >下载</el-button>
+            <div class="file-box" style="width: 100%">
+              <div
+                v-for="(file, fileIndex) in tempTaskDetail.finished_product"
+                :key="fileIndex"
+                class="file-item"
+              >
+                <div class="file-name">{{ file.name }}</div>
+                <div class="btns">
+                  <el-button
+                    type="primary"
+                    size="mini"
+                    plain
+                    @click="downLoadContract(file.name, file.url)"
+                  >下载</el-button>
+                  <el-button
+                    v-if="taskDetailEditable"
+                    type="danger"
+                    size="mini"
+                    plain
+                    @click="deleteTaskFinishedProduct(fileIndex)"
+                  >删除</el-button>
+                </div>
+              </div>
             </div>
-          </div>
+            <div
+              v-if="taskDetailEditable"
+              class="dialog-footer"
+              style="
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                margin-top: 20px;
+              "
+            >
+              <el-button size="mini" @click="dialogTaskDetailVisible = false">
+                取消
+              </el-button>
+              <el-button type="primary" size="mini" @click="confirmTaskDetail">
+                确认
+              </el-button>
+            </div>
+          </el-form>
         </el-tab-pane>
         <el-tab-pane label="操作记录">
           <el-table
@@ -1225,17 +1404,31 @@
       :visible.sync="dialogStopReasonVisible"
       width="600px"
     >
-      <el-form label-position="left" label-width="100px" style="margin: 0 50px">
+      <el-form
+        label-position="left"
+        label-width="100px"
+        style="margin: 0 50px"
+        :rules="finishRules"
+      >
         <el-form-item label="终止原因:">
-          <span>终止原因终止原因终止原因终止原因终止原因终止原因终止原因终止原因终止原因终止原因</span>
+          <span>{{ tempTask.task_reason }}</span>
         </el-form-item>
 
         <el-form-item label="附件:">
-          <div
-            class="file-box"
-            style="display: flex; justify-content: flex-start"
-          >
-            <span>附件.doc</span><el-button size="mini" style="margin-left: 20px">下载</el-button>
+          <div class="file-box" style="width: 50%">
+            <div
+              v-for="(file, fileIndex) in tempTask.stop_file"
+              :key="fileIndex"
+              class="file-item"
+            >
+              <div class="file-name">{{ file.name }}</div>
+              <el-button
+                type="primary"
+                size="mini"
+                plain
+                @click="downLoadContract(file.name, file.url)"
+              >下载</el-button>
+            </div>
           </div>
         </el-form-item>
       </el-form></el-dialog>
@@ -1253,7 +1446,13 @@ import {
   verifyDemand,
   assignSupplier
 } from '@/api/demand/index'
-import { createTask, updateTask, fetchTaskDetail } from '@/api/demand/task'
+import {
+  createTask,
+  updateTask,
+  fetchTaskDetail,
+  verifyTask,
+  finishTask
+} from '@/api/demand/task'
 import {
   fetchAllProcess,
   fetchProcessCategory,
@@ -1353,6 +1552,20 @@ export default {
         return false
       })
       return text
+    },
+    taskStatusFilter(status) {
+      const statusMap = {
+        0: 'success',
+        1: 'danger'
+      }
+      return statusMap[status]
+    },
+    taskStatusText(status) {
+      const statusMap = {
+        0: '正常',
+        1: '终止'
+      }
+      return statusMap[status]
     }
   },
   data() {
@@ -1432,10 +1645,12 @@ export default {
         demand_id: ''
       },
       dialogVerifyVisible: false,
+      dialogVerifyTaskVisible: false,
       tempVerify: {
         reason: ''
       },
       verifyRules: {},
+      verifyStatus: false,
       dialogProviderVisible: false,
       providerRules: {
         id: [{ required: true, message: '请选择供应商', trigger: 'change' }]
@@ -1452,9 +1667,11 @@ export default {
         ]
       },
       tempFinish: {
+        task_id: [],
         reason: '',
         file: ''
       },
+      stopFileList: [],
       dialogTaskVisible: false,
       tempTaskCategory: {
         category_id: '',
@@ -1484,6 +1701,17 @@ export default {
       dialogStopReasonVisible: false,
       demandFileList: [],
       demandSupplierFileList: []
+    }
+  },
+  computed: {
+    taskDetailEditable: function() {
+      return (
+        this.$store.getters.roles.indexOf(0) >= 0 &&
+        [4, 6].indexOf(this.tempTaskDetail.demand.status) >= 0
+      )
+    },
+    verifyVisible: function() {
+      return this.dialogVerifyVisible || this.dialogVerifyTaskVisible
     }
   },
   created() {
@@ -1972,12 +2200,32 @@ export default {
         if (valid) {
           const checkeds = []
           const checkedIndexs = []
+
+          let baseError
+          let checkStatus
+          let status
+          let verifyFunc
+
+          if (this.dialogVerifyVisible === true) {
+            baseError = '该需求并不是待审核状态，无法审核'
+            checkStatus = 1
+            status = this.dialogStatus === 'resolve' ? 3 : 2
+            verifyFunc = verifyDemand
+          } else if (this.dialogVerifyTaskVisible === true) {
+            baseError = '该需求并不是物件待审核状态，无法审核'
+            checkStatus = 5
+            status = this.dialogStatus === 'resolve' ? 7 : 6
+            verifyFunc = verifyTask
+          } else {
+            this.$message.error('审核失败啦')
+            return false
+          }
+
           if (
             !this.list.some((listItem, listIndex) => {
               if (listItem.checked) {
-                if (listItem.status !== 1) {
-                  const errorName = `[${listItem.name}] 该需求并不是待审核状态，无法审核`
-                  this.$message.error(errorName)
+                if (listItem.status !== checkStatus) {
+                  this.$message.error(`[${listItem.name}] ${baseError}`)
                   return true
                 }
                 checkeds.push(listItem.demand_id)
@@ -1995,9 +2243,7 @@ export default {
             return false
           }
 
-          const status = this.dialogStatus === 'resolve' ? 3 : 2
-
-          verifyDemand({
+          verifyFunc({
             demand_id: checkeds,
             status,
             reason: this.tempVerify.reason
@@ -2012,11 +2258,53 @@ export default {
                 }
               })
               this.dialogVerifyVisible = false
+              this.dialogVerifyTaskVisible = false
               this.$message.success('审批成功')
             })
             .catch((error) => {})
         }
       })
+    },
+    /**
+     * 物件审核弹窗
+     */
+    handleResolveTask(ok) {
+      const checkeds = []
+      if (
+        !this.list.some((listItem) => {
+          if (listItem.checked) {
+            if (listItem.status !== 5) {
+              const errorName = `[${listItem.name}] 该需求并不是物件待审核状态，无法审核`
+              this.$message.error(errorName)
+              return true
+            }
+            checkeds.push(listItem.demand_id)
+            return false
+          }
+          return false
+        })
+      ) {
+        if (checkeds.length <= 0) {
+          this.$message.error('请先选择需求')
+          return false
+        }
+      } else {
+        return false
+      }
+
+      this.dialogStatus = ok === true ? 'resolve' : 'reject'
+      if (ok) {
+        if (this.verifyRules.reason) {
+          delete this.verifyRules.reason
+        }
+      } else {
+        this.verifyRules = Object.assign({}, this.verifyRules, {
+          reason: [
+            { required: true, message: '请输入驳回原因', trigger: 'blur' }
+          ]
+        })
+      }
+      this.dialogVerifyTaskVisible = true
     },
     /**
      * 分配供应商弹窗
@@ -2181,11 +2469,70 @@ export default {
      * 终止弹窗
      */
     handleFinish() {
+      const checkeds = []
+      if (
+        !this.list.some((listItem) => {
+          if (listItem.checked) {
+            if (listItem.status !== 7) {
+              const errorName = `[${listItem.name}] 该需求并不是待生成订单状态，无法终止`
+              this.$message.error(errorName)
+              return true
+            }
+          }
+          return listItem.tasks.some((taskItem) => {
+            if (taskItem.checked) {
+              if (taskItem.task_status !== 0) {
+                const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法终止`
+                this.$message.error(errorName)
+                return true
+              }
+              checkeds.push(taskItem.task_id)
+              return false
+            }
+            return false
+          })
+        })
+      ) {
+        if (checkeds.length <= 0) {
+          this.$message.error('请先选择物件')
+          return false
+        }
+      } else {
+        return false
+      }
+
       this.tempFinish = Object.assign({}, this.tempFinish, {
+        task_id: checkeds,
         reason: '',
         file: ''
       })
       this.dialogFinishVisible = true
+    },
+    handleAddStopFileSucc(response, file, fileList) {
+      this.handleStopFileChange(file, fileList)
+    },
+    handleStopFileChange(file, fileList) {
+      this.stopFileList = fileList
+      const fileStr = fileList
+        .map((fileItem) => {
+          return fileItem.response.data.file_id
+        })
+        .join(',')
+      const fileArr = fileList.map((fileItem) => {
+        return {
+          name: fileItem.name,
+          url: fileItem.url,
+          response: {
+            data: {
+              file_id: fileItem.response.data.file_id
+            }
+          }
+        }
+      })
+      this.tempFinish = Object.assign({}, this.tempFinish, {
+        file: fileStr,
+        files: fileArr
+      })
     },
     /**
      * 确认终止
@@ -2193,13 +2540,43 @@ export default {
     confirmFinish() {
       this.$refs['finishDataForm'].validate((valid) => {
         if (valid) {
-          this.$notify({
-            title: '成功',
-            message: '终止成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.dialogFinishVisible = false
+          const temp = Object.assign({}, this.tempFinish)
+
+          finishTask(temp)
+            .then((response) => {
+              const finishData = response.data
+              finishData.forEach((finishItem) => {
+                const { demand_id, task_id, status } = finishItem
+                const demandIndex = this.list.findIndex(
+                  (demandItem) => demandItem.demand_id === demand_id
+                )
+                if (demandIndex >= 0) {
+                  const taskIndex = this.list[demandIndex].tasks.findIndex(
+                    (taskItem) => taskItem.task_id === task_id
+                  )
+                  if (taskIndex >= 0) {
+                    this.$set(
+                      this.list[demandIndex].tasks[taskIndex],
+                      'task_status',
+                      status
+                    )
+                    this.$set(
+                      this.list[demandIndex].tasks[taskIndex],
+                      'stop_file',
+                      temp.files
+                    )
+                  }
+                }
+              })
+              this.$notify({
+                title: '成功',
+                message: '终止成功',
+                type: 'success',
+                duration: 2000
+              })
+              this.dialogFinishVisible = false
+            })
+            .catch((error) => {})
         }
       })
     },
@@ -2343,7 +2720,32 @@ export default {
     /**
      * 确认导入物件
      */
-    confirmImportTask() {},
+    confirmImportTask() {
+      this.$refs['taskDataForm'].validate((valid) => {
+        if (valid) {
+          const temp = JSON.parse(JSON.stringify(this.tempTask))
+          updateTask(temp)
+            .then(() => {
+              const demandIndex = this.list.findIndex(
+                (v) => v.demand_id === temp.demand_id
+              )
+              const taskIndex = this.list[demandIndex].tasks.findIndex(
+                (v) => v.task_id === temp.task_id
+              )
+
+              this.list[demandIndex].tasks.splice(taskIndex, 1, temp)
+              this.dialogTaskVisible = false
+              this.$notify({
+                title: '成功',
+                message: '修改成功',
+                type: 'success',
+                duration: 2000
+              })
+            })
+            .catch((error) => {})
+        }
+      })
+    },
     /**
      * 物件详情弹窗
      */
@@ -2351,7 +2753,30 @@ export default {
       this.$set(this.list[demandIndex].tasks[taskIndex], 'detailLoading', true)
       try {
         const detailData = await fetchTaskDetail({ task_id: task.task_id })
-        this.tempTaskDetail = Object.assign({}, detailData.data)
+
+        const news = { extends: [] }
+        const category = detailData.data.category || []
+        if (category.property_array.length > 0) {
+          news.extends = category.property_array.map((property) => {
+            let value = ''
+            if (detailData.data.props.length > 0) {
+              const propIndex = detailData.data.props.findIndex(
+                (prop) => prop.extend_name === property.extend_name
+              )
+              if (propIndex >= 0) {
+                value = detailData.data.props[propIndex].extend_value
+              }
+            }
+            return {
+              name: property.extend_name,
+              value: value,
+              type: property.extend_tag,
+              options: property.extend_value
+            }
+          })
+        }
+
+        this.tempTaskDetail = Object.assign({}, detailData.data, news)
         this.dialogTaskDetailVisible = true
         this.$set(
           this.list[demandIndex].tasks[taskIndex],
@@ -2366,6 +2791,93 @@ export default {
         )
         this.$message.error(detailData.message || '哎呀，出错啦')
       }
+    },
+    /**
+     * 上传物件展示图成功
+     */
+    handleAddTaskDisplayAreaSucc(response, file, fileList) {
+      this.$set(
+        this.tempTaskDetail,
+        'display_area',
+        fileList.map((file) => {
+          let { file_id, name, url, response } = file
+          if (response) {
+            file_id = response.data.file_id
+            url = URL.createObjectURL(file.raw)
+          }
+          return { file_id, name, url }
+        })
+      )
+    },
+    /**
+     * 删除物件展示图
+     */
+    deleteTaskDisplayArea(fileIndex) {
+      this.tempTaskDetail.display_area.splice(fileIndex, 1)
+    },
+    /**
+     * 删除物件作品
+     */
+    deleteTaskFinishedProduct(fileIndex) {
+      this.tempTaskDetail.finished_product.splice(fileIndex, 1)
+    },
+    /**
+     * 物件详情弹窗确认
+     */
+    confirmTaskDetail() {
+      const temp = JSON.parse(JSON.stringify(this.tempTaskDetail))
+      const task_id = temp.task_id
+      const demand_id = temp.demand_id
+      const extend = temp.extends.map((extend) => {
+        return { name: extend.name, value: extend.value }
+      })
+      const display_area = temp.display_area
+        .map((display_area_item) => {
+          return display_area_item.file_id
+        })
+        .join(',')
+      const finished_product = temp.finished_product
+        .map((finished_product_item) => {
+          return finished_product_item.file_id
+        })
+        .join(',')
+      updateTask({ demand_id, task_id, extend, display_area, finished_product })
+        .then(() => {
+          const demandIndex = this.list.findIndex(
+            (v) => v.demand_id === temp.demand_id
+          )
+          const taskIndex = this.list[demandIndex].tasks.findIndex(
+            (v) => v.task_id === temp.task_id
+          )
+
+          this.$set(this.list[demandIndex], 'status', 5)
+          this.list[demandIndex].tasks.splice(taskIndex, 1, temp)
+          this.dialogTaskVisible = false
+          this.$notify({
+            title: '成功',
+            message: '修改成功',
+            type: 'success',
+            duration: 2000
+          })
+        })
+        .catch((error) => {})
+    },
+    /**
+     * 上传物件作品成功
+     */
+    handleAddTaskFinishedProductSucc(response, file, fileList) {
+      this.$set(
+        this.tempTaskDetail,
+        'finished_product',
+        fileList.map((file) => {
+          let { file_id, name, url, response } = file
+          if (response) {
+            file_id = response.data.file_id
+            url = URL.createObjectURL(file.raw)
+          }
+          return { file_id, name, url }
+        })
+      )
     },
     /**
      * 修改物件弹窗
@@ -2428,9 +2940,10 @@ export default {
       }
     },
     /**
-     * 驳回物件原因弹窗
+     * 终止物件原因弹窗
      */
     handleStopTaskReason(task, taskIndex, demandIndex) {
+      this.tempTask = JSON.parse(JSON.stringify(task))
       this.dialogStopReasonVisible = true
     },
     downLoadContract(fileName, filePath) {
@@ -2464,6 +2977,24 @@ export default {
     }
   }
   .list-container {
+    ::v-deep .el-table__body-wrapper {
+      .el-table__expanded-cell {
+        z-index: 100;
+        padding: 0;
+      }
+    }
+    ::v-deep .el-table__fixed,
+    ::v-deep .el-table__fixed-right {
+      .el-table__expanded-cell {
+        visibility: hidden;
+        padding: 0;
+      }
+    }
+    .expand {
+      width: calc(100vw - 100px);
+      padding: 20px;
+      background: #fff; //盖住fixed产生的阴影
+    }
   }
 }
 .dialog-form {
