@@ -112,6 +112,16 @@
           style="margin-left: 10px"
           type="primary"
           size="mini"
+          @click="handleGongGuanResolveTask(false)"
+        >
+          驳回
+        </el-button>
+        <el-button
+          v-permission="[3]"
+          class="filter-item"
+          style="margin-left: 10px"
+          type="primary"
+          size="mini"
           @click="handleCreateOrder"
         >
           生成订单
@@ -126,6 +136,16 @@
         >
           终止
         </el-button>
+        <el-button
+          v-permission="[0]"
+          class="filter-item"
+          style="margin-left: 10px"
+          type="primary"
+          size="mini"
+          @click="handleToVerifyTask"
+        >
+          提交审核
+        </el-button>
       </div>
     </div>
 
@@ -137,7 +157,6 @@
       element-loading-background="rgba(0, 0, 0, 0.8)"
       class="list-container"
       :data="list"
-      fit
       highlight-current-row
       row-key="demand_id"
       :expand-row-keys="expandRowKeys"
@@ -173,8 +192,9 @@
               <el-table-column
                 prop="task_id"
                 label="物件单号"
-                width="200"
+                width="150"
                 align="center"
+                :show-overflow-tooltip="true"
               />
               <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
@@ -195,6 +215,7 @@
                 prop="task_name"
                 label="物件名称"
                 align="center"
+                :show-overflow-tooltip="true"
               />
               <!-- <el-table-column
                 prop="category_name"
@@ -208,7 +229,7 @@
               <el-table-column
                 prop="deliver_date"
                 label="交付日期"
-                width="200"
+                width="100"
                 align="center"
               />
               <el-table-column
@@ -221,15 +242,20 @@
               <el-table-column prop="work_amount" label="总价" align="center" />
               <el-table-column label="物件状态" align="center">
                 <template slot-scope="scope">
-                  <el-tag :type="scope.row.task_status | taskStatusFilter">
+                  <span
+                    :style="{
+                      color:
+                        scope.row.task_status === 0 ? '#67C23A' : '#F56C6C',
+                    }"
+                  >
                     {{ scope.row.task_status | taskStatusText }}
-                  </el-tag>
+                  </span>
                 </template>
               </el-table-column>
               <el-table-column
                 label="操作"
                 align="center"
-                min-width="350"
+                min-width="300"
                 class-name="small-padding fixed-width"
               >
                 <template slot-scope="scope">
@@ -255,16 +281,6 @@
                   <el-button
                     v-if="[4, 6].indexOf(row.status) >= 0"
                     v-permission="[0]"
-                    size="mini"
-                    type="danger"
-                    plain
-                    @click="handleDeleteTask(scope.row, scope.$index, $index)"
-                  >
-                    删除
-                  </el-button>
-                  <el-button
-                    v-if="[4, 6].indexOf(row.status) >= 0"
-                    v-permission="[0]"
                     type="primary"
                     size="mini"
                     plain
@@ -284,25 +300,51 @@
                   >
                     终止原因
                   </el-button>
+                  <el-popconfirm
+                    v-if="[4, 6].indexOf(row.status) >= 0"
+                    v-permission="[0]"
+                    style="margin-left: 10px"
+                    title="确定删除吗？"
+                    @confirm="handleDeleteTask(scope.row, scope.$index, $index)"
+                  >
+                    <el-button slot="reference" size="mini" type="danger" plain>
+                      删除
+                    </el-button>
+                  </el-popconfirm>
                 </template>
               </el-table-column>
             </el-table>
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="需求订单号" align="left" width="200">
+      <el-table-column
+        label="需求订单号"
+        align="left"
+        width="150"
+        :show-overflow-tooltip="true"
+      >
         <template slot-scope="{ row }">
           {{ row.demand_id }}
         </template>
       </el-table-column>
 
-      <el-table-column label="需求名称" align="center" width="200">
+      <el-table-column
+        label="需求名称"
+        align="center"
+        width="150"
+        :show-overflow-tooltip="true"
+      >
         <template slot-scope="{ row }">
           {{ row.name }}
         </template>
       </el-table-column>
 
-      <el-table-column label="需求品类" align="center" width="200">
+      <el-table-column
+        label="需求品类"
+        align="center"
+        width="150"
+        :show-overflow-tooltip="true"
+      >
         <template slot-scope="{ row }">
           {{ row.category | categoryText }}
         </template>
@@ -330,7 +372,12 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="状态" align="center" width="150">
+      <el-table-column
+        label="状态"
+        align="center"
+        width="150"
+        :show-overflow-tooltip="true"
+      >
         <template slot-scope="{ row }">
           <span>
             {{ row.status | statusText }}
@@ -342,7 +389,7 @@
         label="操作"
         align="center"
         fixed="right"
-        min-width="400"
+        min-width="200"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
@@ -971,7 +1018,6 @@
               <el-input
                 v-else
                 v-model="property.value"
-                type="textarea"
                 :placeholder="`请输入${property.name}`"
                 class="dialog-form-item"
               />
@@ -1444,14 +1490,17 @@ import {
   toVerifyDemand,
   deleteDemand,
   verifyDemand,
-  assignSupplier
+  assignSupplier,
+  rejectDemand,
+  toVerifyTask
 } from '@/api/demand/index'
 import {
   createTask,
   updateTask,
   fetchTaskDetail,
   verifyTask,
-  finishTask
+  finishTask,
+  deleteTask
 } from '@/api/demand/task'
 import {
   fetchAllProcess,
@@ -1651,6 +1700,7 @@ export default {
       },
       verifyRules: {},
       verifyStatus: false,
+      dialogRejectTaskVisible: false,
       dialogProviderVisible: false,
       providerRules: {
         id: [{ required: true, message: '请选择供应商', trigger: 'change' }]
@@ -1705,13 +1755,20 @@ export default {
   },
   computed: {
     taskDetailEditable: function() {
-      return (
-        this.$store.getters.roles.indexOf(0) >= 0 &&
-        [4, 6].indexOf(this.tempTaskDetail.demand.status) >= 0
-      )
+      if (this.tempTaskDetail.demand) {
+        return (
+          this.$store.getters.roles.indexOf(0) >= 0 &&
+          [4, 6].indexOf(this.tempTaskDetail.demand.status) >= 0
+        )
+      }
+      return false
     },
     verifyVisible: function() {
-      return this.dialogVerifyVisible || this.dialogVerifyTaskVisible
+      return (
+        this.dialogVerifyVisible ||
+        this.dialogVerifyTaskVisible ||
+        this.dialogRejectTaskVisible
+      )
     }
   },
   created() {
@@ -2216,6 +2273,11 @@ export default {
             checkStatus = 5
             status = this.dialogStatus === 'resolve' ? 7 : 6
             verifyFunc = verifyTask
+          } else if (this.dialogRejectTaskVisible === true) {
+            baseError = '该需求并不是待生成订单状态，无法驳回'
+            checkStatus = 7
+            status = 6
+            verifyFunc = rejectDemand
           } else {
             this.$message.error('审核失败啦')
             return false
@@ -2259,7 +2321,8 @@ export default {
               })
               this.dialogVerifyVisible = false
               this.dialogVerifyTaskVisible = false
-              this.$message.success('审批成功')
+              this.dialogRejectTaskVisible = false
+              this.$message.success('操作成功')
             })
             .catch((error) => {})
         }
@@ -2305,6 +2368,41 @@ export default {
         })
       }
       this.dialogVerifyTaskVisible = true
+    },
+    /**
+     * 供管驳回待生成订单的需求
+     */
+    handleGongGuanResolveTask() {
+      const checkeds = []
+      if (
+        !this.list.some((listItem) => {
+          if (listItem.checked) {
+            if (listItem.status !== 7) {
+              const errorName = `[${listItem.name}] 该需求并不是待生成订单状态，无法驳回`
+              this.$message.error(errorName)
+              return true
+            }
+            checkeds.push(listItem.demand_id)
+            return false
+          }
+          return false
+        })
+      ) {
+        if (checkeds.length <= 0) {
+          this.$message.error('请先选择需求')
+          return false
+        }
+      } else {
+        return false
+      }
+
+      this.verifyRules = Object.assign({}, this.verifyRules, {
+        reason: [
+          { required: true, message: '请输入驳回原因', trigger: 'blur' }
+        ]
+      })
+      this.dialogStatus = 'reject'
+      this.dialogRejectTaskVisible = true
     },
     /**
      * 分配供应商弹窗
@@ -2581,6 +2679,67 @@ export default {
       })
     },
     /**
+     * 物件提交审核
+     */
+    handleToVerifyTask() {
+      const checkeds = []
+      let hasError = false
+      if (
+        !this.list.some((listItem) => {
+          if (listItem.checked) {
+            if ([4, 6].indexOf(listItem.status) < 0) {
+              const errorName = `[${listItem.name}]: 该需求状态无法提交审核物件`
+              this.$message.error(errorName)
+              hasError = true
+              return true
+            }
+
+            return listItem.tasks.some((taskItem) => {
+              if (taskItem.checked) {
+                if (taskItem.task_status !== 0) {
+                  const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法提交审核`
+                  this.$message.error(errorName)
+                  hasError = true
+                  return true
+                }
+                checkeds.push(taskItem.task_id)
+                return false
+              }
+              return false
+            })
+          }
+
+          return true
+        })
+      ) {
+        if (checkeds.length <= 0) {
+          this.$message.error('请先选择物件')
+          return false
+        }
+      } else {
+        if (hasError === false) {
+          this.$message.error('请先选择需要求')
+        }
+        return false
+      }
+
+      toVerifyTask({
+        task_id: checkeds
+      })
+        .then((response) => {
+          response.data.list.forEach((statusItem) => {
+            const index = this.list.findIndex(
+              (listItem) => listItem.demand_id === statusItem.demand_id
+            )
+            if (index >= 0) {
+              this.$set(this.list[index], 'status', statusItem.status)
+            }
+          })
+          this.$message.success('操作成功')
+        })
+        .catch((error) => {})
+    },
+    /**
      * 重置物件数据
      */
     resetTaskTemp() {
@@ -2627,6 +2786,9 @@ export default {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempTask))
           // temp.task_id = parseInt(Math.random() * 100) + 1024
+          if (temp.task_id) {
+            delete temp.task_id
+          }
           createTask(temp)
             .then((response) => {
               const { id, work_price, work_amount } = response.data
@@ -2645,7 +2807,6 @@ export default {
                 temp.work_price = work_price
                 temp.work_amount = work_amount
                 this.list[demandIndex].tasks.unshift(temp)
-                this.$set(this.list[demandIndex], 'status', 5)
               }
               this.dialogTaskVisible = false
               this.$notify({
@@ -2885,16 +3046,32 @@ export default {
     handleUpdateTask(task, taskIndex, demandIndex) {
       const demand = this.list[demandIndex]
       if (demand) {
-        this.tempTaskCategory = demand.category
-        this.tempTask = Object.assign({}, task, {
-          extend: demand.category.property_array.map((property) => {
+        let extend
+        const category = demand.category
+        const props = task.props || []
+        if (category.property_array.length > 0) {
+          extend = category.property_array.map((property) => {
+            let value = ''
+            if (props.length > 0) {
+              const propIndex = props.findIndex(
+                (prop) => prop.extend_name === property.extend_name
+              )
+              if (propIndex >= 0) {
+                value = props[propIndex].extend_value
+              }
+            }
             return {
               name: property.extend_name,
-              value: '',
+              value: value,
               type: property.extend_tag,
               options: property.extend_value
             }
           })
+        }
+
+        this.tempTaskCategory = demand.category
+        this.tempTask = Object.assign({}, task, {
+          extend
         })
         this.dialogStatus = 'update_task'
         this.dialogTaskVisible = true
@@ -2907,13 +3084,17 @@ export default {
      * 删除物件弹窗
      */
     handleDeleteTask(task, taskIndex, demandIndex) {
-      this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
-      })
-      this.list[demandIndex].tasks.splice(taskIndex, 1)
+      deleteTask({ task_id: task.task_id })
+        .then(() => {
+          this.$notify({
+            title: '成功',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.list[demandIndex].tasks.splice(taskIndex, 1)
+        })
+        .catch((error) => {})
     },
     /**
      * 复制物件弹窗
@@ -2921,16 +3102,32 @@ export default {
     handleCopyTask(task, taskIndex, demandIndex) {
       const demand = this.list[demandIndex]
       if (demand) {
-        this.tempTaskCategory = demand.category
-        this.tempTask = Object.assign({}, task, {
-          extend: demand.category.property_array.map((property) => {
+        let extend
+        const category = demand.category
+        const props = task.props || []
+        if (category.property_array.length > 0) {
+          extend = category.property_array.map((property) => {
+            let value = ''
+            if (props.length > 0) {
+              const propIndex = props.findIndex(
+                (prop) => prop.extend_name === property.extend_name
+              )
+              if (propIndex >= 0) {
+                value = props[propIndex].extend_value
+              }
+            }
             return {
               name: property.extend_name,
-              value: '',
+              value: value,
               type: property.extend_tag,
               options: property.extend_value
             }
           })
+        }
+
+        this.tempTaskCategory = demand.category
+        this.tempTask = Object.assign({}, task, {
+          extend
         })
         this.dialogStatus = 'create_task'
         this.dialogTaskVisible = true

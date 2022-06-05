@@ -39,3 +39,11 @@ export function finishTask(data) {
     data
   })
 }
+
+export function deleteTask(data) {
+  return request({
+    url: '/api/needs/deleteTask',
+    method: 'post',
+    data
+  })
+}

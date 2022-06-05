@@ -63,3 +63,19 @@ export function assignSupplier(data) {
     data
   })
 }
+
+export function rejectDemand(data) {
+  return request({
+    url: '/api/needs/rejectDemand',
+    method: 'post',
+    data
+  })
+}
+
+export function toVerifyTask(data) {
+  return request({
+    url: '/api/needs/toVerifyTask',
+    method: 'post',
+    data
+  })
+}
