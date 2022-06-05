@@ -116,16 +116,16 @@
         >
           驳回
         </el-button>
-        <el-button
+        <el-popconfirm
           v-permission="[3]"
-          class="filter-item"
           style="margin-left: 10px"
-          type="primary"
-          size="mini"
-          @click="handleCreateOrder"
+          title="确定生成订单吗？"
+          @confirm="handleCreateOrder"
         >
-          生成订单
-        </el-button>
+          <el-button slot="reference" size="mini" type="primary">
+            生成订单
+          </el-button>
+        </el-popconfirm>
         <el-button
           v-permission="[3]"
           class="filter-item"
@@ -145,6 +145,26 @@
           @click="handleToVerifyTask"
         >
           提交审核
+        </el-button>
+        <el-button
+          v-permission="[4]"
+          class="filter-item"
+          style="margin-left: 10px"
+          type="primary"
+          size="mini"
+          @click="handleResolveOrder(true)"
+        >
+          通过
+        </el-button>
+        <el-button
+          v-permission="[4]"
+          class="filter-item"
+          style="margin-left: 10px"
+          type="primary"
+          size="mini"
+          @click="handleResolveOrder(false)"
+        >
+          驳回
         </el-button>
       </div>
     </div>
@@ -424,6 +444,16 @@
           <el-button
             v-if="[6].indexOf(row.status) >= 0"
             v-permission="[0]"
+            type="primary"
+            size="mini"
+            plain
+            @click="showReason(row, $index)"
+          >
+            驳回原因
+          </el-button>
+          <el-button
+            v-if="[9].indexOf(row.status) >= 0"
+            v-permission="[3]"
             type="primary"
             size="mini"
             plain
@@ -812,6 +842,8 @@
           @click="
             dialogVerifyVisible = false;
             dialogVerifyTaskVisible = false;
+            dialogRejectTaskVisible = false;
+            dialogVerifyOrderVisible = false;
           "
         >
           取消
@@ -1492,7 +1524,9 @@ import {
   verifyDemand,
   assignSupplier,
   rejectDemand,
-  toVerifyTask
+  toVerifyTask,
+  createOrder,
+  verifyOrder
 } from '@/api/demand/index'
 import {
   createTask,
@@ -1587,7 +1621,7 @@ export default {
         7: '供管',
         8: '供管负责人',
         9: '供管',
-        10: '-'
+        10: '供应商'
       }
       return statusMap[status]
     },
@@ -1695,6 +1729,7 @@ export default {
       },
       dialogVerifyVisible: false,
       dialogVerifyTaskVisible: false,
+      dialogVerifyOrderVisible: false,
       tempVerify: {
         reason: ''
       },
@@ -1763,12 +1798,20 @@ export default {
       }
       return false
     },
-    verifyVisible: function() {
-      return (
-        this.dialogVerifyVisible ||
-        this.dialogVerifyTaskVisible ||
-        this.dialogRejectTaskVisible
-      )
+    verifyVisible: {
+      get() {
+        return (
+          this.dialogVerifyVisible ||
+          this.dialogVerifyTaskVisible ||
+          this.dialogRejectTaskVisible || this.dialogVerifyOrderVisible
+        )
+      },
+      set(newValue) {
+        this.dialogVerifyVisible = newValue
+        this.dialogVerifyTaskVisible = newValue
+        this.dialogRejectTaskVisible = newValue
+        this.dialogVerifyOrderVisible = newValue
+      }
     }
   },
   created() {
@@ -2248,6 +2291,9 @@ export default {
         })
       }
       this.dialogVerifyVisible = true
+      this.$nextTick(() => {
+        this.$refs['verifyDataForm'].clearValidate()
+      })
     },
     /**
      * 审批确认
@@ -2265,19 +2311,24 @@ export default {
 
           if (this.dialogVerifyVisible === true) {
             baseError = '该需求并不是待审核状态，无法审核'
-            checkStatus = 1
+            checkStatus = [1]
             status = this.dialogStatus === 'resolve' ? 3 : 2
             verifyFunc = verifyDemand
           } else if (this.dialogVerifyTaskVisible === true) {
             baseError = '该需求并不是物件待审核状态，无法审核'
-            checkStatus = 5
+            checkStatus = [5]
             status = this.dialogStatus === 'resolve' ? 7 : 6
             verifyFunc = verifyTask
           } else if (this.dialogRejectTaskVisible === true) {
             baseError = '该需求并不是待生成订单状态，无法驳回'
-            checkStatus = 7
+            checkStatus = [7]
             status = 6
             verifyFunc = rejectDemand
+          } else if (this.dialogVerifyOrderVisible === true) {
+            baseError = '该需求并不是订单待审核状态，无法审核'
+            checkStatus = [8]
+            status = this.dialogStatus === 'resolve' ? 10 : 9
+            verifyFunc = verifyOrder
           } else {
             this.$message.error('审核失败啦')
             return false
@@ -2286,7 +2337,7 @@ export default {
           if (
             !this.list.some((listItem, listIndex) => {
               if (listItem.checked) {
-                if (listItem.status !== checkStatus) {
+                if (checkStatus.indexOf(listItem.status) < 0) {
                   this.$message.error(`[${listItem.name}] ${baseError}`)
                   return true
                 }
@@ -2322,6 +2373,7 @@ export default {
               this.dialogVerifyVisible = false
               this.dialogVerifyTaskVisible = false
               this.dialogRejectTaskVisible = false
+              this.dialogVerifyOrderVisible = false
               this.$message.success('操作成功')
             })
             .catch((error) => {})
@@ -2336,8 +2388,8 @@ export default {
       if (
         !this.list.some((listItem) => {
           if (listItem.checked) {
-            if (listItem.status !== 5) {
-              const errorName = `[${listItem.name}] 该需求并不是物件待审核状态，无法审核`
+            if ([5].indexOf(listItem.status) < 0) {
+              const errorName = `[${listItem.name}] 该需求状态错误，无法审核`
               this.$message.error(errorName)
               return true
             }
@@ -2368,6 +2420,9 @@ export default {
         })
       }
       this.dialogVerifyTaskVisible = true
+      this.$nextTick(() => {
+        this.$refs['verifyDataForm'].clearValidate()
+      })
     },
     /**
      * 供管驳回待生成订单的需求
@@ -2403,6 +2458,53 @@ export default {
       })
       this.dialogStatus = 'reject'
       this.dialogRejectTaskVisible = true
+      this.$nextTick(() => {
+        this.$refs['verifyDataForm'].clearValidate()
+      })
+    },
+    /**
+     * 订单审核弹窗
+     */
+    handleResolveOrder(ok) {
+      const checkeds = []
+      if (
+        !this.list.some((listItem) => {
+          if (listItem.checked) {
+            if ([8].indexOf(listItem.status) < 0) {
+              const errorName = `[${listItem.name}] 该需求状态错误，无法审核`
+              this.$message.error(errorName)
+              return true
+            }
+            checkeds.push(listItem.demand_id)
+            return false
+          }
+          return false
+        })
+      ) {
+        if (checkeds.length <= 0) {
+          this.$message.error('请先选择需求')
+          return false
+        }
+      } else {
+        return false
+      }
+
+      this.dialogStatus = ok === true ? 'resolve' : 'reject'
+      if (ok) {
+        if (this.verifyRules.reason) {
+          delete this.verifyRules.reason
+        }
+      } else {
+        this.verifyRules = Object.assign({}, this.verifyRules, {
+          reason: [
+            { required: true, message: '请输入驳回原因', trigger: 'blur' }
+          ]
+        })
+      }
+      this.dialogVerifyOrderVisible = true
+      this.$nextTick(() => {
+        this.$refs['verifyDataForm'].clearValidate()
+      })
     },
     /**
      * 分配供应商弹窗
@@ -2556,12 +2658,40 @@ export default {
      * 预制订单弹窗
      */
     handleCreateOrder() {
-      this.$notify({
-        title: '成功',
-        message: '订单生成成功',
-        type: 'success',
-        duration: 2000
-      })
+      const checkeds = []
+      if (
+        !this.list.some((listItem) => {
+          if (listItem.checked) {
+            if ([7, 9].indexOf(listItem.status) < 0) {
+              const errorName = `[${listItem.name}]: 该需求状态错误`
+              this.$message.error(errorName)
+              return true
+            }
+            checkeds.push(listItem.demand_id)
+            return false
+          }
+          return false
+        })
+      ) {
+        if (checkeds.length <= 0) {
+          this.$message.error('请先选择需求')
+          return false
+        }
+      } else {
+        return false
+      }
+
+      createOrder({ demand_id: checkeds }).then((response) => {
+        response.data.list.forEach((statusItem) => {
+          const index = this.list.findIndex(
+            (listItem) => listItem.demand_id === statusItem.demand_id
+          )
+          if (index >= 0) {
+            this.$set(this.list[index], 'status', statusItem.status)
+          }
+        })
+        this.$message.success('订单生成成功')
+      }).catch(error => {})
     },
     /**
      * 终止弹窗

@@ -79,3 +79,19 @@ export function toVerifyTask(data) {
     data
   })
 }
+
+export function createOrder(data) {
+  return request({
+    url: '/api/needs/createOrder',
+    method: 'post',
+    data
+  })
+}
+
+export function verifyOrder(data) {
+  return request({
+    url: '/api/needs/verifyOrder',
+    method: 'post',
+    data
+  })
+}
