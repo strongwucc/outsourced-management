@@ -142,3 +142,18 @@ export function downloadFile(fileName, filePath) {
     document.body.removeChild(link)
   }, 500)
 }
+
+export function downloadExcelStream(fileName, data) {
+  const aLink = document.createElement('a')
+  const blob = new Blob([data], { type: 'application/vnd.ms-excel' })
+  // 创建一个当前文件的内存URL
+  const _href = URL.createObjectURL(blob)
+  aLink.style.display = 'none'
+  aLink.href = _href
+  document.body.appendChild(aLink)
+  aLink.setAttribute('download', `${fileName}.xlsx`)
+  aLink.click()
+  document.body.removeChild(aLink)
+  // 手动释放创建的URL对象所占内存
+  URL.revokeObjectURL(_href)
+}

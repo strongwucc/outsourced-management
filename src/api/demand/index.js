@@ -95,3 +95,20 @@ export function verifyOrder(data) {
     data
   })
 }
+
+export function exportTaskTpl(demand_id) {
+  return request({
+    url: '/api/needs/exportTaskTpl',
+    method: 'get',
+    params: { demand_id },
+    responseType: 'arraybuffer'
+  })
+}
+
+export function batchAddTasks(data) {
+  return request({
+    url: '/api/needs/batchAddTasks',
+    method: 'post',
+    data
+  })
+}

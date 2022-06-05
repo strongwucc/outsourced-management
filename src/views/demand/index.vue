@@ -1110,15 +1110,16 @@
         style="margin: 0 50px"
       >
         <el-form-item label="物件模板">
-          <el-button size="mini">下载</el-button>
+          <el-button size="mini" @click="downloadTaskTpl">下载</el-button>
         </el-form-item>
 
-        <el-form-item label="导入物件" prop="file">
+        <el-form-item label="导入物件">
           <el-upload
             class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :on-success="handleAddFileSucc"
-            :file-list="fileList"
+            :action="`${$baseUrl}/api/needs/importTaskTpl`"
+            :headers="{Authorization: $store.getters.token}"
+            :on-success="handleAddTaskTplSucc"
+            :show-file-list="false"
           >
             <el-button size="mini" type="primary">导入</el-button>
           </el-upload>
@@ -1526,7 +1527,9 @@ import {
   rejectDemand,
   toVerifyTask,
   createOrder,
-  verifyOrder
+  verifyOrder,
+  exportTaskTpl,
+  batchAddTasks
 } from '@/api/demand/index'
 import {
   createTask,
@@ -1547,7 +1550,7 @@ import { fetchAllCategory } from '@/api/system/category'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 import permission from '@/directive/permission/index.js' // 权限判断指令
-import { downloadFile } from '@/utils/index'
+import { downloadFile, downloadExcelStream } from '@/utils/index'
 
 const tagList = [
   { id: 0, name: '正式包' },
@@ -1778,7 +1781,8 @@ export default {
       taskRules: {},
       dialogImportTaskVisible: false,
       tempImportTask: {
-        file: ''
+        demand_id: '',
+        tasks: []
       },
       importTaskRules: {},
       dialogTaskDetailVisible: false,
@@ -3000,8 +3004,10 @@ export default {
      * 导入物件弹窗
      */
     handleImportTask(demand) {
-      this.tempTaskCategory = demand.category
-      this.resetTaskTemp()
+      this.tempImportTask = Object.assign({}, this.tempImportTask, {
+        demand_id: demand.demand_id,
+        tasks: []
+      })
       this.dialogStatus = 'import_task'
       this.dialogImportTaskVisible = true
       this.$nextTick(() => {
@@ -3009,29 +3015,42 @@ export default {
       })
     },
     /**
+     * 导出物件模板
+     */
+    downloadTaskTpl() {
+      if (this.tempImportTask.demand_id) {
+        exportTaskTpl(this.tempImportTask.demand_id).then(response => {
+          downloadExcelStream('物件模板', response)
+        }).catch(error => {
+          console.log(error)
+        })
+      }
+    },
+    /**
+     * 导入模板成功
+     */
+    handleAddTaskTplSucc(response, file, fileList) {
+      this.tempImportTask = Object.assign({}, this.tempImportTask, { tasks: response })
+    },
+    /**
      * 确认导入物件
      */
     confirmImportTask() {
-      this.$refs['taskDataForm'].validate((valid) => {
+      this.$refs['importTaskDataForm'].validate((valid) => {
         if (valid) {
-          const temp = JSON.parse(JSON.stringify(this.tempTask))
-          updateTask(temp)
-            .then(() => {
+          const temp = JSON.parse(JSON.stringify(this.tempImportTask))
+          batchAddTasks(temp)
+            .then((response) => {
               const demandIndex = this.list.findIndex(
                 (v) => v.demand_id === temp.demand_id
               )
-              const taskIndex = this.list[demandIndex].tasks.findIndex(
-                (v) => v.task_id === temp.task_id
-              )
 
-              this.list[demandIndex].tasks.splice(taskIndex, 1, temp)
-              this.dialogTaskVisible = false
-              this.$notify({
-                title: '成功',
-                message: '修改成功',
-                type: 'success',
-                duration: 2000
-              })
+              if (demandIndex >= 0) {
+                this.$set(this.list[demandIndex], 'tasks', this.list[demandIndex].tasks.concat(response.data.tasks))
+              }
+
+              this.dialogImportTaskVisible = false
+              this.$message.success('导入成功')
             })
             .catch((error) => {})
         }
