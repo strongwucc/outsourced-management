@@ -395,7 +395,7 @@
       <el-table-column
         label="状态"
         align="center"
-        width="150"
+        width="120"
         :show-overflow-tooltip="true"
       >
         <template slot-scope="{ row }">
@@ -789,7 +789,7 @@
         <el-button
           v-if="
             tempDetail.is_creator === 1 &&
-              [0, 1].indexOf(tempDetail.status) >= 0
+              [0, 2].indexOf(tempDetail.status) >= 0
           "
           type="primary"
           size="mini"
@@ -2048,6 +2048,18 @@ export default {
                   type: 'success',
                   duration: 2000
                 })
+              } else if (this.dialogStatus === 'detail') {
+                const index = this.list.findIndex(
+                  (v) => v.demand_id === temp.demand_id
+                )
+                this.list.splice(index, 1, temp)
+                this.dialogDetailVisible = false
+                this.$notify({
+                  title: '成功',
+                  message: '提交成功',
+                  type: 'success',
+                  duration: 2000
+                })
               }
             })
             .catch((error) => {})
@@ -2248,6 +2260,7 @@ export default {
 
       this.temp = Object.assign({}, row)
       this.tempDetail = Object.assign({}, detailData.data)
+      this.dialogStatus = 'detail'
       this.dialogDetailVisible = true
       this.list.splice(
         index,
