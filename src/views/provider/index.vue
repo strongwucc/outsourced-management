@@ -24,6 +24,7 @@
       </div>
       <div class="filter-right">
         <el-button
+          v-permission="[3,4]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -50,13 +51,13 @@
     >
       <el-table-column label="ID" align="center" width="100">
         <template slot-scope="{ row }">
-          {{ row.supplier_id }}
+          {{ row.id }}
         </template>
       </el-table-column>
 
       <el-table-column label="供应商名称" align="center" min-width="150px">
         <template slot-scope="{ row }">
-          {{ row.supplier_name }}
+          {{ row.name }}
         </template>
       </el-table-column>
 
@@ -89,6 +90,7 @@
             查看
           </el-button>
           <el-button
+            v-permission="[3,4]"
             type="primary"
             size="mini"
             plain
@@ -97,6 +99,7 @@
             编辑
           </el-button>
           <el-popconfirm
+            v-permission="[3,4]"
             style="margin-left: 10px"
             title="确定删除吗？"
             @confirm="handleDelete(row, $index)"
@@ -134,8 +137,8 @@
         style="margin: 0 50px"
         class="dialog-form"
       >
-        <el-form-item label="供应商名称:" prop="supplier_name">
-          <el-input v-model="temp.supplier_name" class="dialog-form-item" />
+        <el-form-item label="供应商名称:" prop="name">
+          <el-input v-model="temp.name" class="dialog-form-item" />
         </el-form-item>
 
         <el-form-item label="简介:" prop="brief">
@@ -197,7 +200,7 @@
         <div class="category-container">
           <el-table
             class="category-table"
-            :data="temp.cat_array"
+            :data="temp.prices"
             border
             highlight-current-row
           >
@@ -205,7 +208,7 @@
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
-                  :prop="`cat_array.${scope.$index}.cat_id`"
+                  :prop="`prices.${scope.$index}.cat_id`"
                   :rules="rules.cat_id"
                 >
                   <el-cascader
@@ -225,7 +228,7 @@
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
-                  :prop="`cat_array.${scope.$index}.price`"
+                  :prop="`prices.${scope.$index}.price`"
                   :rules="rules.price"
                 >
                   <el-input
@@ -264,7 +267,7 @@
         <div class="contact-container">
           <el-table
             class="contact-table"
-            :data="temp.contact_array"
+            :data="temp.contacts"
             border
             highlight-current-row
           >
@@ -272,7 +275,7 @@
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
-                  :prop="`contact_array.${scope.$index}.contact_name`"
+                  :prop="`contacts.${scope.$index}.contact_name`"
                   :rules="rules.contact_name"
                 >
                   <el-input v-model="scope.row.contact_name" />
@@ -284,7 +287,7 @@
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
-                  :prop="`contact_array.${scope.$index}.contact_mobile`"
+                  :prop="`contacts.${scope.$index}.contact_mobile`"
                   :rules="rules.contact_mobile"
                 >
                   <el-input v-model="scope.row.contact_mobile" />
@@ -296,7 +299,7 @@
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
-                  :prop="`contact_array.${scope.$index}.contact_qq`"
+                  :prop="`contacts.${scope.$index}.contact_qq`"
                 >
                   <el-input v-model="scope.row.contact_qq" />
                 </el-form-item>
@@ -307,7 +310,7 @@
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
-                  :prop="`contact_array.${scope.$index}.contact_wx`"
+                  :prop="`contacts.${scope.$index}.contact_wx`"
                 >
                   <el-input v-model="scope.row.contact_wx" />
                 </el-form-item>
@@ -318,7 +321,7 @@
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
-                  :prop="`contact_array.${scope.$index}.contact_email`"
+                  :prop="`contacts.${scope.$index}.contact_email`"
                 >
                   <el-input v-model="scope.row.contact_email" />
                 </el-form-item>
@@ -329,7 +332,7 @@
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
-                  :prop="`contact_array.${scope.$index}.contact_position`"
+                  :prop="`contacts.${scope.$index}.contact_position`"
                 >
                   <el-input v-model="scope.row.contact_position" />
                 </el-form-item>
@@ -393,7 +396,7 @@
         :label-style="{ 'font-weight': 'bold', width: '150px' }"
       >
         <el-descriptions-item label="供应商名称">{{
-          temp.supplier_name
+          temp.name
         }}</el-descriptions-item>
         <el-descriptions-item label="简介">{{
           temp.brief
@@ -415,7 +418,7 @@
         :label-style="{ 'font-weight': 'bold', width: '150px' }"
       >
         <el-descriptions-item
-          v-for="(category, categoryIndex) in temp.cat_array"
+          v-for="(category, categoryIndex) in temp.prices"
           :key="categoryIndex"
           :label="category.category | categoryPath"
         >{{ category.price }}</el-descriptions-item>
@@ -425,7 +428,7 @@
         class="margin-top detail-title"
         :label-style="{ 'font-weight': 'bold' }"
       />
-      <el-table :data="temp.contact_array" border style="width: 100%">
+      <el-table :data="temp.contacts" border style="width: 100%">
         <el-table-column prop="contact_name" label="姓名" align="center" />
         <el-table-column prop="contact_mobile" label="电话" align="center" />
         <el-table-column prop="contact_email" label="邮箱" align="center" />
@@ -448,6 +451,7 @@ import {
 import { fetchAllCategory } from '@/api/system/category'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
+import permission from '@/directive/permission/index.js' // 权限判断指令
 
 const validateMobile = (rule, value, callback) => {
   if (value) {
@@ -466,7 +470,7 @@ const validateMobile = (rule, value, callback) => {
 export default {
   name: 'Type',
   components: { Pagination },
-  directives: { waves },
+  directives: { waves, permission },
   filters: {
     categoryPath: function(category) {
       if (!category) {
@@ -474,11 +478,11 @@ export default {
       }
       const path = []
       if (category.category_name) {
-        path.push(category.category_name)
+        path.unshift(category.category_name)
         if (category.parent && category.parent.category_name) {
-          path.push(category.parent.category_name)
+          path.unshift(category.parent.category_name)
           if (category.parent.parent && category.parent.parent.category_name) {
-            path.push(category.parent.parent.category_name)
+            path.unshift(category.parent.parent.category_name)
           }
         }
       }
@@ -503,17 +507,15 @@ export default {
       dialogFormDisabled: false,
       price: '',
       temp: {
-        supplier_id: undefined,
-        supplier_name: '',
+        id: undefined,
+        name: '',
         brief: '',
         login_name: '',
         pass_word: '',
         email: '',
         area: '',
-        cat_json: '[]',
-        cat_array: [],
-        contacts: '[]',
-        contact_array: []
+        prices: [],
+        contacts: []
       },
       textMap: {
         update: '修改供应商',
@@ -529,7 +531,7 @@ export default {
         return Object.assign({})
       }
       return {
-        supplier_name: [
+        name: [
           { required: true, message: '请输入供应商名称', trigger: 'blur' }
         ],
         brief: [
@@ -587,19 +589,7 @@ export default {
       fetchList(this.listQuery)
         .then((response) => {
           this.listLoading = false
-          this.list = response.data.list.map((item) => {
-            const newItem = Object.assign({}, item)
-            newItem.cat_json = JSON.stringify(item.cat)
-            newItem.cat_array = item.cat
-            newItem.contact_array = item.contacts
-            newItem.contacts = JSON.stringify(item.contacts)
-            newItem.supplier_id = item.id
-            newItem.supplier_name = item.name
-            delete newItem.cat
-            delete newItem.id
-            delete newItem.name
-            return newItem
-          })
+          this.list = response.data.list
           this.total = response.data.total
         })
         .catch((error) => {
@@ -613,17 +603,15 @@ export default {
     },
     resetTemp() {
       this.temp = {
-        supplier_id: undefined,
-        supplier_name: '',
+        id: undefined,
+        name: '',
         brief: '',
         login_name: '',
         pass_word: '',
         email: '',
         area: '',
-        cat_json: '[]',
-        cat_array: [],
-        contacts: '[]',
-        contact_array: []
+        prices: [],
+        contacts: []
       }
     },
     handleShow(row) {
@@ -643,16 +631,9 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.temp))
-          // temp.supplier_id = parseInt(Math.random() * 100) + 1024
-          temp.cat_json = JSON.stringify(temp.cat_array)
-          temp.contacts = JSON.stringify(temp.contact_array)
-
-          const postTemp = Object.assign({}, temp)
-          delete postTemp.cat_array
-          delete postTemp.contact_array
-          createProvider(postTemp)
+          createProvider(temp)
             .then((response) => {
-              temp.supplier_id = response.data.id
+              temp.id = response.data.id
               this.list.unshift(temp)
               this.dialogFormVisible = false
               this.$notify({
@@ -679,16 +660,10 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.temp))
-          temp.cat_json = JSON.stringify(temp.cat_array)
-          temp.contacts = JSON.stringify(temp.contact_array)
-
-          const postTemp = JSON.parse(JSON.stringify(temp))
-          delete postTemp.cat_array
-          delete postTemp.contact_array
-          updateProvider(postTemp)
+          updateProvider(temp)
             .then(() => {
               const index = this.list.findIndex(
-                (v) => v.supplier_id === temp.supplier_id
+                (v) => v.id === temp.id
               )
               this.list.splice(index, 1, temp)
               this.dialogFormVisible = false
@@ -704,7 +679,7 @@ export default {
       })
     },
     handleDelete(row, index) {
-      deleteProvider({ supplier_id: row.supplier_id })
+      deleteProvider({ id: row.id })
         .then(() => {
           this.$notify({
             title: '成功',
@@ -718,9 +693,9 @@ export default {
     },
     handleCreateCategory() {
       const newCategory = { cat_id: '', price: '' }
-      const categoryArray = this.temp.cat_array
+      const categoryArray = this.temp.prices
       categoryArray.push(newCategory)
-      this.temp = Object.assign({}, this.temp, { cat_array: categoryArray })
+      this.temp = Object.assign({}, this.temp, { prices: categoryArray })
     },
     handleCreateContact() {
       const newContact = {
@@ -731,19 +706,19 @@ export default {
         contact_wx: '',
         contact_position: ''
       }
-      const contactArray = this.temp.contact_array
+      const contactArray = this.temp.contacts
       contactArray.push(newContact)
-      this.temp = Object.assign({}, this.temp, { contact_array: contactArray })
+      this.temp = Object.assign({}, this.temp, { contacts: contactArray })
     },
     handleDeleteCategory(index) {
-      const categoryArray = this.temp.cat_array
+      const categoryArray = this.temp.prices
       categoryArray.splice(index, 1)
-      this.temp = Object.assign({}, this.temp, { cat_array: categoryArray })
+      this.temp = Object.assign({}, this.temp, { prices: categoryArray })
     },
     handleDeleteContact(index) {
-      const contactArray = this.temp.contact_array
+      const contactArray = this.temp.contacts
       contactArray.splice(index, 1)
-      this.temp = Object.assign({}, this.temp, { contact_array: contactArray })
+      this.temp = Object.assign({}, this.temp, { contacts: contactArray })
     }
   }
 }

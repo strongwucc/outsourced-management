@@ -195,6 +195,7 @@
               <el-button
                 type="primary"
                 size="mini"
+                plain
                 @click="handleUpdateProp(row)"
               >
                 编辑
@@ -203,6 +204,7 @@
                 v-if="row.status != 'deleted'"
                 size="mini"
                 type="danger"
+                plain
                 @click="handleDeleteProp($index)"
               >
                 删除

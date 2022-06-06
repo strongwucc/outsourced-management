@@ -136,11 +136,12 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="项目制作人:" prop="project_producer_json">
+      <el-form-item label="项目制作人:" prop="project_producer">
         <el-select
-          v-model="detail.project_producer_json"
+          v-model="detail.project_producer"
           multiple
           filterable
+          collapse-tags
           class="dialog-form-item"
         >
           <el-option
@@ -155,7 +156,6 @@
         </el-select>
       </el-form-item>
       <el-divider class="form-divider" content-position="left" />
-      <div class="form-title">审核信息配置</div>
       <el-form-item label="创建需求卡:" prop="needs_create_json">
         <div class="needs-create-add" @click="addNeedsCreateItem">
           <i class="el-icon-circle-plus" />
@@ -167,7 +167,7 @@
             :key="itemIndex"
             class="needs-create-item"
           >
-            <div class="item-member">
+            <div class="needs-create-item-member">
               <div class="select-label">用户:</div>
               <div class="select-value">
                 <el-select
@@ -188,7 +188,7 @@
                 </el-select>
               </div>
             </div>
-            <div class="item-category">
+            <div class="needs-create-item-category">
               <div class="select-label">品类:</div>
               <div class="select-value">
                 <el-cascader
@@ -206,7 +206,8 @@
           </div>
         </div>
       </el-form-item>
-
+      <el-divider class="form-divider" content-position="left" />
+      <div class="form-title">审核信息配置</div>
       <el-form-item label="需求卡审批:" prop="needs_verify_json">
         <div class="needs-verify-box json-normal-box">
           <div
@@ -237,12 +238,13 @@
       </el-form-item>
 
       <el-form-item label="分配供应商:" prop="assign_supplier_json">
-        <div class="assign-supplier-box json-normal-box">
+        <div class="assign-supplier-box json-normal-box item-member">
           <el-select
             v-model="detail.assign_supplier_json"
             clearable
             filterable
             multiple
+            collapse-tags
             placeholder="请输入关键词"
             :multiple-limit="2"
           >
@@ -290,12 +292,13 @@
       </el-form-item>
 
       <el-form-item label="拟制订单:" prop="order_create_json">
-        <div class="order-create-box json-normal-box">
+        <div class="order-create-box json-normal-box item-member">
           <el-select
             v-model="detail.order_create_json"
             clearable
             filterable
             multiple
+            collapse-tags
             placeholder="请输入关键词"
             :multiple-limit="2"
           >
@@ -470,12 +473,13 @@
       </el-form-item>
 
       <el-form-item label="推送结算申请:" prop="push_settle_json">
-        <div class="push-settle-box json-normal-box">
+        <div class="push-settle-box json-normal-box item-member">
           <el-select
             v-model="detail.push_settle_json"
             clearable
             filterable
             multiple
+            collapse-tags
             placeholder="请输入关键词"
             :multiple-limit="2"
           >
@@ -721,7 +725,7 @@ export default {
         sub_id: '',
         accounting: '',
         account_dep_id: '',
-        project_producer_json: [],
+        project_producer: [],
         needs_create_json: [], // 创建需求卡
         needs_verify_json: [{ id: '' }, { id: '' }], // 需求卡审批
         assign_supplier_json: [], // 分配供应商
@@ -776,7 +780,7 @@ export default {
         account_dep_id: [
           { required: true, message: '请选择核算部门', trigger: 'change' }
         ],
-        project_producer_json: [
+        project_producer: [
           {
             required: true,
             validator: validateJson,
@@ -1009,7 +1013,7 @@ export default {
             if (member.group && member.group.type === 5) {
               this.projectProducerList.push(member)
             }
-            if (member.group && [1, 2, 3, 4].indexOf(member.group.type) >= 0) {
+            if (member.group && [1, 3].indexOf(member.group.type) >= 0) {
               this.filterNeedsCreate.push(member)
             }
             if (member.group && member.group.type === 2) {
@@ -1120,8 +1124,8 @@ export default {
           const temp = JSON.parse(JSON.stringify(this.detail))
 
           const postTemp = JSON.parse(JSON.stringify(temp))
-          postTemp.project_producer_json = JSON.stringify(
-            temp.project_producer_json
+          postTemp.project_producer = JSON.stringify(
+            temp.project_producer
           )
           postTemp.needs_create_json = JSON.stringify(temp.needs_create_json)
           postTemp.needs_verify_json = JSON.stringify(
@@ -1249,29 +1253,31 @@ export default {
         display: flex;
         justify-content: flex-start;
         align-items: center;
-        .item-member,
-        .item-category {
+        .needs-create-item-member,
+        .needs-create-item-category {
           @extend %flex-center;
           .select-value {
             margin-left: 10px;
           }
-        }
-        .item-member {
-          flex: none;
-        }
-        .item-category {
-          flex: auto;
-          margin-left: 20px;
           justify-content: flex-start;
           .select-label {
             flex: none;
           }
           .select-value {
             flex: auto;
-            .el-cascader {
+            .el-cascader,
+            .el-select {
               width: 100%;
             }
           }
+        }
+        .needs-create-item-member {
+          flex: none;
+          width: 300px;
+        }
+        .needs-create-item-category {
+          flex: auto;
+          margin-left: 20px;
         }
         .item-btn {
           flex: none;
@@ -1295,6 +1301,11 @@ export default {
         &:last-child {
           margin-left: 20px;
         }
+      }
+    }
+    .item-member {
+      .el-select {
+        width: 300px;
       }
     }
   }

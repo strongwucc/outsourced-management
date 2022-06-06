@@ -70,6 +70,7 @@
       </div>
       <div class="filter-right">
         <el-button
+          v-permission="[3,4]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -141,7 +142,7 @@
       <el-table-column
         label="操作"
         align="center"
-        width="250"
+        width="300"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
@@ -149,15 +150,18 @@
             查看
           </el-button>
           <el-button
+            v-permission="[3,4]"
             type="primary"
             size="mini"
             plain
-            @click="handleUpdate(row)"
+            :loading="row.editLoading"
+            @click="handleUpdate(row, $index)"
           >
             编辑
           </el-button>
           <el-popconfirm
             v-if="row.status === 2"
+            v-permission="[3,4]"
             style="margin-left: 10px"
             confirm-button-text="好的"
             cancel-button-text="不用了"
@@ -173,6 +177,7 @@
 
           <el-popconfirm
             v-else-if="row.status === 1"
+            v-permission="[3,4]"
             style="margin-left: 10px"
             confirm-button-text="好的"
             cancel-button-text="不用了"
@@ -269,7 +274,7 @@
             :on-remove="handleFileChange"
             :file-list="fileList"
           >
-            <el-button size="small" type="primary">上传</el-button>
+            <el-button size="mini" type="primary">上传</el-button>
           </el-upload>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
@@ -362,6 +367,7 @@ import {
   fetchRegion
 } from '@/api/provider/index'
 import waves from '@/directive/waves'
+import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 import { downloadFile } from '@/utils/index'
 
@@ -375,7 +381,7 @@ const statList = [
 export default {
   name: 'Type',
   components: { Pagination },
-  directives: { waves },
+  directives: { waves, permission },
   filters: {
     statusFilter(status) {
       const statusMap = {
@@ -552,7 +558,6 @@ export default {
           // temp.pact_id = parseInt(Math.random() * 100) + 1024
           temp.period_start = this.temp.period_date[0] || ''
           temp.period_end = this.temp.period_date[1] || ''
-          temp.status = 0
           this.providers.some((provider) => {
             if (provider.id === temp.supplier_id) {
               temp.supplier_name = provider.name
@@ -576,6 +581,7 @@ export default {
 
           createContract(postTemp).then((response) => {
             temp.pact_id = response.data.id
+            temp.status = response.data.status
             this.list.unshift(temp)
             this.dialogFormVisible = false
             this.$notify({
@@ -593,10 +599,14 @@ export default {
       this.dialogStatus = 'detail'
       this.dialogDetailVisible = true
     },
-    handleUpdate(row) {
+    async handleUpdate(row, index) {
+      this.$set(this.list[index], 'editLoading', true)
       this.temp = JSON.parse(JSON.stringify(row))
-      this.fetchProviderList(this.temp.supplier_name)
-      this.fetchSubjectList(this.temp.subject_name)
+      const providerData = await fetchAllProvider().catch(error => {})
+      this.providers = providerData.data.list
+      const subData = await fetchSubject().catch(error => {})
+      this.subjects = subData.data.list
+
       this.fileList = this.temp.files.map((file) => {
         return {
           name: file.name,
@@ -608,6 +618,8 @@ export default {
           }
         }
       })
+
+      this.$set(this.list[index], 'editLoading', false)
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -620,7 +632,6 @@ export default {
           const temp = JSON.parse(JSON.stringify(this.temp))
           temp.period_start = this.temp.period_date[0] || ''
           temp.period_end = this.temp.period_date[1] || ''
-          temp.status = 0
 
           this.providers.some((provider) => {
             if (provider.id === temp.supplier_id) {
@@ -643,7 +654,8 @@ export default {
           delete postTemp.subject_name
           delete postTemp.period_date
 
-          updateContract(postTemp).then(() => {
+          updateContract(postTemp).then((response) => {
+            temp.status = response.data.status
             const index = this.list.findIndex(
               (v) => v.pact_id === temp.pact_id
             )
