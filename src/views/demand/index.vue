@@ -536,6 +536,7 @@
         <el-form-item label="选择项目流程:" prop="process_id">
           <el-select
             v-model="temp.process_id"
+            style="width: 260px"
             clearable
             filterable
             remote
@@ -554,6 +555,62 @@
             />
           </el-select>
         </el-form-item>
+
+        <div
+          v-if="temp.process_id > 0 && selectedProcess"
+          class="process-info-box"
+          style="margin-bottom: 10px"
+        >
+          <el-descriptions
+            :column="2"
+            title=""
+            :label-style="{
+              'font-weight': 'bold',
+              'align-items': 'center',
+              width: '138px',
+            }"
+          >
+            <el-descriptions-item label="流程代码">{{
+              selectedProcess.bn
+            }}</el-descriptions-item>
+            <el-descriptions-item
+              v-if="selectedProcess.budget_dep.budget > 0"
+              label="部门经费"
+              :content-style="{ 'align-items': 'center' }"
+            >
+              <div class="text-box" style="flex: none">
+                {{ selectedProcess.budget_dep.budget_used }}/{{
+                  selectedProcess.budget_dep.budget
+                }}
+              </div>
+              <div class="process-box" style="flex: auto; margin-left: 10px">
+                <el-progress
+                  :text-inside="true"
+                  :stroke-width="18"
+                  :percentage="
+                    Math.round(
+                      (selectedProcess.budget_dep.budget_used /
+                        selectedProcess.budget_dep.budget) *
+                        100
+                    )
+                  "
+                  :status="
+                    selectedProcess.budget_dep.budget_used >
+                      selectedProcess.budget_dep.budget_warn
+                      ? 'warning'
+                      : 'success'
+                  "
+                />
+              </div>
+            </el-descriptions-item>
+            <el-descriptions-item label="发起部门">{{
+              selectedProcess.launch_dep.name
+            }}</el-descriptions-item>
+            <el-descriptions-item label="核算部门">{{
+              selectedProcess.account_dep.name
+            }}</el-descriptions-item>
+          </el-descriptions>
+        </div>
 
         <el-form-item label="需求名称:" prop="name">
           <el-input
@@ -871,6 +928,7 @@
         <el-form-item label="供应商:" prop="supplier_id">
           <el-select
             v-model="tempProvider.supplier_id"
+            style="width: 300px"
             filterable
             clearable
             placeholder="请输入关键词"
@@ -1033,6 +1091,24 @@
               v-for="(property, propIndex) in tempTask.extend"
               :key="propIndex"
               :label="property.name"
+              :rules="
+                property.type === 1
+                  ? [
+                    {
+                      required: true,
+                      message: `请选择${property.name}`,
+                      trigger: 'change',
+                    },
+                  ]
+                  : [
+                    {
+                      required: true,
+                      message: `请输入${property.name}`,
+                      trigger: 'blur',
+                    },
+                  ]
+              "
+              :prop="`extend.${propIndex}.value`"
             >
               <el-select
                 v-if="property.type === 1"
@@ -1117,7 +1193,7 @@
           <el-upload
             class="upload-demo"
             :action="`${$baseUrl}/api/needs/importTaskTpl`"
-            :headers="{Authorization: $store.getters.token}"
+            :headers="{ Authorization: $store.getters.token }"
             :on-success="handleAddTaskTplSucc"
             :show-file-list="false"
           >
@@ -1237,49 +1313,75 @@
                 </el-descriptions>
               </el-col>
               <el-col :span="12">
+                <template v-if="taskDetailEditable">
+                  <el-descriptions
+                    title="属性"
+                    class="margin-top"
+                    :column="1"
+                    :label-style="{ 'font-weight': 'bold' }"
+                  />
+                  <div class="prop-edit-box">
+                    <el-form-item
+                      v-for="(property, propIndex) in tempTaskDetail.extends"
+                      :key="propIndex"
+                      :label="`${property.name}:`"
+                      :prop="`extends.${propIndex}.value`"
+                      :rules="property.type === 1
+                        ? [
+                          {
+                            required: true,
+                            message: `请选择${property.name}`,
+                            trigger: 'change',
+                          },
+                        ]
+                        : [
+                          {
+                            required: true,
+                            message: `请输入${property.name}`,
+                            trigger: 'blur',
+                          },
+                        ]"
+                    >
+                      <el-select
+                        v-if="property.type === 1"
+                        v-model="property.value"
+                        class="dialog-form-item"
+                        style="width: 100%"
+                      >
+                        <el-option
+                          v-for="(option, optionIndex) in property.options.split(
+                            ','
+                          )"
+                          :key="optionIndex"
+                          :label="option"
+                          :value="option"
+                        />
+                      </el-select>
+                      <el-input
+                        v-else
+                        v-model="property.value"
+                        :placeholder="`请输入${property.name}`"
+                        class="dialog-form-item"
+                      />
+                    </el-form-item>
+                  </div>
+                </template>
+
                 <el-descriptions
+                  v-else
                   title="属性"
                   class="margin-top"
                   :column="1"
                   :label-style="{ 'font-weight': 'bold' }"
                 >
-                  <!-- <el-descriptions-item
+                  <el-descriptions-item
                     v-for="(prop, propIndex) in tempTaskDetail.props"
                     :key="propIndex"
                     :label="prop.extend_name"
                   >
                     {{ prop.extend_value }}
-                  </el-descriptions-item> -->
+                  </el-descriptions-item>
                 </el-descriptions>
-                <div class="prop-edit-box">
-                  <el-form-item
-                    v-for="(property, propIndex) in tempTaskDetail.extends"
-                    :key="propIndex"
-                    :label="`${property.name}:`"
-                  >
-                    <el-select
-                      v-if="property.type === 1"
-                      v-model="property.value"
-                      class="dialog-form-item"
-                      style="width: 100%"
-                    >
-                      <el-option
-                        v-for="(option, optionIndex) in property.options.split(
-                          ','
-                        )"
-                        :key="optionIndex"
-                        :label="option"
-                        :value="option"
-                      />
-                    </el-select>
-                    <el-input
-                      v-else
-                      v-model="property.value"
-                      :placeholder="`请输入${property.name}`"
-                      class="dialog-form-item"
-                    />
-                  </el-form-item>
-                </div>
               </el-col>
             </el-row>
             <el-descriptions
@@ -1698,6 +1800,7 @@ export default {
         remark: '',
         status: 0
       },
+      selectedProcess: undefined,
       tagOptions: tagList,
       textMap: {
         update: '修改需求',
@@ -1741,7 +1844,9 @@ export default {
       dialogRejectTaskVisible: false,
       dialogProviderVisible: false,
       providerRules: {
-        id: [{ required: true, message: '请选择供应商', trigger: 'change' }]
+        supplier_id: [
+          { required: true, message: '请选择供应商', trigger: 'change' }
+        ]
       },
       tempProvider: {
         demand_id: '',
@@ -1778,7 +1883,24 @@ export default {
         remark: '',
         extend: []
       },
-      taskRules: {},
+      taskRules: {
+        task_name: [
+          { required: true, message: '请输入物件名称', trigger: 'blur' }
+        ],
+        task_image: [
+          { required: true, message: '请添加缩略图', trigger: 'blur' }
+        ],
+        work_unit: [
+          { required: true, message: '请选择工作单位', trigger: 'change' }
+        ],
+        work_num: [
+          { required: true, message: '请输入预估数量', trigger: 'blur' }
+        ],
+        deliver_date: [
+          { required: true, message: '请选择日期', trigger: 'blur' }
+        ],
+        value: [{ required: true, message: '请设置属性值', trigger: 'blur' }]
+      },
       dialogImportTaskVisible: false,
       tempImportTask: {
         demand_id: '',
@@ -1786,7 +1908,9 @@ export default {
       },
       importTaskRules: {},
       dialogTaskDetailVisible: false,
-      tempTaskDetail: {},
+      tempTaskDetail: {
+        extends: []
+      },
       dialogStopReasonVisible: false,
       demandFileList: [],
       demandSupplierFileList: []
@@ -1807,7 +1931,8 @@ export default {
         return (
           this.dialogVerifyVisible ||
           this.dialogVerifyTaskVisible ||
-          this.dialogRejectTaskVisible || this.dialogVerifyOrderVisible
+          this.dialogRejectTaskVisible ||
+          this.dialogVerifyOrderVisible
         )
       },
       set(newValue) {
@@ -1889,6 +2014,14 @@ export default {
         this.demandVerifyMembers = []
         return false
       }
+
+      const processIndex = this.process.findIndex(
+        (item) => item.process_id === process
+      )
+      if (processIndex >= 0) {
+        this.selectedProcess = this.process[processIndex]
+      }
+
       fetchProcessCategory({ process_id: process })
         .then((response) => {
           this.categorys = response.data.list.map((first) => {
@@ -2698,17 +2831,19 @@ export default {
         return false
       }
 
-      createOrder({ demand_id: checkeds }).then((response) => {
-        response.data.list.forEach((statusItem) => {
-          const index = this.list.findIndex(
-            (listItem) => listItem.demand_id === statusItem.demand_id
-          )
-          if (index >= 0) {
-            this.$set(this.list[index], 'status', statusItem.status)
-          }
+      createOrder({ demand_id: checkeds })
+        .then((response) => {
+          response.data.list.forEach((statusItem) => {
+            const index = this.list.findIndex(
+              (listItem) => listItem.demand_id === statusItem.demand_id
+            )
+            if (index >= 0) {
+              this.$set(this.list[index], 'status', statusItem.status)
+            }
+          })
+          this.$message.success('订单生成成功')
         })
-        this.$message.success('订单生成成功')
-      }).catch(error => {})
+        .catch((error) => {})
     },
     /**
      * 终止弹窗
@@ -2856,7 +2991,7 @@ export default {
             })
           }
 
-          return true
+          return false
         })
       ) {
         if (checkeds.length <= 0) {
@@ -2880,6 +3015,7 @@ export default {
             )
             if (index >= 0) {
               this.$set(this.list[index], 'status', statusItem.status)
+              this.$set(this.list[index], 'can_add_task', 0)
             }
           })
           this.$message.success('操作成功')
@@ -2940,6 +3076,7 @@ export default {
             .then((response) => {
               const { id, work_price, work_amount } = response.data
               temp.task_id = id
+              temp.task_status = 0
               let demandIndex = -1
               this.list.some((listItem, listIndex) => {
                 if (listItem.demand_id === temp.demand_id) {
@@ -3032,18 +3169,22 @@ export default {
      */
     downloadTaskTpl() {
       if (this.tempImportTask.demand_id) {
-        exportTaskTpl(this.tempImportTask.demand_id).then(response => {
-          downloadExcelStream('物件模板', response)
-        }).catch(error => {
-          console.log(error)
-        })
+        exportTaskTpl(this.tempImportTask.demand_id)
+          .then((response) => {
+            downloadExcelStream('物件模板', response)
+          })
+          .catch((error) => {
+            console.log(error)
+          })
       }
     },
     /**
      * 导入模板成功
      */
     handleAddTaskTplSucc(response, file, fileList) {
-      this.tempImportTask = Object.assign({}, this.tempImportTask, { tasks: response })
+      this.tempImportTask = Object.assign({}, this.tempImportTask, {
+        tasks: response
+      })
     },
     /**
      * 确认导入物件
@@ -3059,7 +3200,11 @@ export default {
               )
 
               if (demandIndex >= 0) {
-                this.$set(this.list[demandIndex], 'tasks', this.list[demandIndex].tasks.concat(response.data.tasks))
+                this.$set(
+                  this.list[demandIndex],
+                  'tasks',
+                  this.list[demandIndex].tasks.concat(response.data.tasks)
+                )
               }
 
               this.dialogImportTaskVisible = false
@@ -3173,7 +3318,6 @@ export default {
             (v) => v.task_id === temp.task_id
           )
 
-          this.$set(this.list[demandIndex], 'status', 5)
           this.list[demandIndex].tasks.splice(taskIndex, 1, temp)
           this.dialogTaskVisible = false
           this.$notify({

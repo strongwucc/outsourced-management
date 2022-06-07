@@ -279,6 +279,7 @@
             v-for="(option, optionIndex) in propTemp.extend_options"
             :key="optionIndex"
             :label="`选项${optionIndex + 1}:`"
+            :prop="`extend_options.${optionIndex}.text`"
             :rules="propRules.text"
           >
             <div class="option-item-box">
