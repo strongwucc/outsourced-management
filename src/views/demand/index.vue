@@ -370,6 +370,12 @@
         </template>
       </el-table-column>
 
+      <el-table-column label="物件数量" align="center" width="80">
+        <template slot-scope="{ row }">
+          {{ row.nums || 0 }}
+        </template>
+      </el-table-column>
+
       <el-table-column label="工作总量" align="center" width="100">
         <template slot-scope="{ row }">
           {{ row.work_num || 0 }}
@@ -383,12 +389,12 @@
       </el-table-column>
 
       <el-table-column label="停留时间" align="center" width="80">
-        <template slot-scope="{ row }"> {{ row.stay_time || 0 }}小时 </template>
+        <template slot-scope="{ row }"> {{ row.stay_time | stayTimeHours }}小时 </template>
       </el-table-column>
 
-      <el-table-column label="当前处理人" align="center" width="120">
+      <el-table-column label="当前处理人" align="center" width="120" show-overflow-tooltip>
         <template slot-scope="{ row }">
-          {{ row.status | operatorText }}
+          {{ row.current_operator }}
         </template>
       </el-table-column>
 
@@ -1133,7 +1139,7 @@
           </el-col>
           <el-col :span="8">
             <el-form-item>
-              <div slot="label" class="form-title">缩略图</div>
+              <div slot="label" class="form-title is-required">缩略图</div>
             </el-form-item>
             <el-form-item prop="task_image" label-width="0">
               <el-upload
@@ -1596,7 +1602,7 @@
         </el-form-item>
 
         <el-form-item label="附件:">
-          <div class="file-box" style="width: 50%">
+          <div class="file-box">
             <div
               v-for="(file, fileIndex) in tempTask.stop_file"
               :key="fileIndex"
@@ -1754,6 +1760,14 @@ export default {
         1: '终止'
       }
       return statusMap[status]
+    },
+    stayTimeHours(seconds) {
+      const diff = parseInt(seconds)
+      if (isNaN(diff)) {
+        return 0
+      }
+
+      return Math.round(+(diff / 3600) + 'e' + 1) / Math.pow(10, 1)
     }
   },
   data() {
@@ -3074,7 +3088,7 @@ export default {
           }
           createTask(temp)
             .then((response) => {
-              const { id, work_price, work_amount } = response.data
+              const { id, work_price, work_amount, nums } = response.data
               temp.task_id = id
               temp.task_status = 0
               let demandIndex = -1
@@ -3090,6 +3104,7 @@ export default {
                 temp.category = this.tempTaskCategory
                 temp.work_price = work_price
                 temp.work_amount = work_amount
+                temp.nums = nums
                 this.list[demandIndex].tasks.unshift(temp)
               }
               this.dialogTaskVisible = false
@@ -3204,6 +3219,11 @@ export default {
                   this.list[demandIndex],
                   'tasks',
                   this.list[demandIndex].tasks.concat(response.data.tasks)
+                )
+                this.$set(
+                  this.list[demandIndex],
+                  'nums',
+                  response.data.nums
                 )
               }
 
@@ -3518,6 +3538,11 @@ export default {
   .form-title {
     font-size: 16px;
     color: #000000;
+    &.is-required::before {
+      content: "*";
+      color: #f56c6c;
+      margin-right: 4px;
+    }
   }
 
   .task-image-uploader {

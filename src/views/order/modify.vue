@@ -4,7 +4,7 @@
     <div class="filter-container">
       <div class="filter-left">
         <el-input
-          v-model="listQuery.modify_id"
+          v-model="listQuery.change_id"
           placeholder="输入申请单号"
           style="width: 200px"
           class="filter-item"
@@ -20,7 +20,7 @@
           @keyup.enter.native="handleFilter"
         />
         <el-input
-          v-model="listQuery.provider_name"
+          v-model="listQuery.supplier_name"
           placeholder="输入供应商名称"
           style="width: 200px"
           class="filter-item"
@@ -29,7 +29,7 @@
         />
 
         <el-select
-          v-model="listQuery.initiator"
+          v-model="listQuery.sponsor"
           placeholder="发起方"
           clearable
           class="filter-item"
@@ -45,7 +45,7 @@
         </el-select>
 
         <el-select
-          v-model="listQuery.type"
+          v-model="listQuery.change_type"
           placeholder="变更类型"
           clearable
           class="filter-item"
@@ -61,7 +61,7 @@
         </el-select>
 
         <el-select
-          v-model="listQuery.status"
+          v-model="listQuery.change_status"
           placeholder="单据状态"
           clearable
           class="filter-item"
@@ -108,6 +108,7 @@
         </el-button>
         <el-button
           slot="reference"
+          v-permission="[1, 2, 3, 4]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -118,6 +119,7 @@
         </el-button>
         <el-button
           slot="reference"
+          v-permission="[1, 2, 3, 4]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -135,10 +137,11 @@
       element-loading-text="拼命加载中"
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.8)"
+      class="list-container"
       :data="list"
       fit
       highlight-current-row
-      row-key="modify_id"
+      row-key="change_id"
       :expand-row-keys="expandRowKeys"
       @expand-change="expandChange"
     >
@@ -180,57 +183,60 @@
                 align="center"
               />
               <el-table-column
-                prop="category_name"
                 label="物件品类"
                 align="center"
-              />
+                width="150"
+                show-overflow-tooltip
+              >
+                <template slot-scope="scope">
+                  {{ scope.row.category | categoryText }}
+                </template>
+              </el-table-column>
               <el-table-column label="交付日期" width="200" align="center">
                 <template slot-scope="scope">
                   <div
                     v-if="
-                      scope.row.modify_deliver_date !== scope.row.deliver_date
+                      scope.row.deliver_new_date !== scope.row.deliver_old_date
                     "
                     class="modify-color"
                   >
-                    <span>{{ scope.row.deliver_date }}</span>
+                    <span>{{ scope.row.deliver_old_date }}</span>
                     <i class="el-icon-right" />
-                    <span>{{ scope.row.modify_deliver_date }}</span>
+                    <span>{{ scope.row.deliver_new_date }}</span>
                   </div>
-                  <span v-else>{{ scope.row.deliver_date }}</span>
+                  <span v-else>{{ scope.row.deliver_old_date }}</span>
                 </template>
               </el-table-column>
-              <el-table-column
-                prop="work_unit"
-                label="工作单位"
-                align="center"
-              />
+              <el-table-column label="工作单位" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.work_unit || "-" }}
+                </template>
+              </el-table-column>
               <el-table-column label="数量" align="center">
                 <template slot-scope="scope">
                   <div
-                    v-if="scope.row.work_num !== scope.row.modify_work_num"
+                    v-if="scope.row.old_nums !== scope.row.new_nums"
                     class="modify-color"
                   >
-                    <span>{{ scope.row.work_num }}</span>
+                    <span>{{ scope.row.old_nums }}</span>
                     <i class="el-icon-right" />
-                    <span>{{ scope.row.modify_work_num }}</span>
+                    <span>{{ scope.row.new_nums }}</span>
                   </div>
-                  <span v-else>{{ scope.row.work_num }}</span>
+                  <span v-else>{{ scope.row.old_nums }}</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="work_price" label="单价" align="center" />
+              <el-table-column prop="price" label="单价" align="center" />
               <el-table-column label="总价" align="center">
                 <template slot-scope="scope">
                   <div
-                    v-if="
-                      scope.row.modify_work_amount !== scope.row.work_amount
-                    "
+                    v-if="scope.row.new_amount !== scope.row.old_amount"
                     class="modify-color"
                   >
-                    <span>{{ scope.row.work_amount }}</span>
+                    <span>{{ scope.row.old_amount }}</span>
                     <i class="el-icon-right" />
-                    <span>{{ scope.row.modify_work_amount }}</span>
+                    <span>{{ scope.row.new_amount }}</span>
                   </div>
-                  <span v-else>{{ scope.row.work_amount }}</span>
+                  <span v-else>{{ scope.row.old_amount }}</span>
                 </template>
               </el-table-column>
             </el-table>
@@ -239,37 +245,47 @@
       </el-table-column>
       <el-table-column label="申请单号" align="left" width="200">
         <template slot-scope="{ row }">
-          {{ row.modify_id }}
+          {{ row.change_id }}
         </template>
       </el-table-column>
-      <el-table-column label="项目名称" align="center" width="200">
+      <el-table-column
+        label="项目名称"
+        align="center"
+        width="150"
+        show-overflow-tooltip
+      >
         <template slot-scope="{ row }">
-          {{ row.project_name }}
+          {{ row.project.project_name }}
         </template>
       </el-table-column>
-      <el-table-column label="供应商" align="center" width="200">
+      <el-table-column
+        label="供应商"
+        align="center"
+        width="150"
+        show-overflow-tooltip
+      >
         <template slot-scope="{ row }">
-          {{ row.provider_name }}
+          {{ row.supplier.name }}
         </template>
       </el-table-column>
-      <el-table-column label="物件数量" align="center" width="100">
+      <el-table-column label="物件数量" align="center" width="120">
         <template slot-scope="{ row }">
-          {{ row.task_num }}
+          {{ row.nums }}
         </template>
       </el-table-column>
-      <el-table-column label="发起方" align="center" width="100">
+      <el-table-column label="发起方" align="center" width="120">
         <template slot-scope="{ row }">
-          {{ row.initiator | initiatorTxt }}
+          {{ row.sponsor | initiatorTxt }}
         </template>
       </el-table-column>
-      <el-table-column label="变更类型" align="center" width="100">
+      <el-table-column label="变更类型" align="center" width="120">
         <template slot-scope="{ row }">
-          {{ row.type | typeTxt }}
+          {{ row.change_type | typeTxt }}
         </template>
       </el-table-column>
-      <el-table-column label="订单状态" align="center" width="100">
+      <el-table-column label="审核状态" align="center" width="120">
         <template slot-scope="{ row }">
-          {{ row.status | statusTxt }}
+          {{ row.change_status | statusTxt }}
         </template>
       </el-table-column>
       <el-table-column
@@ -288,6 +304,7 @@
             变更原因
           </el-button>
           <el-button
+            v-if="[3].indexOf(row.change_status) >= 0"
             type="primary"
             size="mini"
             plain
@@ -362,13 +379,11 @@
       :visible.sync="dialogRejectReasonVisible"
       width="600px"
     >
-      <div class="reason-box">
-        <div class="content">
-          品类改为3D品类改为3D品类改为3D品类改为3D品类改为3D
-        </div>
+      <div v-if="temp.reject" class="reason-box">
+        <div class="content">{{ temp.reject.reason || "" }}</div>
         <div class="user-info">
-          <div>驳回人：tom</div>
-          <div>驳回时间：2022-05-05 12:00:00</div>
+          <div>驳回人：{{ temp.reject.user }}</div>
+          <div>驳回时间：{{ temp.reject.created_at }}</div>
         </div>
       </div>
     </el-dialog>
@@ -381,11 +396,11 @@
     >
       <div class="reason-box">
         <div class="content">
-          品类改为3D品类改为3D品类改为3D品类改为3D品类改为3D
+          {{ tempModify.change_reason }}
         </div>
-        <div class="user-info">
-          <div>申请人：tom</div>
-          <div>申请时间：2022-05-05 12:00:00</div>
+        <div v-if="tempModify.initiator" class="user-info">
+          <div>申请人：{{ tempModify.initiator.name }}</div>
+          <div>申请时间：{{ tempModify.created_at }}</div>
         </div>
       </div>
     </el-dialog>
@@ -393,29 +408,47 @@
 </template>
 
 <script>
-import { fetchModifyOrderList } from '@/api/order/index'
+import { fetchModifyOrderList, changeVerify } from '@/api/order/index'
 
 import waves from '@/directive/waves'
+import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 
 const initiatorMap = [
-  { label: '项目组', value: 0 },
-  { label: '供应商', value: 1 }
+  { label: '供应商', value: 0 },
+  { label: '项目组', value: 1 }
 ]
 const typeMap = [
   { label: '数量变更', value: 0 },
   { label: '新增物件', value: 1 }
 ]
 const statusMap = [
-  { label: '审核中', value: 0 },
-  { label: '审核通过', value: 1 },
-  { label: '审核不通过', value: 2 }
+  { label: '待审核', value: 0 },
+  { label: '审核中', value: 1 },
+  { label: '已审核', value: 2 },
+  { label: '审核不通过', value: 3 }
 ]
 
 export default {
   components: { Pagination },
-  directives: { waves },
+  directives: { waves, permission },
   filters: {
+    categoryText(category) {
+      if (!category) {
+        return '-'
+      }
+      if (typeof category === 'string') {
+        return category
+      }
+      let name = category.category_name
+      if (category.parent) {
+        name = `${category.parent.category_name}/${name}`
+      }
+      if (category.parent.parent) {
+        name = `${category.parent.parent.category_name}/${name}`
+      }
+      return name
+    },
     initiatorTxt(initiator) {
       const index = initiatorMap.findIndex((v) => v.value === initiator)
       if (index >= 0) {
@@ -449,12 +482,12 @@ export default {
       typeMap: typeMap,
       statusMap: statusMap,
       listQuery: {
-        modify_id: '',
+        change_id: '',
         project_name: '',
-        provider_name: '',
-        initiator: '',
-        type: '',
-        status: '',
+        supplier_name: '',
+        sponsor: '',
+        change_type: '',
+        change_status: '',
         tag: '',
         page: 1,
         page_num: 10
@@ -468,10 +501,19 @@ export default {
       dialogStatus: '',
       dialogVerifyVisible: false,
       tempVerify: {
+        change_id: '',
+        status: '',
         reason: ''
       },
+      verifyRules: {},
+      temp: {},
       dialogRejectReasonVisible: false,
-      dialogModifyReasonVisible: false
+      dialogModifyReasonVisible: false,
+      tempModify: {
+        change_reason: '',
+        initiator: undefined,
+        created_at: ''
+      }
     }
   },
   created() {
@@ -480,7 +522,7 @@ export default {
   methods: {
     expandChange(row, expandedRows) {
       this.expandRowKeys = expandedRows.map((row) => {
-        return row.modify_id
+        return row.change_id
       })
     },
     /**
@@ -548,15 +590,16 @@ export default {
     getList() {
       this.listLoading = true
 
-      fetchModifyOrderList(this.listQuery).then((response) => {
-        this.total = response.data.total
-        this.list = response.data.items
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
+      fetchModifyOrderList(this.listQuery)
+        .then((response) => {
           this.listLoading = false
-        }, 1.5 * 1000)
-      })
+          this.total = response.data.total
+          this.list = response.data.list
+        })
+        .catch((error) => {
+          console.log(error)
+          this.listLoading = false
+        })
     },
     /**
      * 查询过滤
@@ -572,15 +615,15 @@ export default {
       if (isExpand) {
         this.list.forEach((listItem) => {
           if (listItem.checked) {
-            if (this.expandRowKeys.indexOf(listItem.modify_id) < 0) {
-              this.expandRowKeys.push(listItem.modify_id)
+            if (this.expandRowKeys.indexOf(listItem.change_id) < 0) {
+              this.expandRowKeys.push(listItem.change_id)
             }
           }
         })
       } else {
         this.list.forEach((listItem) => {
           if (listItem.checked) {
-            const keyIndex = this.expandRowKeys.indexOf(listItem.modify_id)
+            const keyIndex = this.expandRowKeys.indexOf(listItem.change_id)
             if (keyIndex >= 0) {
               this.expandRowKeys.splice(keyIndex, 1)
             }
@@ -592,31 +635,103 @@ export default {
      * 通过驳回弹窗
      */
     handleVerify(pass) {
-      this.dialogStatus = pass ? 'resolve' : 'reject'
+      const checkeds = []
+      if (
+        !this.list.some((listItem) => {
+          if (listItem.checked) {
+            if (checkeds.length >= 1) {
+              const errorName = `每次只能对单个变更单进行审核`
+              this.$message.error(errorName)
+              return true
+            }
+            if ([0, 1].indexOf(listItem.change_status) < 0) {
+              const errorName = `[${listItem.change_id}] 该申请单不是待审核状态，无法审核`
+              this.$message.error(errorName)
+              return true
+            }
+            checkeds.push(listItem.change_id)
+            return false
+          }
+          return false
+        })
+      ) {
+        if (checkeds.length <= 0) {
+          this.$message.error('请先选择变更单')
+          return false
+        }
+      } else {
+        return false
+      }
+
+      this.dialogStatus = pass === true ? 'resolve' : 'reject'
+      this.tempVerify.change_id = checkeds[0]
+      this.tempVerify.status = pass ? 1 : 0
+      if (pass) {
+        if (this.verifyRules.reason) {
+          delete this.verifyRules.reason
+        }
+      } else {
+        this.verifyRules = Object.assign({}, this.verifyRules, {
+          reason: [
+            { required: true, message: '请输入驳回原因', trigger: 'blur' }
+          ]
+        })
+      }
       this.dialogVerifyVisible = true
+      this.$nextTick(() => {
+        this.$refs['verifyDataForm'].clearValidate()
+      })
     },
     /**
      * 通过申请弹窗
      */
     confirmVerify() {
-      this.$notify({
-        title: '成功',
-        message: '处理成功',
-        type: 'success',
-        duration: 2000
+      this.$refs['verifyDataForm'].validate((valid) => {
+        if (valid) {
+          const tempData = JSON.parse(JSON.stringify(this.tempVerify))
+          changeVerify(tempData)
+            .then((response) => {
+              const { change_id, change_status } = response.data
+              const changeIndex = this.list.findIndex(
+                (listItem) => listItem.change_id === change_id
+              )
+              if (changeIndex >= 0) {
+                this.$set(this.list[changeIndex], 'change_status', change_status)
+              }
+              this.$notify({
+                title: '成功',
+                message: '处理成功',
+                type: 'success',
+                duration: 2000
+              })
+              this.dialogVerifyVisible = false
+            })
+            .catch((error) => {})
+        }
       })
-      this.dialogVerifyVisible = false
     },
     /**
      * 驳回原因
      */
-    handleRejectReason() {
-      this.dialogRejectReasonVisible = true
+    handleRejectReason(row) {
+      if (!row.reject) {
+        this.$message.error('对不起，没有驳回原因')
+        return false
+      }
+      this.temp = JSON.parse(JSON.stringify(row))
+      this.$nextTick(() => {
+        this.dialogRejectReasonVisible = true
+      })
     },
     /**
      * 变更原因
      */
-    handleModifyReason() {
+    handleModifyReason(row) {
+      this.tempModify = Object.assign({}, this.tempModify, {
+        change_reason: row.change_reason,
+        initiator: row.initiator,
+        created_at: row.created_at
+      })
       this.dialogModifyReasonVisible = true
     }
   }

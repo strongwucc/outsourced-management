@@ -20,7 +20,7 @@
           @keyup.enter.native="handleFilter"
         />
         <el-input
-          v-model="listQuery.provider_name"
+          v-model="listQuery.supplier_name"
           placeholder="输入供应商名称"
           style="width: 200px"
           class="filter-item"
@@ -58,16 +58,24 @@
         >
           收起
         </el-button>
-        <el-button
-          class="filter-item"
-          style="margin-left: 10px"
-          type="primary"
-          size="mini"
-          @click="handleModify"
-        >
-          申请变更
-        </el-button>
         <el-popconfirm
+          v-permission="[0]"
+          title="确定申请变更吗？"
+          @confirm="handleModify"
+        >
+          <el-button
+            slot="reference"
+            class="filter-item"
+            style="margin-left: 10px"
+            type="primary"
+            size="mini"
+          >
+            申请变更
+          </el-button>
+        </el-popconfirm>
+
+        <el-popconfirm
+          v-permission="[0]"
           title="确定交付验收吗？"
           @confirm="handleDeliver"
         ><el-button
@@ -88,6 +96,7 @@
       element-loading-text="拼命加载中"
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.8)"
+      class="list-container"
       :data="list"
       fit
       highlight-current-row
@@ -124,14 +133,19 @@
               <el-table-column
                 prop="task_id"
                 label="物件单号"
-                width="200"
+                width="150"
                 align="center"
               />
-              <el-table-column prop="task_image" label="缩略图" align="center">
+              <el-table-column
+                prop="task_image"
+                label="缩略图"
+                align="center"
+                width="80"
+              >
                 <template slot-scope="scope">
                   <el-image
                     style="width: 50px; height: 50px"
-                    :src="scope.row.task_image"
+                    :src="scope.row.image_url"
                   >
                     <div slot="error" class="image-slot">
                       <i
@@ -146,36 +160,79 @@
                 prop="task_name"
                 label="物件名称"
                 align="center"
+                width="100"
+                show-overflow-tooltip
               />
               <el-table-column
-                prop="category_name"
                 label="物件品类"
                 align="center"
-              />
+                width="150"
+                show-overflow-tooltip
+              >
+                <template slot-scope="scope">
+                  {{ scope.row.category | categoryText }}
+                </template>
+              </el-table-column>
               <el-table-column
                 prop="deliver_date"
                 label="交付日期"
-                width="200"
+                width="180"
                 align="center"
               />
               <el-table-column
-                prop="work_unit"
+                prop="unit"
                 label="工作单位"
+                width="80"
                 align="center"
               />
-              <el-table-column prop="work_num" label="数量" align="center" />
-              <el-table-column prop="work_price" label="单价" align="center" />
-              <el-table-column prop="work_amount" label="总价" align="center" />
-              <el-table-column prop="status" label="物件状态" align="center" />
+              <el-table-column
+                prop="nums"
+                label="数量"
+                width="80"
+                align="center"
+              />
+              <el-table-column
+                prop="price"
+                label="单价"
+                width="80"
+                align="center"
+              />
+              <el-table-column
+                prop="amount"
+                label="总价"
+                width="80"
+                align="center"
+              />
+              <el-table-column
+                prop="task_status"
+                label="物件状态"
+                width="100"
+                align="center"
+              >
+                <template slot-scope="scope">
+                  {{ scope.row.task_status | statusText }}
+                </template>
+              </el-table-column>
+              <!-- <el-table-column label="作品" align="center" width="80">
+                <el-button
+                  type="primary"
+                  size="mini"
+                  plain
+                  @click="handleDownloadWork(scope.row, scope.$index, $index)"
+                >
+                  下载
+                </el-button>
+              </el-table-column> -->
               <el-table-column
                 label="操作"
                 align="center"
-                min-width="100"
-                class-name="small-padding fixed-width"
+                min-width="300"
+                class-name="small-padding fixed-width need-flex"
               >
                 <template slot-scope="scope">
                   <el-upload
-                    class="upload-demo"
+                    v-if="[0, 2].indexOf(scope.row.task_status) >= 0"
+                    class="upload-box"
                     action="https://jsonplaceholder.typicode.com/posts/"
                     :show-file-list="false"
                     multiple
@@ -185,21 +242,25 @@
                     <el-button
                       size="mini"
                       type="primary"
+                      style="margin-left: 10px"
                       plain
                     >上传作品</el-button>
                   </el-upload>
                   <el-button
                     type="primary"
                     size="mini"
+                    style="margin-left: 10px"
                     plain
                     @click="handleDownloadWork(scope.row, scope.$index, $index)"
                   >
                     下载作品
                   </el-button>
                   <el-upload
-                    class="upload-demo"
+                    v-if="[0, 2].indexOf(scope.row.task_status) >= 0"
+                    class="upload-box"
                     action="https://jsonplaceholder.typicode.com/posts/"
                     :show-file-list="false"
+                    style="margin-left: 10px"
                     multiple
                     @on-success="handleUploadPlanImageSuccess"
                     @on-error="handleUploadPlanImageError"
@@ -210,8 +271,10 @@
                   </el-upload>
 
                   <el-button
+                    v-if="[4].indexOf(scope.row.task_status) >= 0"
                     type="primary"
                     size="mini"
+                    style="margin-left: 10px"
                     plain
                     @click="
                       handleRejectTaskReason(scope.row, scope.$index, $index)
@@ -220,6 +283,7 @@
                     驳回原因
                   </el-button>
                   <el-button
+                    v-if="[5].indexOf(scope.row.task_status) >= 0"
                     type="primary"
                     size="mini"
                     plain
@@ -240,52 +304,79 @@
           {{ row.order_id }}
         </template>
       </el-table-column>
-      <el-table-column label="项目名称" align="center" width="200">
+      <el-table-column
+        label="项目名称"
+        align="center"
+        width="150"
+        show-overflow-tooltip
+      >
         <template slot-scope="{ row }">
-          {{ row.project_name }}
+          {{ row.project.project_name }}
         </template>
       </el-table-column>
-      <el-table-column label="需求名称" align="center" width="200">
+      <el-table-column
+        label="需求名称"
+        align="center"
+        width="150"
+        show-overflow-tooltip
+      >
         <template slot-scope="{ row }">
           {{ row.demand_name }}
         </template>
       </el-table-column>
-      <el-table-column label="供应商" align="center" width="200">
+      <el-table-column
+        label="供应商"
+        align="center"
+        width="150"
+        show-overflow-tooltip
+      >
         <template slot-scope="{ row }">
-          {{ row.provider_name }}
+          {{ row.supplier.name }}
         </template>
       </el-table-column>
-      <el-table-column label="供管" align="center" width="100">
+      <el-table-column
+        label="供管"
+        align="center"
+        width="100"
+        show-overflow-tooltip
+      >
         <template slot-scope="{ row }">
-          {{ row.manager }}
+          {{ row.supplier_management }}
         </template>
       </el-table-column>
-      <el-table-column label="物件数量" align="center" width="100">
+      <el-table-column label="物件数量" align="center" width="80">
         <template slot-scope="{ row }">
-          {{ row.task_num }}
+          {{ row.nums }}
         </template>
       </el-table-column>
-      <el-table-column label="工作总量" align="center" width="100">
+      <el-table-column label="工作总量" align="center" width="80">
         <template slot-scope="{ row }">
-          {{ row.work_total }}
+          {{ row.work_num }}
         </template>
       </el-table-column>
-      <el-table-column label="总金额" align="center" width="100">
+      <el-table-column label="总金额" align="center" width="80">
         <template slot-scope="{ row }">
           {{ row.work_amount }}
         </template>
       </el-table-column>
-      <el-table-column label="停留时间" align="center" width="100">
-        <template slot-scope="{ row }"> {{ row.stay_time }}小时 </template>
-      </el-table-column>
-      <el-table-column label="当前处理人" align="center" width="100">
+      <el-table-column label="停留时间" align="center" width="80">
         <template slot-scope="{ row }">
-          {{ row.current_manager }}
+          {{ row.stay_time | stayTimeHours }}小时
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="当前处理人"
+        align="center"
+        width="150"
+        show-overflow-tooltip
+      >
+        <template slot-scope="{ row }">
+          {{ row.dealing || "-" }}
         </template>
       </el-table-column>
       <el-table-column label="单据状态" align="center" width="100">
         <template slot-scope="{ row }">
-          {{ row.status }}
+          {{ row.order_status | statusText }}
         </template>
       </el-table-column>
       <el-table-column
@@ -313,7 +404,7 @@
       :total="total"
       :page.sync="listQuery.page"
       :limit.sync="listQuery.page_num"
-      @pagination="getList"
+      @pagination="getList(true)"
     />
 
     <!--新增物件-->
@@ -381,7 +472,6 @@
                 style="width: 100%"
               />
             </el-form-item>
-
             <el-form-item label="备注信息:" prop="remark">
               <el-input
                 v-model="tempTask.remark"
@@ -397,6 +487,24 @@
               v-for="(property, propIndex) in tempTask.extend"
               :key="propIndex"
               :label="property.name"
+              :rules="
+                property.type === 1
+                  ? [
+                    {
+                      required: true,
+                      message: `请选择${property.name}`,
+                      trigger: 'change',
+                    },
+                  ]
+                  : [
+                    {
+                      required: true,
+                      message: `请输入${property.name}`,
+                      trigger: 'blur',
+                    },
+                  ]
+              "
+              :prop="`extend.${propIndex}.value`"
             >
               <el-select
                 v-if="property.type === 1"
@@ -414,7 +522,6 @@
               <el-input
                 v-else
                 v-model="property.value"
-                type="textarea"
                 :placeholder="`请输入${property.name}`"
                 class="dialog-form-item"
               />
@@ -422,23 +529,36 @@
           </el-col>
           <el-col :span="8">
             <el-form-item>
-              <div slot="label" class="form-title">缩略图</div>
+              <div slot="label" class="form-title is-required">缩略图</div>
             </el-form-item>
             <el-form-item prop="task_image" label-width="0">
               <el-upload
                 class="task-image-uploader"
-                action="https://jsonplaceholder.typicode.com/posts/"
+                :action="`${$baseUrl}/api/tools/upfile`"
                 :show-file-list="false"
                 :on-success="handleTaskImageSuccess"
-                :before-upload="beforeTaskImageUpload"
+                :on-change="handleTaskImageChange"
               >
                 <img
-                  v-if="tempTask.task_image"
-                  :src="tempTask.task_image"
+                  v-if="tempTask.task_image_url"
+                  :src="tempTask.task_image_url"
                   class="task-image"
                 >
                 <i v-else class="el-icon-plus task-image-uploader-icon" />
               </el-upload>
+            </el-form-item>
+            <el-form-item>
+              <div slot="label" class="form-title is-required">
+                新增物件原因
+              </div>
+            </el-form-item>
+            <el-form-item label-width="0" prop="reason">
+              <el-input
+                v-model="tempTask.reason"
+                type="textarea"
+                placeholder="请输入新增物件原因"
+                class="dialog-form-item"
+              />
             </el-form-item>
           </el-col>
         </el-row>
@@ -477,9 +597,9 @@
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="数量:" prop="work_num">
+        <el-form-item label="数量:" prop="nums">
           <el-input
-            v-model="tempModify.work_num"
+            v-model="tempModify.nums"
             placeholder="请输入变更数量"
             class="dialog-form-item"
           />
@@ -495,7 +615,7 @@
           <el-input
             v-model="tempModify.reason"
             type="textarea"
-            placeholder="请输入终止原因"
+            placeholder="请输入变更原因"
             class="dialog-form-item"
           />
         </el-form-item>
@@ -551,16 +671,54 @@
 </template>
 
 <script>
-import { fetchOrderList } from '@/api/order/index'
+import { fetchOrderList, modifyOrder, addTask } from '@/api/order/index'
 import { createTask } from '@/api/demand/task'
 
 import waves from '@/directive/waves'
+import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 
 export default {
   components: { Pagination },
-  directives: { waves },
-  filters: {},
+  directives: { waves, permission },
+  filters: {
+    categoryText(category) {
+      if (!category) {
+        return '-'
+      }
+      if (typeof category === 'string') {
+        return category
+      }
+      let name = category.category_name
+      if (category.parent) {
+        name = `${category.parent.category_name}/${name}`
+      }
+      if (category.parent.parent) {
+        name = `${category.parent.parent.category_name}/${name}`
+      }
+      return name
+    },
+    statusText(status) {
+      const statusMap = {
+        0: '待交付验收',
+        1: '变更中',
+        2: '资源审核中',
+        3: '资源已验收',
+        4: '验收未通过',
+        5: '物件已终止',
+        6: '验收通过'
+      }
+      return statusMap[status]
+    },
+    stayTimeHours(seconds) {
+      const diff = parseInt(seconds)
+      if (isNaN(diff)) {
+        return 0
+      }
+
+      return Math.round(+(diff / 3600) + 'e' + 1) / Math.pow(10, 1)
+    }
+  },
   data() {
     return {
       globelCheckedAll: false,
@@ -571,7 +729,7 @@ export default {
       listQuery: {
         order_id: '',
         project_name: '',
-        provider_name: '',
+        supplier_name: '',
         tag: '',
         page: 1,
         page_num: 10
@@ -593,16 +751,40 @@ export default {
         demand_id: '',
         task_name: '',
         task_image: '',
+        task_image_url: '',
         work_unit: '',
         work_num: '',
         deliver_date: '',
         remark: '',
-        extend: []
+        extend: [],
+        reason: ''
       },
-      taskRules: {},
+      taskRules: {
+        task_name: [
+          { required: true, message: '请输入物件名称', trigger: 'blur' }
+        ],
+        task_image: [
+          { required: true, message: '请添加缩略图', trigger: 'blur' }
+        ],
+        work_unit: [
+          { required: true, message: '请选择工作单位', trigger: 'change' }
+        ],
+        work_num: [
+          { required: true, message: '请输入预估数量', trigger: 'blur' }
+        ],
+        deliver_date: [
+          { required: true, message: '请选择日期', trigger: 'blur' }
+        ],
+        value: [{ required: true, message: '请设置属性值', trigger: 'blur' }],
+        reason: [
+          { required: true, message: '请输入新增物件原因', trigger: 'blur' }
+        ]
+      },
       dialogModifyVisible: false,
       tempModify: {
-        work_num: '',
+        order_id: '',
+        task_id: [],
+        nums: '',
         work_price: '',
         work_amount: '',
         deliver_date: '',
@@ -614,7 +796,7 @@ export default {
     }
   },
   created() {
-    this.getList()
+    this.getList(true)
   },
   methods: {
     expandChange(row, expandedRows) {
@@ -684,25 +866,28 @@ export default {
     /**
      * 获取需求列表
      */
-    getList() {
-      this.listLoading = true
+    getList(needLoading = true) {
+      if (needLoading) {
+        this.listLoading = true
+      }
 
-      fetchOrderList(this.listQuery).then((response) => {
-        this.total = response.data.total
-        this.list = response.data.items
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
+      fetchOrderList(this.listQuery)
+        .then((response) => {
           this.listLoading = false
-        }, 1.5 * 1000)
-      })
+          this.total = response.data.total
+          this.list = response.data.list
+        })
+        .catch((error) => {
+          console.log(error)
+          this.listLoading = false
+        })
     },
     /**
      * 查询过滤
      */
     handleFilter() {
       this.listQuery.page = 1
-      this.getList()
+      this.getList(true)
     },
     /**
      * 展开
@@ -731,9 +916,50 @@ export default {
      * 申请变更
      */
     handleModify() {
+      const orderCheckeds = []
+      const taskCheckeds = []
+
+      let price, amount
+
+      if (
+        !this.list.some((orderItem, orderIndex) => {
+          return orderItem.tasks.some((taskItem, taskIndex) => {
+            if (taskItem.checked) {
+              if ([0].indexOf(taskItem.task_status) < 0) {
+                const errorName = `[${taskItem.task_id}]: 该物件状态无法申请变更`
+                this.$message.error(errorName)
+                return true
+              }
+              if (orderCheckeds.indexOf(taskItem.order_id) < 0) {
+                orderCheckeds.push(taskItem.order_id)
+              }
+              if (orderCheckeds.length > 1) {
+                const errorName = `只能选择单个订单下的物件`
+                this.$message.error(errorName)
+                return true
+              }
+              taskCheckeds.push(taskItem.task_id)
+              price = taskItem.price
+              amount = taskItem.amount
+              return false
+            }
+            return false
+          })
+        })
+      ) {
+        if (taskCheckeds.length <= 0) {
+          this.$message.error('请先选择物件')
+          return false
+        }
+      } else {
+        return false
+      }
+
       this.tempModify = Object.assign({}, this.tempModify, {
-        work_price: 10,
-        work_amount: 10000
+        order_id: orderCheckeds[0],
+        task_id: taskCheckeds,
+        work_price: price,
+        work_amount: amount
       })
       this.dialogStatus = 'modify'
       this.dialogModifyVisible = true
@@ -747,13 +973,36 @@ export default {
     confirmModify() {
       this.$refs['modifyDataForm'].validate((valid) => {
         if (valid) {
-          this.$notify({
-            title: '成功',
-            message: '申请成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.dialogModifyVisible = false
+          const tempData = JSON.parse(JSON.stringify(this.tempModify))
+          modifyOrder(tempData)
+            .then((response) => {
+              const orderIndex = this.list.findIndex(
+                (listItem) => listItem.order_id === tempData.order_id
+              )
+              if (orderIndex >= 0) {
+                this.$set(this.list[orderIndex], 'order_status', 1)
+                tempData.task_id.forEach((task_id) => {
+                  const taskIndex = this.list[orderIndex].tasks.findIndex(
+                    (taskItem) => taskItem.task_id === task_id
+                  )
+                  if (taskIndex >= 0) {
+                    this.$set(
+                      this.list[orderIndex].tasks[taskIndex],
+                      'task_status',
+                      1
+                    )
+                  }
+                })
+              }
+              this.$notify({
+                title: '成功',
+                message: '申请成功',
+                type: 'success',
+                duration: 2000
+              })
+              this.dialogModifyVisible = false
+            })
+            .catch((error) => {})
         }
       })
     },
@@ -875,23 +1124,44 @@ export default {
       this.$refs['taskDataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempTask))
-          temp.task_id = parseInt(Math.random() * 100) + 1024
-          createTask(temp).then(() => {
-            const orderIndex = this.list.findIndex(
-              (v) => v.order_id === temp.order_id
-            )
+          addTask(temp).then((response) => {
+            const task = response.data
+            let orderIndex = -1
+            this.list.some((listItem, listIndex) => {
+              if (listItem.order_id === task.order_id) {
+                orderIndex = listIndex
+                return true
+              }
+              return false
+            })
 
             if (orderIndex >= 0) {
-              temp.category_id = this.tempTaskCategory.category_id
-              temp.category_name = this.tempTaskCategory.category_name
-              temp.work_price = 10
-              temp.work_amount = 10 * temp.work_num
-              this.list[orderIndex].tasks.unshift(temp)
+              this.$set(
+                this.list[orderIndex],
+                'order_status',
+                1
+              )
+              this.$set(
+                this.list[orderIndex],
+                'nums',
+                parseInt(this.list[orderIndex].nums) + 1
+              )
+              this.$set(
+                this.list[orderIndex],
+                'work_num',
+                parseInt(this.list[orderIndex].work_num) + parseInt(task.nums)
+              )
+              this.$set(
+                this.list[orderIndex],
+                'work_amount',
+                parseFloat(this.list[orderIndex].work_amount) + parseFloat(task.amount)
+              )
+              this.list[orderIndex].tasks.unshift(task)
             }
             this.dialogTaskVisible = false
             this.$notify({
               title: '成功',
-              message: '创建成功',
+              message: '新增物件成功',
               type: 'success',
               duration: 2000
             })
@@ -902,14 +1172,19 @@ export default {
     /**
      * 上传物件图片成功回调
      */
-    handleTaskImageSuccess(res, file) {
-      console.log(11111, res, file)
+    handleTaskImageSuccess(response, file) {
+      this.handleTaskImageChange(file)
     },
     /**
-     * 上传物件图片前回调
+     * 上传物件图片变化回调
      */
-    beforeTaskImageUpload(file) {
-      console.log(22222, file)
+    handleTaskImageChange(file) {
+      if (file.response) {
+        this.tempTask = Object.assign({}, this.tempTask, {
+          task_image: file.response.data.file_id,
+          task_image_url: URL.createObjectURL(file.raw)
+        })
+      }
     }
   }
 }
@@ -939,6 +1214,27 @@ export default {
     }
   }
   .list-container {
+    ::v-deep .el-table__body-wrapper {
+      .el-table__expanded-cell {
+        z-index: 100;
+        padding: 0;
+      }
+    }
+    ::v-deep .el-table__fixed,
+    ::v-deep .el-table__fixed-right {
+      .el-table__expanded-cell {
+        visibility: hidden;
+        padding: 0;
+      }
+    }
+    .expand {
+      width: calc(100vw - 100px);
+      padding: 20px;
+      background: #fff; //盖住fixed产生的阴影
+    }
+    .upload-box {
+      display: inline-block;
+    }
   }
 }
 .dialog-form {
@@ -959,6 +1255,11 @@ export default {
   .form-title {
     font-size: 16px;
     color: #000000;
+    &.is-required::before {
+      content: "*";
+      color: #f56c6c;
+      margin-right: 4px;
+    }
   }
 
   .task-image-uploader {

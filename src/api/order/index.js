@@ -2,17 +2,41 @@ import request from '@/utils/request'
 
 export function fetchOrderList(params) {
   return request({
-    url: '/vue-admin-template/order/list',
+    url: '/api/order/list',
     method: 'post',
     params
   })
 }
 
+export function addTask(data) {
+  return request({
+    url: '/api/order/changeTask',
+    method: 'post',
+    data
+  })
+}
+
+export function modifyOrder(data) {
+  return request({
+    url: '/api/order/changeNum',
+    method: 'post',
+    data
+  })
+}
+
 export function fetchModifyOrderList(params) {
   return request({
-    url: '/vue-admin-template/order/modify/list',
+    url: '/api/order/changeList',
     method: 'post',
     params
+  })
+}
+
+export function changeVerify(data) {
+  return request({
+    url: '/api/order/changeVerify',
+    method: 'post',
+    data
   })
 }
 
