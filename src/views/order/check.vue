@@ -149,7 +149,7 @@
       <el-table-column type="expand" width="20">
         <template slot-scope="{ row, $index }">
           <div class="expand-table-box" style="padding-left: 50px">
-            <el-table class="task-list" border :data="row.tasks" fit stripe>
+            <el-table class="task-list" border :data="row.items" fit stripe>
               <el-table-column label="" width="50" align="center">
                 <template slot-scope="scope">
                   <el-checkbox
@@ -185,10 +185,15 @@
                 align="center"
               />
               <el-table-column
-                prop="category_name"
                 label="物件品类"
                 align="center"
-              />
+                width="150"
+                show-overflow-tooltip
+              >
+                <template slot-scope="scope">
+                  {{ scope.row.category | categoryText }}
+                </template>
+              </el-table-column>
               <el-table-column
                 prop="deliver_date"
                 label="交付日期"
@@ -203,7 +208,16 @@
               <el-table-column prop="work_num" label="数量" align="center" />
               <el-table-column prop="work_price" label="单价" align="center" />
               <el-table-column prop="work_amount" label="总价" align="center" />
-              <el-table-column prop="status" label="物件状态" align="center" />
+              <el-table-column
+                prop="task_status"
+                label="物件状态"
+                width="100"
+                align="center"
+              >
+                <template slot-scope="scope">
+                  {{ scope.row.task_status | statusText }}
+                </template>
+              </el-table-column>
               <el-table-column
                 label="操作"
                 align="center"
@@ -439,7 +453,34 @@ import Pagination from '@/components/Pagination'
 export default {
   components: { Pagination },
   directives: { waves },
-  filters: {},
+  filters: {
+    categoryText(category) {
+      if (!category) {
+        return '-'
+      }
+      if (typeof category === 'string') {
+        return category
+      }
+      let name = category.category_name
+      if (category.parent) {
+        name = `${category.parent.category_name}/${name}`
+      }
+      if (category.parent.parent) {
+        name = `${category.parent.parent.category_name}/${name}`
+      }
+      return name
+    },
+    statusText(status) {
+      const statusMap = {
+        0: '资源审核中',
+        1: '资源已验收',
+        2: '验收不通过',
+        3: '物件已终止',
+        4: '已生成对帐单'
+      }
+      return statusMap[status]
+    }
+  },
   data() {
     return {
       globelCheckedAll: false,
@@ -565,13 +606,12 @@ export default {
       this.listLoading = true
 
       fetchCheckOrderList(this.listQuery).then((response) => {
+        this.listLoading = false
         this.total = response.data.total
-        this.list = response.data.items
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+        this.list = response.data.list
+      }).catch(error => {
+        console.log(error)
+        this.listLoading = false
       })
     },
     /**

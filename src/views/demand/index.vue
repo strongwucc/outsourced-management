@@ -1658,7 +1658,7 @@ import { fetchAllCategory } from '@/api/system/category'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 import permission from '@/directive/permission/index.js' // 权限判断指令
-import { downloadFile, downloadExcelStream } from '@/utils/index'
+import { downloadFile, downloadFileStream } from '@/utils/index'
 
 const tagList = [
   { id: 0, name: '正式包' },
@@ -3186,7 +3186,7 @@ export default {
       if (this.tempImportTask.demand_id) {
         exportTaskTpl(this.tempImportTask.demand_id)
           .then((response) => {
-            downloadExcelStream('物件模板', response)
+            downloadFileStream('物件模板.xlsx', response)
           })
           .catch((error) => {
             console.log(error)

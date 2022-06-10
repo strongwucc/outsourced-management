@@ -143,17 +143,40 @@ export function downloadFile(fileName, filePath) {
   }, 500)
 }
 
-export function downloadExcelStream(fileName, data) {
+export function downloadFileStream(fileName, data) {
   const aLink = document.createElement('a')
-  const blob = new Blob([data], { type: 'application/vnd.ms-excel' })
+  const blob = new Blob([data], { type: 'image/jpeg' })
+  // const blob = new Blob([data])
   // 创建一个当前文件的内存URL
   const _href = URL.createObjectURL(blob)
   aLink.style.display = 'none'
   aLink.href = _href
   document.body.appendChild(aLink)
-  aLink.setAttribute('download', `${fileName}.xlsx`)
+  aLink.setAttribute('download', fileName)
   aLink.click()
   document.body.removeChild(aLink)
   // 手动释放创建的URL对象所占内存
   URL.revokeObjectURL(_href)
+}
+
+export function downloadFileUrl(fileName, url) {
+  fetch(url)
+    .then((res) => res.blob())
+    .then((blob) => {
+      const aLink = document.createElement('a')
+      // 创建一个当前文件的内存URL
+      const _href = URL.createObjectURL(blob)
+      aLink.style.display = 'none'
+      aLink.href = _href
+      document.body.appendChild(aLink)
+      aLink.setAttribute('download', fileName)
+      aLink.click()
+      document.body.removeChild(aLink)
+      // 手动释放创建的URL对象所占内存
+      URL.revokeObjectURL(_href)
+    })
+}
+
+export function baseName(url) {
+  return String(url).substring(url.lastIndexOf('/') + 1)
 }

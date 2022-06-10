@@ -24,6 +24,14 @@ export function modifyOrder(data) {
   })
 }
 
+export function toCheckOrder(data) {
+  return request({
+    url: '/api/order/check',
+    method: 'post',
+    data
+  })
+}
+
 export function fetchModifyOrderList(params) {
   return request({
     url: '/api/order/changeList',
@@ -42,7 +50,7 @@ export function changeVerify(data) {
 
 export function fetchCheckOrderList(params) {
   return request({
-    url: '/vue-admin-template/order/check/list',
+    url: '/api/order/receiveQuery',
     method: 'post',
     params
   })
@@ -50,7 +58,7 @@ export function fetchCheckOrderList(params) {
 
 export function fetchReconcileOrderList(params) {
   return request({
-    url: '/vue-admin-template/order/reconcile/list',
+    url: '/api/statement/list',
     method: 'post',
     params
   })

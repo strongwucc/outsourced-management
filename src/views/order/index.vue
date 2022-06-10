@@ -231,13 +231,24 @@
               >
                 <template slot-scope="scope">
                   <el-upload
-                    v-if="[0, 2].indexOf(scope.row.task_status) >= 0"
+                    v-if="[0].indexOf(scope.row.task_status) >= 0"
                     class="upload-box"
-                    action="https://jsonplaceholder.typicode.com/posts/"
+                    :action="`${$baseUrl}/api/tools/upfile`"
                     :show-file-list="false"
                     multiple
-                    @on-success="handleUploadWorkSuccess"
-                    @on-error="handleUploadWorkError"
+                    :file-list="scope.row.finished_product"
+                    :on-success="
+                      (response, file, fileList) =>
+                        handleUploadWorkSuccess(
+                          response,
+                          file,
+                          fileList,
+                          $index,
+                          scope.$index,
+                          'finished_product'
+                        )
+                    "
+                    :on-error="handleUploadWorkError"
                   >
                     <el-button
                       size="mini"
@@ -256,14 +267,24 @@
                     下载作品
                   </el-button>
                   <el-upload
-                    v-if="[0, 2].indexOf(scope.row.task_status) >= 0"
+                    v-if="[0].indexOf(scope.row.task_status) >= 0"
                     class="upload-box"
-                    action="https://jsonplaceholder.typicode.com/posts/"
+                    :action="`${$baseUrl}/api/tools/upfile`"
                     :show-file-list="false"
                     style="margin-left: 10px"
-                    multiple
-                    @on-success="handleUploadPlanImageSuccess"
-                    @on-error="handleUploadPlanImageError"
+                    :file-list="scope.row.display_area"
+                    :on-success="
+                      (response, file, fileList) =>
+                        handleUploadWorkSuccess(
+                          response,
+                          file,
+                          fileList,
+                          $index,
+                          scope.$index,
+                          'display_area'
+                        )
+                    "
+                    :on-error="handleUploadWorkError"
                   >
                     <el-button type="primary" size="mini" plain>
                       上传展示图
@@ -671,8 +692,10 @@
 </template>
 
 <script>
-import { fetchOrderList, modifyOrder, addTask } from '@/api/order/index'
+import { fetchOrderList, modifyOrder, addTask, toCheckOrder } from '@/api/order/index'
 import { createTask } from '@/api/demand/task'
+import { downloadFile } from '@/api/system/file'
+import { downloadFileStream, baseName } from '@/utils/index'
 
 import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
@@ -792,7 +815,8 @@ export default {
       },
       modifyRules: {},
       dialogRejectReasonVisible: false,
-      dialogStopReasonVisible: false
+      dialogStopReasonVisible: false,
+      fileList: []
     }
   },
   created() {
@@ -980,7 +1004,7 @@ export default {
                 (listItem) => listItem.order_id === tempData.order_id
               )
               if (orderIndex >= 0) {
-                this.$set(this.list[orderIndex], 'order_status', 1)
+                // this.$set(this.list[orderIndex], "order_status", 1);
                 tempData.task_id.forEach((task_id) => {
                   const taskIndex = this.list[orderIndex].tasks.findIndex(
                     (taskItem) => taskItem.task_id === task_id
@@ -1010,39 +1034,108 @@ export default {
      * 交付验收
      */
     handleDeliver() {
-      this.$notify({
-        title: '成功',
-        message: '交付成功',
-        type: 'success',
-        duration: 2000
-      })
+      const taskCheckeds = []
+      if (
+        !this.list.some((orderItem, orderIndex) => {
+          return orderItem.tasks.some((taskItem, taskIndex) => {
+            if (taskItem.checked) {
+              if ([0].indexOf(taskItem.task_status) < 0) {
+                const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
+                this.$message.error(errorName)
+                return true
+              }
+              if (taskItem.finished_product.length <= 0) {
+                const errorName = `[${taskItem.task_id}]: 请上传该物件的作品`
+                this.$message.error(errorName)
+                return true
+              }
+              taskCheckeds
+                .push({
+                  task_id: taskItem.task_id,
+                  file: taskItem.finished_product.map((product) => {
+                    return product.file_id
+                  }).join(',')
+                })
+              return false
+            }
+            return false
+          })
+        })
+      ) {
+        if (taskCheckeds.length <= 0) {
+          this.$message.error('请先选择物件')
+          return false
+        }
+      } else {
+        return false
+      }
+
+      toCheckOrder({ tasks: taskCheckeds })
+        .then((response) => {
+          taskCheckeds.forEach(checkedTaskItem => {
+            let checkedOrderIndex, checkedTaskIndex
+            this.list.some((orderItem, orderIndex) => {
+              return orderItem.tasks.some((taskItem, taskIndex) => {
+                if (taskItem.task_id === checkedTaskItem.task_id) {
+                  checkedOrderIndex = orderIndex
+                  checkedTaskIndex = taskIndex
+                  return true
+                }
+                return false
+              })
+            })
+            this.$set(this.list[checkedOrderIndex].tasks[checkedTaskIndex], 'task_status', 2)
+          })
+
+          this.$message.success('交付验收成功')
+        })
+        .catch((error) => {})
     },
     /**
      * 上传作品
      */
     handleUploadWork(task, taskIndex, demandIndex) {},
-    handleUploadWorkSuccess(response, file, fileList) {
-      console.log('上传成功', response, file, fileList)
-      this.$notify({
-        title: '成功',
-        message: '上传成功',
-        type: 'success',
-        duration: 2000
+    handleUploadWorkSuccess(
+      response,
+      file,
+      fileList,
+      orderIndex,
+      taskIndex,
+      keyName
+    ) {
+      console.log(11111, response, file, fileList)
+      const fileArr = fileList.map((fileItem) => {
+        return {
+          name: fileItem.name,
+          url: fileItem.response
+            ? fileItem.response.data.url
+            : fileItem.url || '',
+          file_id: fileItem.response
+            ? fileItem.response.data.file_id
+            : fileItem.file_id || ''
+        }
       })
+      this.$set(this.list[orderIndex].tasks[taskIndex], keyName, fileArr)
+      this.$message.success('上传成功')
     },
     handleUploadWorkError(err, file, fileList) {
       console.log('上传失败', err, file, fileList)
-      this.$notify({
-        title: '失败',
-        message: '上传失败',
-        type: 'error',
-        duration: 2000
-      })
+      this.$message.error('上传失败')
     },
     /**
      * 下载作品
      */
-    handleDownloadWork(task, taskIndex, demandIndex) {},
+    handleDownloadWork(task, taskIndex, demandIndex) {
+      if (task.finished_product.length > 0) {
+        task.finished_product.forEach((product) => {
+          downloadFile({ url: product.url })
+            .then((response) => {
+              downloadFileStream(baseName(product.url), response)
+            })
+            .catch((error) => {})
+        })
+      }
+    },
     /**
      * 上传展示图
      */
@@ -1136,11 +1229,7 @@ export default {
             })
 
             if (orderIndex >= 0) {
-              this.$set(
-                this.list[orderIndex],
-                'order_status',
-                1
-              )
+              this.$set(this.list[orderIndex], 'order_status', 1)
               this.$set(
                 this.list[orderIndex],
                 'nums',
@@ -1154,7 +1243,8 @@ export default {
               this.$set(
                 this.list[orderIndex],
                 'work_amount',
-                parseFloat(this.list[orderIndex].work_amount) + parseFloat(task.amount)
+                parseFloat(this.list[orderIndex].work_amount) +
+                  parseFloat(task.amount)
               )
               this.list[orderIndex].tasks.unshift(task)
             }
