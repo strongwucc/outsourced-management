@@ -28,7 +28,7 @@
           @keyup.enter.native="handleFilter"
         />
         <el-input
-          v-model="listQuery.provider_name"
+          v-model="listQuery.supplier_name"
           placeholder="输入供应商名称"
           style="width: 200px"
           class="filter-item"
@@ -67,6 +67,7 @@
           收起
         </el-button>
         <el-popconfirm
+          v-permission="[0]"
           title="确定生成对账单吗？"
           @confirm="handleReconcile"
         ><el-button
@@ -78,27 +79,35 @@
         >
           生成对账单
         </el-button></el-popconfirm>
-        <el-button
-          class="filter-item"
-          style="margin-left: 10px"
-          type="primary"
-          size="mini"
-          @click="handleModify"
+        <el-popconfirm
+          v-permission="[1]"
+          title="确定申请变更吗？"
+          @confirm="handleModify"
         >
-          申请变更
-        </el-button>
+          <el-button
+            slot="reference"
+            class="filter-item"
+            style="margin-left: 10px"
+            type="primary"
+            size="mini"
+          >
+            申请变更
+          </el-button>
+        </el-popconfirm>
         <el-button
           slot="reference"
+          v-permission="[1,2,3,4]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
           size="mini"
           @click="handleVerify(true)"
         >
-          通过
+          验收通过
         </el-button>
         <el-button
           slot="reference"
+          v-permission="[1,2,3,4]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -108,6 +117,7 @@
           驳回
         </el-button>
         <el-button
+          v-permission="[1,2,3,4]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -168,7 +178,7 @@
                 <template slot-scope="scope">
                   <el-image
                     style="width: 50px; height: 50px"
-                    :src="scope.row.task_image"
+                    :src="scope.row.image_url"
                   >
                     <div slot="error" class="image-slot">
                       <i
@@ -215,7 +225,7 @@
                 align="center"
               >
                 <template slot-scope="scope">
-                  {{ scope.row.task_status | statusText }}
+                  {{ scope.row.task_status | taskStatusText }}
                 </template>
               </el-table-column>
               <el-table-column
@@ -251,17 +261,17 @@
       </el-table-column>
       <el-table-column label="供应商" align="center" width="200">
         <template slot-scope="{ row }">
-          {{ row.provider_name }}
+          {{ row.supplier_name }}
         </template>
       </el-table-column>
       <el-table-column label="物件数量" align="center">
         <template slot-scope="{ row }">
-          {{ row.task_num }}
+          {{ row.nums }}
         </template>
       </el-table-column>
       <el-table-column label="工作总量" align="center">
         <template slot-scope="{ row }">
-          {{ row.work_total }}
+          {{ row.work_num }}
         </template>
       </el-table-column>
       <el-table-column label="总金额" align="center">
@@ -274,12 +284,12 @@
       </el-table-column>
       <el-table-column label="当前处理人" align="center">
         <template slot-scope="{ row }">
-          {{ row.current_manager }}
+          {{ row.dealing }}
         </template>
       </el-table-column>
       <el-table-column label="订单状态" align="center">
         <template slot-scope="{ row }">
-          {{ row.status }}
+          {{ row.receipts_status | statusText }}
         </template>
       </el-table-column>
     </el-table>
@@ -359,6 +369,7 @@
         ref="verifyDataForm"
         class="dialog-form"
         :model="tempVerify"
+        :rules="verifyRules"
         label-position="left"
         label-width="100px"
         style="margin: 0 50px"
@@ -445,14 +456,17 @@
 </template>
 
 <script>
-import { fetchCheckOrderList } from '@/api/order/index'
+import { fetchCheckOrderList, modifyCheckOrder, verifyCheckOrder } from '@/api/order/index'
+import { downloadFile } from '@/api/system/file'
+import { downloadFileStream, baseName } from '@/utils/index'
 
 import waves from '@/directive/waves'
+import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 
 export default {
   components: { Pagination },
-  directives: { waves },
+  directives: { waves, permission },
   filters: {
     categoryText(category) {
       if (!category) {
@@ -469,6 +483,17 @@ export default {
         name = `${category.parent.parent.category_name}/${name}`
       }
       return name
+    },
+    taskStatusText(status) {
+      const statusMap = {
+        0: '资源审核中',
+        1: '变更中',
+        2: '资源已验收',
+        3: '验收不通过',
+        4: '物件已终止',
+        5: '已生成对帐单'
+      }
+      return statusMap[status]
     },
     statusText(status) {
       const statusMap = {
@@ -492,7 +517,7 @@ export default {
         receipt_id: '',
         order_id: '',
         project_name: '',
-        provider_name: '',
+        supplier_name: '',
         tag: '',
         page: 1,
         page_num: 10
@@ -505,6 +530,8 @@ export default {
       dialogStatus: '',
       dialogModifyVisible: false,
       tempModify: {
+        receipt_id: '',
+        task_id: [],
         work_num: '',
         work_price: '',
         work_amount: '',
@@ -527,8 +554,11 @@ export default {
       },
       dialogVerifyVisible: false,
       tempVerify: {
+        task_id: [],
+        status: '',
         reason: ''
-      }
+      },
+      verifyRules: {}
     }
   },
   created() {
@@ -546,7 +576,7 @@ export default {
     clickCheckAll(item) {
       this.list = this.list.map((val) => {
         val.checked = this.globelCheckedAll
-        val.tasks = val.tasks.map((i) => {
+        val.items = val.items.map((i) => {
           i.checked = this.globelCheckedAll
           return i
         })
@@ -564,7 +594,7 @@ export default {
      * 每行选择事件
      */
     handleSelectionChange(val) {
-      val.tasks = val.tasks.map((i) => {
+      val.items = val.items.map((i) => {
         i.checked = val.checked
         return i
       })
@@ -585,7 +615,7 @@ export default {
       // 如果是选了勾选
       if (item.checked) {
         // 检查是否所有数据都手动勾选了
-        const isAllChecked = row.tasks.every((v) => v.checked)
+        const isAllChecked = row.items.every((v) => v.checked)
         if (isAllChecked) {
           row.checked = true
           const globelCheckedAll = this.list.every((v) => v.checked)
@@ -648,9 +678,50 @@ export default {
      * 申请变更
      */
     handleModify() {
+      const orderCheckeds = []
+      const taskCheckeds = []
+
+      let price, amount
+
+      if (
+        !this.list.some((orderItem, orderIndex) => {
+          return orderItem.items.some((taskItem, taskIndex) => {
+            if (taskItem.checked) {
+              if ([0].indexOf(taskItem.task_status) < 0) {
+                const errorName = `[${taskItem.task_id}]: 该物件状态无法申请变更`
+                this.$message.error(errorName)
+                return true
+              }
+              if (orderCheckeds.indexOf(taskItem.receipt_id) < 0) {
+                orderCheckeds.push(taskItem.receipt_id)
+              }
+              if (orderCheckeds.length > 1) {
+                const errorName = `只能选择单个验收单下的物件`
+                this.$message.error(errorName)
+                return true
+              }
+              taskCheckeds.push(taskItem.task_id)
+              price = taskItem.work_price
+              amount = taskItem.work_amount
+              return false
+            }
+            return false
+          })
+        })
+      ) {
+        if (taskCheckeds.length <= 0) {
+          this.$message.error('请先选择物件')
+          return false
+        }
+      } else {
+        return false
+      }
+
       this.tempModify = Object.assign({}, this.tempModify, {
-        work_price: 10,
-        work_amount: 10000
+        receipt_id: orderCheckeds[0],
+        task_id: taskCheckeds,
+        work_price: price,
+        work_amount: amount
       })
       this.dialogStatus = 'modify'
       this.dialogModifyVisible = true
@@ -664,13 +735,36 @@ export default {
     confirmModify() {
       this.$refs['modifyDataForm'].validate((valid) => {
         if (valid) {
-          this.$notify({
-            title: '成功',
-            message: '申请成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.dialogModifyVisible = false
+          const tempData = JSON.parse(JSON.stringify(this.tempModify))
+          modifyCheckOrder(tempData)
+            .then((response) => {
+              const orderIndex = this.list.findIndex(
+                (listItem) => listItem.receipt_id === tempData.receipt_id
+              )
+              if (orderIndex >= 0) {
+                // this.$set(this.list[orderIndex], "order_status", 1);
+                tempData.task_id.forEach((task_id) => {
+                  const taskIndex = this.list[orderIndex].items.findIndex(
+                    (taskItem) => taskItem.task_id === task_id
+                  )
+                  if (taskIndex >= 0) {
+                    this.$set(
+                      this.list[orderIndex].items[taskIndex],
+                      'task_status',
+                      1
+                    )
+                  }
+                })
+              }
+              this.$notify({
+                title: '成功',
+                message: '申请成功',
+                type: 'success',
+                duration: 2000
+              })
+              this.dialogModifyVisible = false
+            })
+            .catch((error) => {})
         }
       })
     },
@@ -689,20 +783,82 @@ export default {
      * 通过驳回弹窗
      */
     handleVerify(pass) {
-      this.dialogStatus = pass ? 'resolve' : 'reject'
+      const checkeds = []
+      if (
+        !this.list.some((listItem) => {
+          return listItem.items.some(taskItem => {
+            if (taskItem.checked) {
+              if ([0].indexOf(taskItem.task_status) < 0) {
+                const errorName = `[${listItem.change_id}] 该物件不是待审核状态，无法审核`
+                this.$message.error(errorName)
+                return true
+              }
+              checkeds.push(taskItem.task_id)
+              return false
+            }
+            return false
+          })
+        })
+      ) {
+        if (checkeds.length <= 0) {
+          this.$message.error('请先选择物件')
+          return false
+        }
+      } else {
+        return false
+      }
+
+      this.dialogStatus = pass === true ? 'resolve' : 'reject'
+      this.tempVerify.status = pass ? 1 : 0
+      this.tempVerify.task_id = checkeds
+      if (pass) {
+        if (this.verifyRules.reason) {
+          delete this.verifyRules.reason
+        }
+      } else {
+        this.verifyRules = Object.assign({}, this.verifyRules, {
+          reason: [
+            { required: true, message: '请输入驳回原因', trigger: 'blur' }
+          ]
+        })
+      }
       this.dialogVerifyVisible = true
+      this.$nextTick(() => {
+        this.$refs['verifyDataForm'].clearValidate()
+      })
     },
     /**
      * 通过申请弹窗
      */
     confirmVerify() {
-      this.$notify({
-        title: '成功',
-        message: '处理成功',
-        type: 'success',
-        duration: 2000
+      this.$refs['verifyDataForm'].validate((valid) => {
+        if (valid) {
+          const tempData = JSON.parse(JSON.stringify(this.tempVerify))
+          verifyCheckOrder(tempData)
+            .then((response) => {
+              const statusData = response.data
+              statusData.forEach(statusItem => {
+                this.list.some((listItem, listIndex) => {
+                  return listItem.items.some((taskItem, taskIndex) => {
+                    if (taskItem.task_id === statusItem.task_id) {
+                      this.$set(this.list[listIndex].items[taskIndex], 'task_status', statusItem.task_status)
+                      return true
+                    }
+                    return false
+                  })
+                })
+              })
+              this.$notify({
+                title: '成功',
+                message: '处理成功',
+                type: 'success',
+                duration: 2000
+              })
+              this.dialogVerifyVisible = false
+            })
+            .catch((error) => {})
+        }
       })
-      this.dialogVerifyVisible = false
     },
     /**
      * 终止弹窗
@@ -744,7 +900,17 @@ export default {
     /**
      * 下载作品
      */
-    handleDownloadWork(task, taskIndex, demandIndex) {}
+    handleDownloadWork(task, taskIndex, demandIndex) {
+      if (task.finished_product.length > 0) {
+        task.finished_product.forEach((product) => {
+          downloadFile({ url: product.url })
+            .then((response) => {
+              downloadFileStream(baseName(product.url), response)
+            })
+            .catch((error) => {})
+        })
+      }
+    }
   }
 }
 </script>

@@ -64,6 +64,22 @@ export function fetchReconcileOrderList(params) {
   })
 }
 
+export function modifyCheckOrder(data) {
+  return request({
+    url: '/api/order/receiveChangeNum',
+    method: 'post',
+    data
+  })
+}
+
+export function verifyCheckOrder(data) {
+  return request({
+    url: '/api/order/receiveVerify',
+    method: 'post',
+    data
+  })
+}
+
 export function uploadBillData(data) {
   return request({
     url: '/vue-element-template/order/bill/upload',

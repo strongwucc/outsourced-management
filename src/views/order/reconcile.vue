@@ -643,13 +643,12 @@ export default {
       this.listLoading = true
 
       fetchReconcileOrderList(this.listQuery).then((response) => {
+        this.listLoading = false
         this.total = response.data.total
-        this.list = response.data.items
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+        this.list = response.data.list
+      }).catch(error => {
+        console.log(error)
+        this.listLoading = false
       })
     },
     /**
