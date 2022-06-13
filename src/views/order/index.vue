@@ -676,15 +676,24 @@
     >
       <el-form label-position="left" label-width="100px" style="margin: 0 50px">
         <el-form-item label="终止原因:">
-          <span>终止原因终止原因终止原因终止原因终止原因终止原因终止原因终止原因终止原因终止原因</span>
+          <span>{{ tempTask.task_reason }}</span>
         </el-form-item>
 
         <el-form-item label="附件:">
-          <div
-            class="file-box"
-            style="display: flex; justify-content: flex-start"
-          >
-            <span>附件.doc</span><el-button size="mini" style="margin-left: 20px">下载</el-button>
+          <div class="file-box">
+            <div
+              v-for="(file, fileIndex) in tempTask.stop_file"
+              :key="fileIndex"
+              class="file-item"
+            >
+              <div class="file-name">{{ file.name }}</div>
+              <el-button
+                type="primary"
+                size="mini"
+                plain
+                @click="downLoadContract(file.name, file.url)"
+              >下载</el-button>
+            </div>
           </div>
         </el-form-item>
       </el-form></el-dialog>
@@ -1168,6 +1177,7 @@ export default {
      * 终止原因
      */
     handleStopTaskReason(task, taskIndex, demandIndex) {
+      this.tempTask = JSON.parse(JSON.stringify(task))
       this.dialogStopReasonVisible = true
     },
     /**
@@ -1275,6 +1285,13 @@ export default {
           task_image_url: URL.createObjectURL(file.raw)
         })
       }
+    },
+    downLoadContract(fileName, fileUrl) {
+      downloadFile({ url: fileUrl, name: fileName })
+        .then((response) => {
+          downloadFileStream(fileName, response)
+        })
+        .catch((error) => {})
     }
   }
 }

@@ -80,9 +80,49 @@ export function verifyCheckOrder(data) {
   })
 }
 
+export function finishCheckOrderTask(data) {
+  return request({
+    url: '/api/order/receiveVerify',
+    method: 'post',
+    data
+  })
+}
+
+export function generateStatement(data) {
+  return request({
+    url: '/api/order/produceStatement',
+    method: 'post',
+    data
+  })
+}
+
+export function uploadInvoiceData(data) {
+  return request({
+    url: '/api/statement/upInvoice',
+    method: 'post',
+    data
+  })
+}
+
 export function uploadBillData(data) {
   return request({
-    url: '/vue-element-template/order/bill/upload',
+    url: '/api/statement/upBill',
+    method: 'post',
+    data
+  })
+}
+
+export function submitStatement(data) {
+  return request({
+    url: '/api/statement/push',
+    method: 'post',
+    data
+  })
+}
+
+export function rejectStatement(data) {
+  return request({
+    url: '/api/statement/reject',
     method: 'post',
     data
   })

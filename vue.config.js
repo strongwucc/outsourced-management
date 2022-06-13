@@ -42,7 +42,8 @@ module.exports = {
         target: 'http://pms.madainfo.cn', // 目标服务器
         changeOrigin: true
       }
-    }
+    },
+    host: 'localhost'
   },
   configureWebpack: {
     // provide the app's title in webpack's name field, so that

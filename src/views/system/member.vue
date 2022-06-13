@@ -330,7 +330,9 @@ export default {
       }
       if (this.roles.length === 0) {
         const roleData = await fetchAllRole()
-        this.roles = roleData.data.list
+        this.roles = roleData.data.list.filter(listItem => {
+          return listItem.type !== 0
+        })
       }
       fetchList(this.listQuery).then((response) => {
         this.listLoading = false

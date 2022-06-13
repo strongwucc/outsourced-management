@@ -96,7 +96,7 @@
         </el-popconfirm>
         <el-button
           slot="reference"
-          v-permission="[1,2,3,4]"
+          v-permission="[1, 2, 3, 4]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -107,7 +107,7 @@
         </el-button>
         <el-button
           slot="reference"
-          v-permission="[1,2,3,4]"
+          v-permission="[1, 2, 3, 4]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -117,7 +117,7 @@
           驳回
         </el-button>
         <el-button
-          v-permission="[1,2,3,4]"
+          v-permission="[1, 2, 3, 4]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -435,11 +435,12 @@
         <el-form-item label="上传附件" prop="file">
           <el-upload
             class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :on-success="handleAddFileSucc"
-            :file-list="fileList"
+            :action="`${$baseUrl}/api/tools/upfile`"
+            :on-success="handleAddStopFileSucc"
+            :on-remove="handleStopFileChange"
+            :file-list="stopFileList"
           >
-            <el-button size="small" type="primary">上传</el-button>
+            <el-button size="mini" type="primary">上传</el-button>
           </el-upload>
         </el-form-item>
       </el-form>
@@ -456,7 +457,13 @@
 </template>
 
 <script>
-import { fetchCheckOrderList, modifyCheckOrder, verifyCheckOrder } from '@/api/order/index'
+import {
+  fetchCheckOrderList,
+  modifyCheckOrder,
+  verifyCheckOrder,
+  finishCheckOrderTask,
+  generateStatement
+} from '@/api/order/index'
 import { downloadFile } from '@/api/system/file'
 import { downloadFileStream, baseName } from '@/utils/index'
 
@@ -549,9 +556,11 @@ export default {
       },
       fileList: [],
       tempFinish: {
+        task_id: [],
         reason: '',
         file: ''
       },
+      stopFileList: [],
       dialogVerifyVisible: false,
       tempVerify: {
         task_id: [],
@@ -635,14 +644,16 @@ export default {
     getList() {
       this.listLoading = true
 
-      fetchCheckOrderList(this.listQuery).then((response) => {
-        this.listLoading = false
-        this.total = response.data.total
-        this.list = response.data.list
-      }).catch(error => {
-        console.log(error)
-        this.listLoading = false
-      })
+      fetchCheckOrderList(this.listQuery)
+        .then((response) => {
+          this.listLoading = false
+          this.total = response.data.total
+          this.list = response.data.list
+        })
+        .catch((error) => {
+          console.log(error)
+          this.listLoading = false
+        })
     },
     /**
      * 查询过滤
@@ -772,12 +783,52 @@ export default {
      * 生成对账单
      */
     handleReconcile() {
-      this.$notify({
-        title: '成功',
-        message: '交付成功',
-        type: 'success',
-        duration: 2000
-      })
+      const taskCheckeds = []
+      if (
+        !this.list.some((orderItem, orderIndex) => {
+          return orderItem.items.some((taskItem, taskIndex) => {
+            if (taskItem.checked) {
+              if ([2].indexOf(taskItem.task_status) < 0) {
+                const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
+                this.$message.error(errorName)
+                return true
+              }
+              taskCheckeds
+                .push(taskItem.task_id)
+              return false
+            }
+            return false
+          })
+        })
+      ) {
+        if (taskCheckeds.length <= 0) {
+          this.$message.error('请先选择物件')
+          return false
+        }
+      } else {
+        return false
+      }
+
+      generateStatement({ tasks: taskCheckeds })
+        .then((response) => {
+          taskCheckeds.forEach(checkedTaskId => {
+            let checkedOrderIndex, checkedTaskIndex
+            this.list.some((orderItem, orderIndex) => {
+              return orderItem.items.some((taskItem, taskIndex) => {
+                if (taskItem.task_id === checkedTaskId) {
+                  checkedOrderIndex = orderIndex
+                  checkedTaskIndex = taskIndex
+                  return true
+                }
+                return false
+              })
+            })
+            this.$set(this.list[checkedOrderIndex].tasks[checkedTaskIndex], 'task_status', 4)
+          })
+
+          this.$message.success('交付验收成功')
+        })
+        .catch((error) => {})
     },
     /**
      * 通过驳回弹窗
@@ -786,10 +837,10 @@ export default {
       const checkeds = []
       if (
         !this.list.some((listItem) => {
-          return listItem.items.some(taskItem => {
+          return listItem.items.some((taskItem) => {
             if (taskItem.checked) {
               if ([0].indexOf(taskItem.task_status) < 0) {
-                const errorName = `[${listItem.change_id}] 该物件不是待审核状态，无法审核`
+                const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
                 this.$message.error(errorName)
                 return true
               }
@@ -837,11 +888,15 @@ export default {
           verifyCheckOrder(tempData)
             .then((response) => {
               const statusData = response.data
-              statusData.forEach(statusItem => {
+              statusData.forEach((statusItem) => {
                 this.list.some((listItem, listIndex) => {
                   return listItem.items.some((taskItem, taskIndex) => {
                     if (taskItem.task_id === statusItem.task_id) {
-                      this.$set(this.list[listIndex].items[taskIndex], 'task_status', statusItem.task_status)
+                      this.$set(
+                        this.list[listIndex].items[taskIndex],
+                        'task_status',
+                        statusItem.task_status
+                      )
                       return true
                     }
                     return false
@@ -864,11 +919,63 @@ export default {
      * 终止弹窗
      */
     handleFinish() {
+      const checkeds = []
+      if (
+        !this.list.some((listItem) => {
+          return listItem.items.some((taskItem) => {
+            if (taskItem.checked) {
+              if ([0].indexOf(taskItem.task_status) < 0) {
+                const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
+                this.$message.error(errorName)
+                return true
+              }
+              checkeds.push(taskItem.task_id)
+              return false
+            }
+            return false
+          })
+        })
+      ) {
+        if (checkeds.length <= 0) {
+          this.$message.error('请先选择物件')
+          return false
+        }
+      } else {
+        return false
+      }
+
       this.tempFinish = Object.assign({}, this.tempFinish, {
+        task_id: checkeds,
         reason: '',
         file: ''
       })
       this.dialogFinishVisible = true
+    },
+    handleAddStopFileSucc(response, file, fileList) {
+      this.handleStopFileChange(file, fileList)
+    },
+    handleStopFileChange(file, fileList) {
+      this.stopFileList = fileList
+      const fileStr = fileList
+        .map((fileItem) => {
+          return fileItem.response.data.file_id
+        })
+        .join(',')
+      const fileArr = fileList.map((fileItem) => {
+        return {
+          name: fileItem.name,
+          url: fileItem.url,
+          response: {
+            data: {
+              file_id: fileItem.response.data.file_id
+            }
+          }
+        }
+      })
+      this.tempFinish = Object.assign({}, this.tempFinish, {
+        file: fileStr,
+        files: fileArr
+      })
     },
     /**
      * 确认终止
@@ -876,13 +983,33 @@ export default {
     confirmFinish() {
       this.$refs['finishDataForm'].validate((valid) => {
         if (valid) {
-          this.$notify({
-            title: '成功',
-            message: '终止成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.dialogFinishVisible = false
+          const temp = Object.assign({}, this.tempFinish)
+
+          finishCheckOrderTask(temp)
+            .then((response) => {
+              temp.task_id.forEach((checkedTaskId) => {
+                this.list.some((listItem, listIndex) => {
+                  return this.list[listIndex].items.some(
+                    (taskItem, taskIndex) => {
+                      if (taskItem.task_id === checkedTaskId) {
+                        this.$set(this.list[listIndex].items[taskIndex], 'task_status', 3)
+                        return true
+                      }
+                      return false
+                    }
+                  )
+                })
+              })
+
+              this.$notify({
+                title: '成功',
+                message: '终止成功',
+                type: 'success',
+                duration: 2000
+              })
+              this.dialogFinishVisible = false
+            })
+            .catch((error) => {})
         }
       })
     },

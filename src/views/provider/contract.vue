@@ -369,7 +369,7 @@ import {
 import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
-import { downloadFile } from '@/utils/index'
+import { previewFile } from '@/utils/index'
 
 const statList = [
   { id: 0, name: '未生效' },
@@ -713,7 +713,7 @@ export default {
       })
     },
     downLoadContract(fileName, filePath) {
-      downloadFile(fileName, filePath)
+      previewFile(fileName, filePath)
     }
   }
 }

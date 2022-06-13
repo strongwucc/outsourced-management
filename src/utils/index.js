@@ -118,7 +118,7 @@ export function param2Obj(url) {
   return obj
 }
 
-export function downloadFile(fileName, filePath) {
+export function previewFile(fileName, filePath) {
   let link
   if (
     filePath.includes('pdf') ||

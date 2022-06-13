@@ -263,7 +263,7 @@
         </el-form-item>
 
         <el-form-item
-          v-show="propTemp.extend_tag === 0"
+          v-if="propTemp.extend_tag === 0"
           label="备注:"
           prop="extend_remark"
         >
@@ -274,7 +274,7 @@
           />
         </el-form-item>
 
-        <div v-show="propTemp.extend_tag === 1" class="extend-options">
+        <div v-if="propTemp.extend_tag === 1" class="extend-options">
           <el-form-item
             v-for="(option, optionIndex) in propTemp.extend_options"
             :key="optionIndex"

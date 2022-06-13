@@ -1658,7 +1658,7 @@ import { fetchAllCategory } from '@/api/system/category'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 import permission from '@/directive/permission/index.js' // 权限判断指令
-import { downloadFile, downloadFileStream } from '@/utils/index'
+import { previewFile, downloadFileStream } from '@/utils/index'
 
 const tagList = [
   { id: 0, name: '正式包' },
@@ -3470,7 +3470,7 @@ export default {
       this.dialogStopReasonVisible = true
     },
     downLoadContract(fileName, filePath) {
-      downloadFile(fileName, filePath)
+      previewFile(fileName, filePath)
     }
   }
 }
