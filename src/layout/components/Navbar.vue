@@ -11,11 +11,14 @@
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
-          <router-link to="/">
+          <el-dropdown-item>
+            {{ name }}
+          </el-dropdown-item>
+          <!-- <router-link to="/">
             <el-dropdown-item>
               个人中心
             </el-dropdown-item>
-          </router-link>
+          </router-link> -->
           <!-- <a target="_blank" href="https://github.com/PanJiaChen/vue-admin-template/">
             <el-dropdown-item>Github</el-dropdown-item>
           </a>
@@ -44,7 +47,8 @@ export default {
   computed: {
     ...mapGetters([
       'sidebar',
-      'avatar'
+      'avatar',
+      'name'
     ])
   },
   methods: {
