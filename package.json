@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "axios": "0.18.1",
+    "compression-webpack-plugin": "^6.1.1",
     "core-js": "3.6.5",
     "el-select-tree": "^2.0.9",
     "element-ui": "^2.15.8",

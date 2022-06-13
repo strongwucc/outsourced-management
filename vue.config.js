@@ -2,6 +2,11 @@
 const path = require('path')
 const defaultSettings = require('./src/settings.js')
 
+// 导入compression-webpack-plugin
+const CompressionWebpackPlugin = require('compression-webpack-plugin')
+// 定义压缩文件类型
+const productionGzipExtensions = ['js', 'css']
+
 function resolve(dir) {
   return path.join(__dirname, dir)
 }
@@ -53,7 +58,16 @@ module.exports = {
       alias: {
         '@': resolve('src')
       }
-    }
+    },
+    plugins: [
+      new CompressionWebpackPlugin({
+        filename: '[path].gz[query]',
+        algorithm: 'gzip',
+        test: new RegExp('.(' + productionGzipExtensions.join('|') + ')$'),
+        threshold: 10240,
+        minRatio: 0.8
+      })
+    ]
   },
   chainWebpack(config) {
     // it can improve the speed of the first screen, it is recommended to turn on preload
