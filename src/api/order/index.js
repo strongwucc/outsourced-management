@@ -127,3 +127,11 @@ export function rejectStatement(data) {
     data
   })
 }
+
+export function uploadWorkImage(data) {
+  return request({
+    url: '/api/order/upDesign',
+    method: 'post',
+    data
+  })
+}

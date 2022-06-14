@@ -701,7 +701,13 @@
 </template>
 
 <script>
-import { fetchOrderList, modifyOrder, addTask, toCheckOrder } from '@/api/order/index'
+import {
+  fetchOrderList,
+  modifyOrder,
+  addTask,
+  toCheckOrder,
+  uploadWorkImage
+} from '@/api/order/index'
 import { createTask } from '@/api/demand/task'
 import { downloadFile } from '@/api/system/file'
 import { downloadFileStream, baseName } from '@/utils/index'
@@ -1058,13 +1064,14 @@ export default {
                 this.$message.error(errorName)
                 return true
               }
-              taskCheckeds
-                .push({
-                  task_id: taskItem.task_id,
-                  file: taskItem.finished_product.map((product) => {
+              taskCheckeds.push({
+                task_id: taskItem.task_id,
+                file: taskItem.finished_product
+                  .map((product) => {
                     return product.file_id
-                  }).join(',')
-                })
+                  })
+                  .join(',')
+              })
               return false
             }
             return false
@@ -1081,7 +1088,7 @@ export default {
 
       toCheckOrder({ tasks: taskCheckeds })
         .then((response) => {
-          taskCheckeds.forEach(checkedTaskItem => {
+          taskCheckeds.forEach((checkedTaskItem) => {
             let checkedOrderIndex, checkedTaskIndex
             this.list.some((orderItem, orderIndex) => {
               return orderItem.tasks.some((taskItem, taskIndex) => {
@@ -1093,7 +1100,11 @@ export default {
                 return false
               })
             })
-            this.$set(this.list[checkedOrderIndex].tasks[checkedTaskIndex], 'task_status', 2)
+            this.$set(
+              this.list[checkedOrderIndex].tasks[checkedTaskIndex],
+              'task_status',
+              2
+            )
           })
 
           this.$message.success('交付验收成功')
@@ -1124,8 +1135,21 @@ export default {
             : fileItem.file_id || ''
         }
       })
-      this.$set(this.list[orderIndex].tasks[taskIndex], keyName, fileArr)
-      this.$message.success('上传成功')
+      const fileStr = fileArr
+        .map((fileItem) => {
+          return fileItem.file_id
+        })
+        .join(',')
+
+      const task = this.list[orderIndex].tasks[taskIndex]
+      const upType = keyName === 'display_area' ? 1 : 0
+
+      uploadWorkImage({ task_id: task.task_id, up_type: upType, file_id: fileStr })
+        .then((response) => {
+          this.$set(this.list[orderIndex].tasks[taskIndex], keyName, fileArr)
+          this.$message.success('上传成功')
+        })
+        .catch((error) => {})
     },
     handleUploadWorkError(err, file, fileList) {
       console.log('上传失败', err, file, fileList)

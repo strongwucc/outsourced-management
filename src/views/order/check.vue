@@ -218,6 +218,16 @@
               <el-table-column prop="work_num" label="数量" align="center" />
               <el-table-column prop="work_price" label="单价" align="center" />
               <el-table-column prop="work_amount" label="总价" align="center" />
+              <el-table-column label="停留时间" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.stay_time }}小时
+                </template>
+              </el-table-column>
+              <el-table-column label="当前处理人" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.dealing }}
+                </template>
+              </el-table-column>
               <el-table-column
                 prop="task_status"
                 label="物件状态"
@@ -277,14 +287,6 @@
       <el-table-column label="总金额" align="center">
         <template slot-scope="{ row }">
           {{ row.work_amount }}
-        </template>
-      </el-table-column>
-      <el-table-column label="停留时间" align="center">
-        <template slot-scope="{ row }"> {{ row.stay_time }}小时 </template>
-      </el-table-column>
-      <el-table-column label="当前处理人" align="center">
-        <template slot-scope="{ row }">
-          {{ row.dealing }}
         </template>
       </el-table-column>
       <el-table-column label="订单状态" align="center">
@@ -793,8 +795,7 @@ export default {
                 this.$message.error(errorName)
                 return true
               }
-              taskCheckeds
-                .push(taskItem.task_id)
+              taskCheckeds.push(taskItem.task_id)
               return false
             }
             return false
@@ -811,7 +812,7 @@ export default {
 
       generateStatement({ tasks: taskCheckeds })
         .then((response) => {
-          taskCheckeds.forEach(checkedTaskId => {
+          taskCheckeds.forEach((checkedTaskId) => {
             let checkedOrderIndex, checkedTaskIndex
             this.list.some((orderItem, orderIndex) => {
               return orderItem.items.some((taskItem, taskIndex) => {
@@ -823,7 +824,11 @@ export default {
                 return false
               })
             })
-            this.$set(this.list[checkedOrderIndex].tasks[checkedTaskIndex], 'task_status', 4)
+            this.$set(
+              this.list[checkedOrderIndex].tasks[checkedTaskIndex],
+              'task_status',
+              4
+            )
           })
 
           this.$message.success('交付验收成功')
@@ -992,7 +997,11 @@ export default {
                   return this.list[listIndex].items.some(
                     (taskItem, taskIndex) => {
                       if (taskItem.task_id === checkedTaskId) {
-                        this.$set(this.list[listIndex].items[taskIndex], 'task_status', 3)
+                        this.$set(
+                          this.list[listIndex].items[taskIndex],
+                          'task_status',
+                          3
+                        )
                         return true
                       }
                       return false
