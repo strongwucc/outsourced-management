@@ -151,7 +151,7 @@ $cursor: #fff;
 
 @supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
   .login-container .el-input input {
-    color: $cursor;
+    // color: $cursor;
   }
 }
 
@@ -168,20 +168,21 @@ $cursor: #fff;
       -webkit-appearance: none;
       border-radius: 0px;
       padding: 12px 5px 12px 15px;
-      color: $light_gray;
+      // color: $light_gray;
       height: 47px;
-      caret-color: $cursor;
+      // caret-color: $cursor;
 
       &:-webkit-autofill {
         box-shadow: 0 0 0px 1000px $bg inset !important;
-        -webkit-text-fill-color: $cursor !important;
+        // -webkit-text-fill-color: $cursor !important;
       }
     }
   }
 
   .el-form-item {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.1);
+    // border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, .1);
+    // background: rgba(0, 0, 0, 0.1);
     border-radius: 5px;
     color: #454545;
   }
@@ -194,18 +195,31 @@ $dark_gray: #889aa4;
 $light_gray: #eee;
 
 .login-container {
+  position: relative;
   min-height: 100%;
   width: 100%;
-  background-color: $bg;
+  // background-color: $bg;
   overflow: hidden;
+  background-image: url('../../assets/system/bg.svg');
+  background-size: cover;
 
   .login-form {
-    position: relative;
+    position: absolute;
     width: 520px;
+    height: 400px;
     max-width: 100%;
-    padding: 160px 35px 0;
-    margin: 0 auto;
+    // padding: 160px 35px 0;
+    padding: 50px 35px 0;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
     overflow: hidden;
+    background: #fff;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 20%);
+    padding-right: 42px;
+    border-radius: 2px;
   }
 
   .tips {
@@ -222,7 +236,7 @@ $light_gray: #eee;
 
   .svg-container {
     padding: 6px 5px 6px 15px;
-    color: $dark_gray;
+    // color: $dark_gray;
     vertical-align: middle;
     width: 30px;
     display: inline-block;
@@ -233,7 +247,8 @@ $light_gray: #eee;
 
     .title {
       font-size: 26px;
-      color: $light_gray;
+      // color: $light_gray;
+      color: rgba(0, 0, 0, 0.65);;
       margin: 0px auto 40px auto;
       text-align: center;
       font-weight: bold;
@@ -245,7 +260,7 @@ $light_gray: #eee;
     right: 10px;
     top: 7px;
     font-size: 16px;
-    color: $dark_gray;
+    // color: $dark_gray;
     cursor: pointer;
     user-select: none;
   }
