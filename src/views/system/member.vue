@@ -147,9 +147,10 @@
           <el-input v-model="temp.name" class="dialog-form-item" />
         </el-form-item>
 
-        <el-form-item label="用户分组:" prop="group_id">
+        <el-form-item v-if="dialogStatus === 'update'" label="用户分组:" prop="group_id">
           <el-select
             v-model="temp.group_id"
+            :disabled="true"
             class="dialog-form-item"
             placeholder="请选择"
           >
@@ -161,10 +162,25 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item v-else label="用户分组:" prop="group_id">
+          <el-select
+            v-model="temp.group_id"
+            class="dialog-form-item"
+            placeholder="请选择"
+          >
+            <el-option
+              v-for="item in roles.filter(role=>role.type !== 0)"
+              :key="item.id"
+              :label="item.group_name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
 
         <el-form-item label="部门:" prop="dep_json">
           <el-select
             v-model="temp.dep_json"
+            :disabled="dialogStatus === 'update'"
             class="dialog-form-item"
             multiple
             collapse-tags
@@ -256,7 +272,7 @@ export default {
     },
     groupText(group) {
       if (!group) {
-        return '-'
+        return '系统管理员'
       }
       return group.group_name
     }
@@ -330,9 +346,8 @@ export default {
       }
       if (this.roles.length === 0) {
         const roleData = await fetchAllRole()
-        this.roles = roleData.data.list.filter(listItem => {
-          return listItem.type !== 0
-        })
+        this.roles = roleData.data.list
+        this.roles.push({ id: 0, type: '', nums: 0, group_name: '系统管理员' })
       }
       fetchList(this.listQuery).then((response) => {
         this.listLoading = false
@@ -393,10 +408,8 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.temp))
-          const postTemp = JSON.parse(JSON.stringify(this.temp))
-          postTemp.dep_json = JSON.stringify(temp.dep_json)
           // temp.id = parseInt(Math.random() * 100) + 1024
-          createMember(postTemp).then((response) => {
+          createMember(temp).then((response) => {
             temp.id = response.data.id
             this.roles.some((roleItem) => {
               if (roleItem.id === temp.group_id) {
@@ -436,9 +449,7 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.temp))
-          const postTemp = JSON.parse(JSON.stringify(this.temp))
-          postTemp.dep_json = JSON.stringify(temp.dep_json)
-          updateMember(postTemp).then(() => {
+          updateMember(temp).then(() => {
             this.roles.some((roleItem) => {
               if (roleItem.id === temp.group_id) {
                 temp.group_name = roleItem.name

@@ -91,8 +91,12 @@ export default {
         password: ''
       },
       loginRules: {
-        login_name: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        login_name: [
+          { required: true, trigger: 'blur', validator: validateUsername }
+        ],
+        password: [
+          { required: true, trigger: 'blur', validator: validatePassword }
+        ]
       },
       loading: false,
       passwordType: 'password',
@@ -119,18 +123,21 @@ export default {
       })
     },
     handleLogin() {
-      this.$refs.loginForm.validate(valid => {
+      this.$refs.loginForm.validate((valid) => {
         if (valid) {
           this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(async() => {
-            // await this.$store.dispatch('user/getInfo')
-            // const accessRoutes = await this.$store.dispatch('permission/generateRoutes')
-            // this.$router.addRoutes(accessRoutes)
-            this.loading = false
-            this.$router.push({ path: this.redirect || '/' })
-          }).catch(() => {
-            this.loading = false
-          })
+          this.$store
+            .dispatch('user/login', this.loginForm)
+            .then(async() => {
+              // await this.$store.dispatch('user/getInfo')
+              // const accessRoutes = await this.$store.dispatch('permission/generateRoutes')
+              // this.$router.addRoutes(accessRoutes)
+              this.loading = false
+              this.$router.push({ path: this.redirect || '/' })
+            })
+            .catch(() => {
+              this.loading = false
+            })
         } else {
           console.log('error submit!!')
           return false
@@ -173,7 +180,7 @@ $cursor: #fff;
       // caret-color: $cursor;
 
       &:-webkit-autofill {
-        box-shadow: 0 0 0px 1000px $bg inset !important;
+        box-shadow: 0 0 0px 1000px #ffffff inset !important;
         // -webkit-text-fill-color: $cursor !important;
       }
     }
@@ -181,7 +188,7 @@ $cursor: #fff;
 
   .el-form-item {
     // border: 1px solid rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(0, 0, 0, .1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     // background: rgba(0, 0, 0, 0.1);
     border-radius: 5px;
     color: #454545;
@@ -200,7 +207,7 @@ $light_gray: #eee;
   width: 100%;
   // background-color: $bg;
   overflow: hidden;
-  background-image: url('../../assets/system/bg.svg');
+  background-image: url("../../assets/system/bg.svg");
   background-size: cover;
 
   .login-form {
@@ -248,7 +255,7 @@ $light_gray: #eee;
     .title {
       font-size: 26px;
       // color: $light_gray;
-      color: rgba(0, 0, 0, 0.65);;
+      color: rgba(0, 0, 0, 0.65);
       margin: 0px auto 40px auto;
       text-align: center;
       font-weight: bold;

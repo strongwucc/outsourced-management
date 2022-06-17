@@ -67,7 +67,7 @@
           收起
         </el-button>
         <el-popconfirm
-          v-permission="[0]"
+          v-permission="[3]"
           title="确定生成对账单吗？"
           @confirm="handleReconcile"
         ><el-button
@@ -223,7 +223,7 @@
                   {{ scope.row.stay_time }}小时
                 </template>
               </el-table-column>
-              <el-table-column label="当前处理人" align="center">
+              <el-table-column label="当前处理人" align="center" min-width="120">
                 <template slot-scope="scope">
                   {{ scope.row.dealing }}
                 </template>

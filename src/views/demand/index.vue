@@ -2067,7 +2067,7 @@ export default {
         })
         .catch((error) => {})
 
-      fetchAllProvider({ process_id: process })
+      fetchAllProvider({ process_id: process, status: 1 })
         .then((response) => {
           this.providers = response.data.list
         })
@@ -2254,7 +2254,8 @@ export default {
         this.demandVerifyMembers = verifyMemberData.data.list
 
         const providerData = await fetchAllProvider({
-          process_id: row.process_id
+          process_id: row.process_id,
+          status: 1
         })
         this.providers = providerData.data.list
       } catch (error) {
@@ -2681,7 +2682,8 @@ export default {
       )
       try {
         const providerData = await fetchAllProvider({
-          process_id: row.process_id
+          process_id: row.process_id,
+          status: 1
         })
         this.providers = providerData.data.list
         this.list.splice(

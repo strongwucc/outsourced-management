@@ -108,7 +108,7 @@
         </el-button>
         <el-button
           slot="reference"
-          v-permission="[1, 2, 3, 4]"
+          v-permission="[1, 2, 3, 4, 0]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -119,7 +119,7 @@
         </el-button>
         <el-button
           slot="reference"
-          v-permission="[1, 2, 3, 4]"
+          v-permission="[1, 2, 3, 4, 0]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -426,7 +426,8 @@ const statusMap = [
   { label: '待审核', value: 0 },
   { label: '审核中', value: 1 },
   { label: '已审核', value: 2 },
-  { label: '审核不通过', value: 3 }
+  { label: '审核不通过', value: 3 },
+  { label: '待供应商确认', value: 4 }
 ]
 
 export default {
@@ -644,7 +645,7 @@ export default {
               this.$message.error(errorName)
               return true
             }
-            if ([0, 1].indexOf(listItem.change_status) < 0) {
+            if ([0, 1, 4].indexOf(listItem.change_status) < 0) {
               const errorName = `[${listItem.change_id}] 该申请单不是待审核状态，无法审核`
               this.$message.error(errorName)
               return true

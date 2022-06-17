@@ -231,7 +231,8 @@
               >
                 <template slot-scope="scope">
                   <el-upload
-                    v-if="[0].indexOf(scope.row.task_status) >= 0"
+                    v-if="[0, 4].indexOf(scope.row.task_status) >= 0"
+                    v-permission="[0]"
                     class="upload-box"
                     :action="`${$baseUrl}/api/tools/upfile`"
                     :show-file-list="false"
@@ -267,7 +268,8 @@
                     下载作品
                   </el-button>
                   <el-upload
-                    v-if="[0].indexOf(scope.row.task_status) >= 0"
+                    v-if="[0, 4].indexOf(scope.row.task_status) >= 0"
+                    v-permission="[0]"
                     class="upload-box"
                     :action="`${$baseUrl}/api/tools/upfile`"
                     :show-file-list="false"
@@ -408,6 +410,7 @@
       >
         <template slot-scope="{ row, $index }">
           <el-button
+            v-permission="[0]"
             type="primary"
             size="mini"
             plain
@@ -657,13 +660,11 @@
       :visible.sync="dialogRejectReasonVisible"
       width="600px"
     >
-      <div class="reason-box">
-        <div class="content">
-          品类改为3D品类改为3D品类改为3D品类改为3D品类改为3D
-        </div>
+      <div v-if="tempTask.reject" class="reason-box">
+        <div class="content">{{ tempTask.reject.reason || "" }}</div>
         <div class="user-info">
-          <div>驳回人：tom</div>
-          <div>驳回时间：2022-05-05 12:00:00</div>
+          <div>驳回人：{{ tempTask.reject.user }}</div>
+          <div>驳回时间：{{ tempTask.reject.created_at }}</div>
         </div>
       </div>
     </el-dialog>
@@ -1054,7 +1055,7 @@ export default {
         !this.list.some((orderItem, orderIndex) => {
           return orderItem.tasks.some((taskItem, taskIndex) => {
             if (taskItem.checked) {
-              if ([0].indexOf(taskItem.task_status) < 0) {
+              if ([0, 4].indexOf(taskItem.task_status) < 0) {
                 const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
                 this.$message.error(errorName)
                 return true
@@ -1195,7 +1196,14 @@ export default {
      * 驳回原因
      */
     handleRejectTaskReason(task, taskIndex, demandIndex) {
-      this.dialogRejectReasonVisible = true
+      if (!task.reject) {
+        this.$message.error('对不起，没有驳回原因')
+        return false
+      }
+      this.tempTask = JSON.parse(JSON.stringify(task))
+      this.$nextTick(() => {
+        this.dialogRejectReasonVisible = true
+      })
     },
     /**
      * 终止原因
