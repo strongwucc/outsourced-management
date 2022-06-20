@@ -423,6 +423,15 @@
             type="primary"
             size="mini"
             plain
+            :loading="row.copyLoading"
+            @click="handleCopy(row, $index)"
+          >
+            复制
+          </el-button>
+          <el-button
+            type="primary"
+            size="mini"
+            plain
             :loading="row.detailLoading"
             @click="handleDetail(row, $index)"
           >
@@ -715,7 +724,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <template v-if="dialogStatus === 'create'">
+        <template v-if="dialogStatus === 'create' || dialogStatus === 'copy'">
           <el-button size="mini" @click="createData(0)"> 保存为模板 </el-button>
           <el-button type="primary" size="mini" @click="createData(1)">
             提报需求
@@ -1818,6 +1827,7 @@ export default {
       tagOptions: tagList,
       textMap: {
         update: '修改需求',
+        copy: '复制需求',
         create: '新增需求',
         resolve: '审批',
         reject: '驳回',
@@ -2172,8 +2182,9 @@ export default {
                 temp.category = ''
               }
 
-              if (this.dialogStatus === 'create') {
+              if (this.dialogStatus === 'create' || this.dialogStatus === 'copy') {
                 temp.demand_id = response.data.id
+                temp.current_operator = response.data.current_operator
                 temp.is_creator = 1
                 this.list.unshift(temp)
                 this.dialogFormVisible = false
@@ -2328,6 +2339,94 @@ export default {
             })
             .catch((error) => {})
         }
+      })
+    },
+    /**
+     * 复制需求弹窗
+     */
+    async handleCopy(row, index) {
+      this.list.splice(index, 1, Object.assign({}, row, { copyLoading: true }))
+      try {
+        const processData = await fetchAllProcess({
+          create_needs_permission: 1
+        })
+        this.process = processData.data.list || []
+
+        const categoryData = await fetchProcessCategory({
+          process_id: row.process_id
+        })
+        this.categorys = categoryData.data.list.map((first) => {
+          const seconds = first.children.map((second) => {
+            const thirds = second.children.map((third) => {
+              return {
+                label: third.category_name,
+                value: third.cat_id
+              }
+            })
+            return {
+              label: second.category_name,
+              value: second.cat_id,
+              children: thirds
+            }
+          })
+          return {
+            label: first.category_name,
+            value: first.cat_id,
+            children: seconds
+          }
+        })
+
+        const verifyMemberData = await fetchProcessVerifyMember({
+          process_id: row.process_id
+        })
+        this.demandVerifyMembers = verifyMemberData.data.list
+
+        const providerData = await fetchAllProvider({
+          process_id: row.process_id,
+          status: 1
+        })
+        this.providers = providerData.data.list
+      } catch (error) {
+        console.log(error)
+        this.list.splice(
+          index,
+          1,
+          Object.assign({}, row, { copyLoading: false })
+        )
+        this.$message.error('复制失败')
+      }
+      this.list.splice(
+        index,
+        1,
+        Object.assign({}, row, { copyLoading: false })
+      )
+      this.temp = Object.assign({}, {
+        project_id: this.process.length > 0 ? row.project_id : '',
+        process_id: this.process.length > 0 ? row.process_id : '',
+        name: row.name || '',
+        introduce: row.introduce || '',
+        cat_id: row.cat_id || '',
+        file: row.file || '',
+        files: row.files || [],
+        remark: row.remark || '',
+        tag: parseInt(row.tag),
+        supplier: parseInt(row.supplier)
+      })
+      this.demandFileList = this.temp.files.map((file) => {
+        return {
+          name: file.name,
+          url: file.url,
+          response: {
+            data: {
+              file_id: file.file_id
+            }
+          }
+        }
+      })
+      this.dialogStatus = 'copy'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
       })
     },
     /**
