@@ -2006,6 +2006,7 @@ export default {
      * 重置需求数据
      */
     resetTemp() {
+      this.demandFileList = []
       this.temp = {
         id: undefined,
         process_id: '',

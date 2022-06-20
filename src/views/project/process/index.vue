@@ -460,10 +460,10 @@
               multiple
               collapse-tags
               placeholder="请输入关键词"
-              :remote-method="(query) => fetchMemberList(query, '3,4')"
+              :remote-method="(query) => fetchMemberList(query, '3')"
               :loading="memberLoading"
               :multiple-limit="2"
-              @focus="fetchMemberList('', '3,4')"
+              @focus="fetchMemberList('', '3')"
             >
               <el-option
                 v-for="member in members"
