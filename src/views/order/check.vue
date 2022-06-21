@@ -67,7 +67,7 @@
           收起
         </el-button>
         <el-popconfirm
-          v-permission="[3]"
+          v-permission="[0]"
           title="确定生成对账单吗？"
           @confirm="handleReconcile"
         ><el-button

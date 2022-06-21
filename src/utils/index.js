@@ -145,8 +145,8 @@ export function previewFile(fileName, filePath) {
 
 export function downloadFileStream(fileName, data) {
   const aLink = document.createElement('a')
-  const blob = new Blob([data], { type: 'image/jpeg' })
-  // const blob = new Blob([data])
+  // const blob = new Blob([data], { type: 'image/jpeg' })
+  const blob = new Blob([data])
   // 创建一个当前文件的内存URL
   const _href = URL.createObjectURL(blob)
   aLink.style.display = 'none'

@@ -146,21 +146,21 @@
         <el-form-item
           v-if="tag === 2 || dialogStatus === 'manage'"
           label="预算经费:"
-          prop="name"
+          prop="budget"
         >
           <el-input v-model="temp.budget" />
         </el-form-item>
         <el-form-item
           v-if="tag === 2 || dialogStatus === 'manage'"
           label="预警阈值:"
-          prop="name"
+          prop="budget_warn"
         >
           <el-input v-model="temp.budget_warn" />
         </el-form-item>
         <el-form-item
           v-if="tag === 2 && dialogStatus !== 'manage'"
           label="阙值提醒邮箱:"
-          prop="name"
+          prop="email"
         >
           <el-input v-model="temp.email" />
         </el-form-item>
@@ -190,6 +190,20 @@ import {
 } from '@/api/system/department'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
+
+const checkEmail = (rule, value, callback) => {
+  const mailReg = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/
+  if (!value) {
+    return callback(new Error('请输入阙值提醒邮箱'))
+  }
+  setTimeout(() => {
+    if (mailReg.test(value)) {
+      callback()
+    } else {
+      callback(new Error('请输入正确的邮箱格式'))
+    }
+  }, 100)
+}
 
 export default {
   name: 'Type',
@@ -226,7 +240,14 @@ export default {
         manage: '调整预算'
       },
       rules: {
-        name: [{ required: true, message: '请输入部门名称', trigger: 'blur' }]
+        name: [{ required: true, message: '请输入部门名称', trigger: 'blur' }],
+        budget: [
+          { required: true, message: '请输入预算经费', trigger: 'blur' }
+        ],
+        budget_warn: [
+          { required: true, message: '请输入预警阈值', trigger: 'blur' }
+        ],
+        email: [{ required: true, validator: checkEmail, trigger: 'blur' }]
       }
     }
   },
@@ -250,14 +271,16 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      fetchList(this.listQuery).then((response) => {
-        this.listLoading = false
-        this.list = response.data.list
-        this.total = response.data.total
-      }).catch(error => {
-        console.log(error)
-        this.listLoading = false
-      })
+      fetchList(this.listQuery)
+        .then((response) => {
+          this.listLoading = false
+          this.list = response.data.list
+          this.total = response.data.total
+        })
+        .catch((error) => {
+          console.log(error)
+          this.listLoading = false
+        })
     },
     handleFilter() {
       this.listQuery.page = 1
@@ -286,17 +309,19 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           // this.temp.id = parseInt(Math.random() * 100) + 1024
-          createDepartment(this.temp).then((response) => {
-            this.temp.id = response.data.id
-            this.list.unshift(this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
+          createDepartment(this.temp)
+            .then((response) => {
+              this.temp.id = response.data.id
+              this.list.unshift(this.temp)
+              this.dialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '创建成功',
+                type: 'success',
+                duration: 2000
+              })
             })
-          }).catch(error => {})
+            .catch((error) => {})
         }
       })
     },
@@ -312,17 +337,19 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp, { tag: this.tag })
-          updateDepartment(tempData).then(() => {
-            const index = this.list.findIndex((v) => v.id === this.temp.id)
-            this.list.splice(index, 1, this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '修改成功',
-              type: 'success',
-              duration: 2000
+          updateDepartment(tempData)
+            .then(() => {
+              const index = this.list.findIndex((v) => v.id === this.temp.id)
+              this.list.splice(index, 1, this.temp)
+              this.dialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '修改成功',
+                type: 'success',
+                duration: 2000
+              })
             })
-          }).catch(error => {})
+            .catch((error) => {})
         }
       })
     },
@@ -335,15 +362,17 @@ export default {
       })
     },
     handleDelete(row, index) {
-      deleteDepartment({ id: row.id }).then(() => {
-        this.$notify({
-          title: '成功',
-          message: '删除成功',
-          type: 'success',
-          duration: 2000
+      deleteDepartment({ id: row.id })
+        .then(() => {
+          this.$notify({
+            title: '成功',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.list.splice(index, 1)
         })
-        this.list.splice(index, 1)
-      }).catch(error => {})
+        .catch((error) => {})
     }
   }
 }

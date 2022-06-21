@@ -1064,7 +1064,7 @@
                 style="width: 100%"
               >
                 <el-option
-                  v-for="(item, itemIndex) in ['人日']"
+                  v-for="(item, itemIndex) in ['人日','套','件', '分钟', '千字']"
                   :key="itemIndex"
                   :label="item"
                   :value="item"
@@ -2443,6 +2443,7 @@ export default {
             duration: 2000
           })
           this.$set(this.list[index], 'status', response.data.status)
+          this.$set(this.list[index], 'current_operator', response.data.current_operator)
         })
         .catch((error) => {})
     },
@@ -2633,6 +2634,7 @@ export default {
                 )
                 if (index >= 0) {
                   this.$set(this.list[index], 'status', statusItem.status)
+                  this.$set(this.list[index], 'current_operator', statusItem.current_operator)
                 }
               })
               this.dialogVerifyVisible = false
@@ -2955,6 +2957,7 @@ export default {
             )
             if (index >= 0) {
               this.$set(this.list[index], 'status', statusItem.status)
+              this.$set(this.list[index], 'current_operator', statusItem.current_operator)
             }
           })
           this.$message.success('订单生成成功')
@@ -3132,6 +3135,7 @@ export default {
             if (index >= 0) {
               this.$set(this.list[index], 'status', statusItem.status)
               this.$set(this.list[index], 'can_add_task', 0)
+              this.$set(this.list[index], 'current_operator', statusItem.current_operator)
             }
           })
           this.$message.success('操作成功')

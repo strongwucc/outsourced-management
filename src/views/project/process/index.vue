@@ -761,9 +761,9 @@
                   :placeholder="
                     itemIndex === 0 ? '一级审批系统默认' : '二级审批'
                   "
-                  :remote-method="(query) => fetchMemberList(query, 1)"
+                  :remote-method="(query) => fetchMemberList(query, '1,2')"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('', 1)"
+                  @focus="fetchMemberList('', '1,2')"
                 >
                   <el-option
                     v-for="member in members"
@@ -772,7 +772,7 @@
                     :value="member.id"
                   >
                     <span style="float: left">{{ member.name }}</span>
-                    <span style="float: right">{{ member.mobile }}</span>
+                    <span style="float: right">{{ member.group_name }}</span>
                   </el-option>
                 </el-select>
               </div>
@@ -793,9 +793,9 @@
                   filterable
                   remote
                   :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
-                  :remote-method="(query) => fetchMemberList(query, 3)"
+                  :remote-method="(query) => fetchMemberList(query, '3,4')"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('', 3)"
+                  @focus="fetchMemberList('', '3,4')"
                 >
                   <el-option
                     v-for="member in members"
@@ -804,7 +804,7 @@
                     :value="member.id"
                   >
                     <span style="float: left">{{ member.name }}</span>
-                    <span style="float: right">{{ member.mobile }}</span>
+                    <span style="float: right">{{ member.group_name }}</span>
                   </el-option>
                 </el-select>
               </div>
