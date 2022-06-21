@@ -7,7 +7,7 @@
         :collapse="isCollapse"
         :background-color="variables.menuBg"
         :text-color="variables.menuText"
-        :default-openeds="['/project','/demand','/order','/provider','/system']"
+        :default-openeds="openeds"
         :unique-opened="false"
         :active-text-color="variables.menuActiveText"
         :collapse-transition="false"
@@ -27,6 +27,11 @@ import variables from '@/styles/variables.scss'
 
 export default {
   components: { SidebarItem, Logo },
+  data() {
+    return {
+      openeds: ['/project', '/demand', '/order', '/provider', '/system']
+    }
+  },
   computed: {
     ...mapGetters([
       'sidebar'
