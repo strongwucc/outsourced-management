@@ -338,7 +338,7 @@
         label-width="100px"
         style="margin: 0 50px"
       >
-        <el-form-item
+        <!-- <el-form-item
           v-if="dialogStatus === 'resolve'"
           label="通过原因:"
           prop="reason"
@@ -349,7 +349,10 @@
             placeholder="请输入通过原因"
             class="dialog-form-item"
           />
-        </el-form-item>
+        </el-form-item> -->
+        <div v-if="dialogStatus === 'resolve'" class="resolve-notice">
+          是否确认审核通过？
+        </div>
         <el-form-item
           v-else-if="dialogStatus === 'reject'"
           label="驳回原因:"
