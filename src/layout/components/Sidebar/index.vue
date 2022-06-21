@@ -7,6 +7,7 @@
         :collapse="isCollapse"
         :background-color="variables.menuBg"
         :text-color="variables.menuText"
+        :default-openeds="['/project','/demand','/order','/provider','/system']"
         :unique-opened="false"
         :active-text-color="variables.menuActiveText"
         :collapse-transition="false"
