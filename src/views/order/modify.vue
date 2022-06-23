@@ -176,7 +176,11 @@
                 label="物件单号"
                 width="200"
                 align="center"
-              />
+              >
+                <template slot-scope="scope">
+                  <task-detail :task-id="scope.row.task_id" />
+                </template>
+              </el-table-column>
               <el-table-column
                 prop="task_name"
                 label="物件名称"
@@ -270,7 +274,7 @@
       </el-table-column>
       <el-table-column label="物件数量" align="center" width="120">
         <template slot-scope="{ row }">
-          {{ row.nums }}
+          {{ row.tasks.length }}
         </template>
       </el-table-column>
       <el-table-column label="发起方" align="center" width="120">
@@ -281,6 +285,11 @@
       <el-table-column label="变更类型" align="center" width="120">
         <template slot-scope="{ row }">
           {{ row.change_type | typeTxt }}
+        </template>
+      </el-table-column>
+      <el-table-column label="当前操作人" align="center" width="120">
+        <template slot-scope="{ row }">
+          {{ row.current_operator || '-' }}
         </template>
       </el-table-column>
       <el-table-column label="审核状态" align="center" width="120">
@@ -416,6 +425,7 @@ import { fetchModifyOrderList, changeVerify } from '@/api/order/index'
 import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
+import TaskDetail from '@/components/TaskDetail'
 
 const initiatorMap = [
   { label: '供应商', value: 0 },
@@ -434,7 +444,7 @@ const statusMap = [
 ]
 
 export default {
-  components: { Pagination },
+  components: { Pagination, TaskDetail },
   directives: { waves, permission },
   filters: {
     categoryText(category) {
@@ -695,12 +705,13 @@ export default {
           const tempData = JSON.parse(JSON.stringify(this.tempVerify))
           changeVerify(tempData)
             .then((response) => {
-              const { change_id, change_status } = response.data
+              const { change_id, change_status, current_operator } = response.data
               const changeIndex = this.list.findIndex(
                 (listItem) => listItem.change_id === change_id
               )
               if (changeIndex >= 0) {
                 this.$set(this.list[changeIndex], 'change_status', change_status)
+                this.$set(this.list[changeIndex], 'current_operator', current_operator)
               }
               this.$notify({
                 title: '成功',

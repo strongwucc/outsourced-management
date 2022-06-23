@@ -135,7 +135,11 @@
                 label="物件单号"
                 width="150"
                 align="center"
-              />
+              >
+                <template slot-scope="scope">
+                  <task-detail :task-id="scope.row.task_id" />
+                </template>
+              </el-table-column>
               <el-table-column
                 prop="task_image"
                 label="缩略图"
@@ -716,9 +720,10 @@ import { downloadFileStream, baseName } from '@/utils/index'
 import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
+import TaskDetail from '@/components/TaskDetail'
 
 export default {
-  components: { Pagination },
+  components: { Pagination, TaskDetail },
   directives: { waves, permission },
   filters: {
     categoryText(category) {

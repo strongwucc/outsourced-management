@@ -214,8 +214,11 @@
                 label="物件单号"
                 width="150"
                 align="center"
-                :show-overflow-tooltip="true"
-              />
+              >
+                <template slot-scope="scope">
+                  <task-detail :task-id="scope.row.task_id" />
+                </template>
+              </el-table-column>
               <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
@@ -405,7 +408,7 @@
         :show-overflow-tooltip="true"
       >
         <template slot-scope="{ row }">
-          <span>
+          <span :style="{color: statusColor(row.status)}">
             {{ row.status | statusText }}
           </span>
         </template>
@@ -505,7 +508,7 @@
             导入物件
           </el-button>
           <el-popconfirm
-            v-if="row.is_creator === 1 && [0, 2].indexOf(row.status) >= 0"
+            v-if="row.is_creator === 1 && [0, 1, 2].indexOf(row.status) >= 0"
             style="margin-left: 10px"
             title="确定删除吗？"
             @confirm="handleDelete(row, $index)"
@@ -1057,7 +1060,7 @@
             </el-form-item>
 
             <el-form-item label="物件类别:">
-              <span>{{ tempTaskCategory.category_name }}</span>
+              <span>{{ tempTaskCategory | categoryText }}</span>
             </el-form-item>
 
             <el-form-item label="工作单位:" prop="work_unit">
@@ -1671,6 +1674,7 @@ import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import { previewFile, downloadFileStream } from '@/utils/index'
+import TaskDetail from '@/components/TaskDetail'
 
 const tagList = [
   { id: 0, name: '正式包' },
@@ -1681,7 +1685,7 @@ const tagList = [
 
 export default {
   name: 'Type',
-  components: { Pagination },
+  components: { Pagination, TaskDetail },
   directives: { waves, permission },
   filters: {
     categoryText(category) {
@@ -1695,26 +1699,10 @@ export default {
       if (category.parent) {
         name = `${category.parent.category_name}/${name}`
       }
-      if (category.parent.parent) {
+      if (category.parent && category.parent.parent) {
         name = `${category.parent.parent.category_name}/${name}`
       }
       return name
-    },
-    statusColor(status) {
-      const statusMap = {
-        0: '#67c23a',
-        1: '#67c23a',
-        2: '#67c23a',
-        3: '#67c23a',
-        4: '#67c23a',
-        5: '#67c23a',
-        6: '#67c23a',
-        7: '#67c23a',
-        8: '#67c23a',
-        9: '#67c23a',
-        10: '#67c23a'
-      }
-      return statusMap[status]
     },
     statusText(status) {
       const statusMap = {
@@ -1798,6 +1786,22 @@ export default {
     // }
 
     return {
+      statusColor(status) {
+        const statusMap = {
+          0: '#606266;',
+          1: '#606266',
+          2: '#606266',
+          3: '#606266',
+          4: '#606266',
+          5: '#606266',
+          6: '#606266',
+          7: '#606266',
+          8: '#606266',
+          9: '#606266',
+          10: '#cccccc'
+        }
+        return statusMap[status]
+      },
       globelCheckedAll: false,
       expandRowKeys: [],
       list: [],

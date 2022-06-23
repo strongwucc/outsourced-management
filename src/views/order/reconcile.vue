@@ -131,7 +131,11 @@
                 label="物件单号"
                 width="200"
                 align="center"
-              />
+              >
+                <template slot-scope="scope">
+                  <task-detail :task-id="scope.row.task_id" />
+                </template>
+              </el-table-column>
               <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
@@ -546,9 +550,10 @@ import ElImageViewer from 'element-ui/packages/image/src/image-viewer'
 import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
+import TaskDetail from '@/components/TaskDetail'
 
 export default {
-  components: { Pagination, ElImageViewer },
+  components: { Pagination, ElImageViewer, TaskDetail },
   directives: { waves, permission },
   filters: {
     categoryText(category) {

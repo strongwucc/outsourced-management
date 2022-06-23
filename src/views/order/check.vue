@@ -173,7 +173,11 @@
                 label="物件单号"
                 width="200"
                 align="center"
-              />
+              >
+                <template slot-scope="scope">
+                  <task-detail :task-id="scope.row.task_id" />
+                </template>
+              </el-table-column>
               <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
@@ -475,9 +479,10 @@ import { downloadFileStream, baseName } from '@/utils/index'
 import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
+import TaskDetail from '@/components/TaskDetail'
 
 export default {
-  components: { Pagination },
+  components: { Pagination, TaskDetail },
   directives: { waves, permission },
   filters: {
     categoryText(category) {
@@ -899,11 +904,16 @@ export default {
               statusData.forEach((statusItem) => {
                 this.list.some((listItem, listIndex) => {
                   return listItem.items.some((taskItem, taskIndex) => {
-                    if (taskItem.task_id === statusItem.task_id) {
+                    if (taskItem.id === statusItem.id) {
                       this.$set(
                         this.list[listIndex].items[taskIndex],
                         'task_status',
                         statusItem.task_status
+                      )
+                      this.$set(
+                        this.list[listIndex].items[taskIndex],
+                        'dealing',
+                        statusItem.dealing
                       )
                       return true
                     }

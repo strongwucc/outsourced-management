@@ -1192,12 +1192,10 @@ export default {
           createProcess(postTemp)
             .then(() => {
               this.dialogFormVisible = false
-              this.$notify({
-                title: '成功',
-                message: '保存成功',
-                type: 'success',
-                duration: 2000
-              })
+              this.$message.success('保存成功')
+              setTimeout(() => {
+                this.$router.push({ path: '/project/process' })
+              }, 1000)
             })
             .catch((error) => {})
         }

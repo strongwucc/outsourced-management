@@ -10,6 +10,14 @@
           size="mini"
           @keyup.enter.native="handleFilter"
         />
+        <el-input
+          v-model="listQuery.bn"
+          placeholder="项目代码"
+          style="width: 200px"
+          class="filter-item"
+          size="mini"
+          @keyup.enter.native="handleFilter"
+        />
         <el-button
           v-waves
           class="filter-item"
@@ -223,6 +231,7 @@ export default {
         page: 1,
         page_num: 10,
         project_name: undefined,
+        bn: '',
         sort: '+id'
       },
       dialogStatus: '',
