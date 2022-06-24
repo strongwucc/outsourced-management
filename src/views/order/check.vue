@@ -351,7 +351,7 @@
           <el-input
             v-model="tempModify.reason"
             type="textarea"
-            placeholder="请输入终止原因"
+            placeholder="请输入变更原因"
             class="dialog-form-item"
           />
         </el-form-item>
@@ -799,7 +799,7 @@ export default {
           return orderItem.items.some((taskItem, taskIndex) => {
             if (taskItem.checked) {
               if ([2].indexOf(taskItem.task_status) < 0) {
-                const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
+                const errorName = `[${taskItem.task_id}]: 该物件状态无法生成对账单`
                 this.$message.error(errorName)
                 return true
               }

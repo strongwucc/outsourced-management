@@ -2861,7 +2861,9 @@ export default {
                 (listItem) => listItem.demand_id === this.tempProvider.demand_id
               )
               if (index >= 0) {
-                this.$set(this.list[index], 'status', 4)
+                const { status, current_operator } = response.data
+                this.$set(this.list[index], 'status', status)
+                this.$set(this.list[index], 'current_operator', current_operator)
               }
               this.dialogProviderVisible = false
               this.$message.success('分配成功')
@@ -3219,6 +3221,9 @@ export default {
                 temp.work_amount = work_amount
                 temp.nums = nums
                 this.list[demandIndex].tasks.unshift(temp)
+                this.$set(this.list[demandIndex], 'nums', this.list[demandIndex].nums + 1)
+                this.$set(this.list[demandIndex], 'work_num', this.list[demandIndex].work_num + nums)
+                this.$set(this.list[demandIndex], 'work_amount', this.list[demandIndex].work_amount + work_amount)
               }
               this.dialogTaskVisible = false
               this.$notify({
@@ -3337,6 +3342,16 @@ export default {
                   this.list[demandIndex],
                   'nums',
                   response.data.nums
+                )
+                this.$set(
+                  this.list[demandIndex],
+                  'work_num',
+                  response.data.work_num
+                )
+                this.$set(
+                  this.list[demandIndex],
+                  'work_amount',
+                  response.data.work_amount
                 )
               }
 

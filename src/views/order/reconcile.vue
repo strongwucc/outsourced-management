@@ -236,7 +236,7 @@
       </el-table-column>
       <el-table-column label="当前处理人" align="center" width="100">
         <template slot-scope="{ row }">
-          {{ row.dealing }}
+          {{ row.current_operator }}
         </template>
       </el-table-column>
       <el-table-column label="订单状态" align="center" width="100">
@@ -791,7 +791,7 @@ export default {
         !this.list.some((listItem) => {
           if (listItem.checked) {
             if ([1].indexOf(listItem.statement_status) < 0) {
-              const errorName = `[${listItem.statement_id}] 该对账单不在待结算中，无法提交结算`
+              const errorName = pass === true ? `[${listItem.statement_id}] 该对账单的状态，无法提交` : `[${listItem.statement_id}] 该对账单的状态，无法驳回`
               this.$message.error(errorName)
               return true
             }
@@ -849,15 +849,13 @@ export default {
       const func = tempData.status ? submitStatement : rejectStatement
       func({ statement_id: tempData.statement_id, reason: tempData.reason })
         .then((response) => {
-          const newStatus = tempData.status ? 2 : 3
           tempData.statement_id.forEach(checkedStatementId => {
-            this.list.some((listItem, listIndex) => {
-              if (listItem.statement_id === checkedStatementId) {
-                this.$set(this.list[listIndex], 'statement_status', newStatus)
-                return true
-              }
-              return false
-            })
+            const listIndex = this.list.findIndex(listItem => listItem.statement_id === checkedStatementId)
+            const dataIndex = response.data.findIndex(dataItem => dataItem.statement_id === checkedStatementId)
+            if (listIndex >= 0 && dataIndex >= 0) {
+              this.$set(this.list[listIndex], 'statement_status', response.data[dataIndex].statement_status)
+              this.$set(this.list[listIndex], 'current_operator', response.data[dataIndex].current_operator)
+            }
           })
           this.$notify({
             title: '成功',
@@ -992,10 +990,12 @@ export default {
       this.$refs['billDataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempBill))
-          uploadInvoiceData(temp).then(() => {
+          uploadInvoiceData(temp).then((response) => {
             const index = this.list.findIndex(listItem => listItem.statement_id === temp.statement_id)
             if (index >= 0) {
-              this.$set(this.list[index], 'statement_status', 1)
+              const { statement_status, current_operator } = response.data
+              this.$set(this.list[index], 'statement_status', statement_status)
+              this.$set(this.list[index], 'current_operator', current_operator)
               this.$set(this.list[index], 'invoice_file', temp.invoice_file_url)
             }
             this.dialogBillVisible = false
