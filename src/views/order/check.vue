@@ -833,13 +833,13 @@ export default {
               })
             })
             this.$set(
-              this.list[checkedOrderIndex].tasks[checkedTaskIndex],
+              this.list[checkedOrderIndex].items[checkedTaskIndex],
               'task_status',
-              4
+              5
             )
           })
 
-          this.$message.success('交付验收成功')
+          this.$message.success('生成对账单成功')
         })
         .catch((error) => {})
     },

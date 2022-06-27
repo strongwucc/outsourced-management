@@ -182,6 +182,11 @@
                 </template>
               </el-table-column>
               <el-table-column
+                prop="order_id"
+                label="订单号"
+                align="center"
+              />
+              <el-table-column
                 prop="task_name"
                 label="物件名称"
                 align="center"

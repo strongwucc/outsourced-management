@@ -201,7 +201,7 @@
         <template slot-scope="{ row, $index }">
           <div class="expand-table-box" style="padding-left: 50px">
             <el-table class="task-list" border :data="row.tasks" stripe>
-              <el-table-column label="" width="50" align="center">
+              <el-table-column v-if="$store.getters.roles.indexOf(0) < 0" label="" width="50" align="center">
                 <template slot-scope="scope">
                   <el-checkbox
                     v-model="scope.row.checked"
@@ -423,6 +423,7 @@
       >
         <template slot-scope="{ row, $index }">
           <el-button
+            v-permission="[1, 3]"
             type="primary"
             size="mini"
             plain
@@ -1219,6 +1220,7 @@
             :show-file-list="false"
           >
             <el-button size="mini" type="primary">导入</el-button>
+            <span class="file-name" style="margin-left: 10px">{{ tempImportTaskFileName }}</span>
           </el-upload>
         </el-form-item>
       </el-form>
@@ -1673,7 +1675,8 @@ import { fetchAllCategory } from '@/api/system/category'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 import permission from '@/directive/permission/index.js' // 权限判断指令
-import { previewFile, downloadFileStream } from '@/utils/index'
+import { downloadFile } from '@/api/system/file'
+import { previewFile, downloadFileStream, baseName } from '@/utils/index'
 import TaskDetail from '@/components/TaskDetail'
 
 const tagList = [
@@ -1938,6 +1941,7 @@ export default {
         tasks: []
       },
       importTaskRules: {},
+      tempImportTaskFileName: '',
       dialogTaskDetailVisible: false,
       tempTaskDetail: {
         extends: []
@@ -2417,8 +2421,8 @@ export default {
         file: row.file || '',
         files: row.files || [],
         remark: row.remark || '',
-        tag: parseInt(row.tag),
-        supplier: parseInt(row.supplier)
+        tag: parseInt(row.tag) || '',
+        supplier: parseInt(row.supplier) || ''
       })
       this.demandFileList = this.temp.files.map((file) => {
         return {
@@ -3123,7 +3127,7 @@ export default {
         })
       ) {
         if (checkeds.length <= 0) {
-          this.$message.error('请先选择物件')
+          this.$message.error('请先选择需求')
           return false
         }
       } else {
@@ -3315,6 +3319,7 @@ export default {
      * 导入模板成功
      */
     handleAddTaskTplSucc(response, file, fileList) {
+      this.tempImportTaskFileName = file.name
       this.tempImportTask = Object.assign({}, this.tempImportTask, {
         tasks: response
       })
@@ -3598,7 +3603,11 @@ export default {
       this.dialogStopReasonVisible = true
     },
     downLoadContract(fileName, filePath) {
-      previewFile(fileName, filePath)
+      downloadFile({ url: filePath })
+        .then((response) => {
+          downloadFileStream(baseName(filePath), response)
+        })
+        .catch((error) => {})
     }
   }
 }
@@ -3698,6 +3707,7 @@ export default {
       display: block;
     }
   }
+
 }
 .task-detail-dialog {
   .task-detail-title {

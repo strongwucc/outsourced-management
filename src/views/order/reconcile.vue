@@ -136,6 +136,11 @@
                   <task-detail :task-id="scope.row.task_id" />
                 </template>
               </el-table-column>
+              <el-table-column
+                prop="order_id"
+                label="订单号"
+                align="center"
+              />
               <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
