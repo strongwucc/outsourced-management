@@ -280,15 +280,14 @@
                   display: flex;
                   justify-content: space-between;
                   align-items: center;
-                  &:not(:last-child) {
-                    margin-bottom: 10px;
-                  }
+                  margin-bottom: 10px;
                 "
               >
                 <div class="file-name">{{ file.name }}</div>
                 <div class="btns">
                   <el-button
                     type="primary"
+                    :disabled="false"
                     size="mini"
                     plain
                     @click="downLoadContract(file.name, file.url)"
@@ -331,15 +330,14 @@
                   display: flex;
                   justify-content: space-between;
                   align-items: center;
-                  &:not(:last-child) {
-                    margin-bottom: 10px;
-                  }
+                  margin-bottom: 10px;
                 "
               >
                 <div class="file-name">{{ file.name }}</div>
                 <div class="btns">
                   <el-button
                     type="primary"
+                    :disabled="false"
                     size="mini"
                     plain
                     @click="downLoadContract(file.name, file.url)"
@@ -403,6 +401,8 @@
 
 <script>
 import { fetchTaskDetail } from '@/api/demand/task'
+import { downloadFile } from '@/api/system/file'
+import { downloadFileStream, baseName } from '@/utils/index'
 const tagList = [
   { id: 0, name: '正式包' },
   { id: 1, name: '测试包' },
@@ -509,6 +509,13 @@ export default {
         loading.close()
         // this.$message.error('哎呀，出错啦')
       }
+    },
+    downLoadContract(fileName, filePath) {
+      downloadFile({ url: filePath })
+        .then((response) => {
+          downloadFileStream(baseName(filePath), response)
+        })
+        .catch((error) => {})
     }
   }
 }

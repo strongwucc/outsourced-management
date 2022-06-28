@@ -474,7 +474,13 @@
                 style="width: 100%"
               >
                 <el-option
-                  v-for="(item, itemIndex) in ['人日']"
+                  v-for="(item, itemIndex) in [
+                    '人日',
+                    '套',
+                    '件',
+                    '分钟',
+                    '千字',
+                  ]"
                   :key="itemIndex"
                   :label="item"
                   :value="item"

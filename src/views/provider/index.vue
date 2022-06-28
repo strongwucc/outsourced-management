@@ -541,12 +541,10 @@ export default {
           { required: true, message: '请选择需求品类', trigger: 'change' }
         ],
         price: [{ required: true, message: '请输入单价', trigger: 'blur' }],
-        name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-        mobile: [
+        contact_name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+        contact_mobile: [
           {
-            required: true,
             validator: validateMobile,
-            message: '请输入电话',
             trigger: 'blur'
           }
         ]

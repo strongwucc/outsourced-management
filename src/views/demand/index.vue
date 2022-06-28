@@ -201,7 +201,12 @@
         <template slot-scope="{ row, $index }">
           <div class="expand-table-box" style="padding-left: 50px">
             <el-table class="task-list" border :data="row.tasks" stripe>
-              <el-table-column v-if="$store.getters.roles.indexOf(0) < 0" label="" width="50" align="center">
+              <el-table-column
+                v-if="$store.getters.roles.indexOf(0) < 0"
+                label=""
+                width="50"
+                align="center"
+              >
                 <template slot-scope="scope">
                   <el-checkbox
                     v-model="scope.row.checked"
@@ -392,10 +397,17 @@
       </el-table-column>
 
       <el-table-column label="停留时间" align="center" width="80">
-        <template slot-scope="{ row }"> {{ row.stay_time | stayTimeHours }}小时 </template>
+        <template slot-scope="{ row }">
+          {{ row.stay_time | stayTimeHours }}小时
+        </template>
       </el-table-column>
 
-      <el-table-column label="当前处理人" align="center" width="120" show-overflow-tooltip>
+      <el-table-column
+        label="当前处理人"
+        align="center"
+        width="120"
+        show-overflow-tooltip
+      >
         <template slot-scope="{ row }">
           {{ row.current_operator }}
         </template>
@@ -408,7 +420,7 @@
         :show-overflow-tooltip="true"
       >
         <template slot-scope="{ row }">
-          <span :style="{color: statusColor(row.status)}">
+          <span :style="{ color: statusColor(row.status) }">
             {{ row.status | statusText }}
           </span>
         </template>
@@ -1071,7 +1083,13 @@
                 style="width: 100%"
               >
                 <el-option
-                  v-for="(item, itemIndex) in ['人日','套','件', '分钟', '千字']"
+                  v-for="(item, itemIndex) in [
+                    '人日',
+                    '套',
+                    '件',
+                    '分钟',
+                    '千字',
+                  ]"
                   :key="itemIndex"
                   :label="item"
                   :value="item"
@@ -1220,7 +1238,9 @@
             :show-file-list="false"
           >
             <el-button size="mini" type="primary">导入</el-button>
-            <span class="file-name" style="margin-left: 10px">{{ tempImportTaskFileName }}</span>
+            <span class="file-name" style="margin-left: 10px">{{
+              tempImportTaskFileName
+            }}</span>
           </el-upload>
         </el-form-item>
       </el-form>
@@ -1349,21 +1369,23 @@
                       :key="propIndex"
                       :label="`${property.name}:`"
                       :prop="`extends.${propIndex}.value`"
-                      :rules="property.type === 1
-                        ? [
-                          {
-                            required: true,
-                            message: `请选择${property.name}`,
-                            trigger: 'change',
-                          },
-                        ]
-                        : [
-                          {
-                            required: true,
-                            message: `请输入${property.name}`,
-                            trigger: 'blur',
-                          },
-                        ]"
+                      :rules="
+                        property.type === 1
+                          ? [
+                            {
+                              required: true,
+                              message: `请选择${property.name}`,
+                              trigger: 'change',
+                            },
+                          ]
+                          : [
+                            {
+                              required: true,
+                              message: `请输入${property.name}`,
+                              trigger: 'blur',
+                            },
+                          ]
+                      "
                     >
                       <el-select
                         v-if="property.type === 1"
@@ -1372,9 +1394,9 @@
                         style="width: 100%"
                       >
                         <el-option
-                          v-for="(option, optionIndex) in property.options.split(
-                            ','
-                          )"
+                          v-for="(
+                            option, optionIndex
+                          ) in property.options.split(',')"
                           :key="optionIndex"
                           :label="option"
                           :value="option"
@@ -2194,7 +2216,10 @@ export default {
                 temp.category = ''
               }
 
-              if (this.dialogStatus === 'create' || this.dialogStatus === 'copy') {
+              if (
+                this.dialogStatus === 'create' ||
+                this.dialogStatus === 'copy'
+              ) {
                 temp.demand_id = response.data.id
                 temp.current_operator = response.data.current_operator
                 temp.is_creator = 1
@@ -2412,18 +2437,21 @@ export default {
         1,
         Object.assign({}, row, { copyLoading: false })
       )
-      this.temp = Object.assign({}, {
-        project_id: this.process.length > 0 ? row.project_id : '',
-        process_id: this.process.length > 0 ? row.process_id : '',
-        name: row.name || '',
-        introduce: row.introduce || '',
-        cat_id: row.cat_id || '',
-        file: row.file || '',
-        files: row.files || [],
-        remark: row.remark || '',
-        tag: parseInt(row.tag) || '',
-        supplier: parseInt(row.supplier) || ''
-      })
+      this.temp = Object.assign(
+        {},
+        {
+          project_id: this.process.length > 0 ? row.project_id : '',
+          process_id: this.process.length > 0 ? row.process_id : '',
+          name: row.name || '',
+          introduce: row.introduce || '',
+          cat_id: row.cat_id || '',
+          file: row.file || '',
+          files: row.files || [],
+          remark: row.remark || '',
+          tag: parseInt(row.tag) || '',
+          supplier: parseInt(row.supplier) || ''
+        }
+      )
       this.demandFileList = this.temp.files.map((file) => {
         return {
           name: file.name,
@@ -2454,7 +2482,11 @@ export default {
             duration: 2000
           })
           this.$set(this.list[index], 'status', response.data.status)
-          this.$set(this.list[index], 'current_operator', response.data.current_operator)
+          this.$set(
+            this.list[index],
+            'current_operator',
+            response.data.current_operator
+          )
         })
         .catch((error) => {})
     },
@@ -2645,7 +2677,11 @@ export default {
                 )
                 if (index >= 0) {
                   this.$set(this.list[index], 'status', statusItem.status)
-                  this.$set(this.list[index], 'current_operator', statusItem.current_operator)
+                  this.$set(
+                    this.list[index],
+                    'current_operator',
+                    statusItem.current_operator
+                  )
                 }
               })
               this.dialogVerifyVisible = false
@@ -2867,7 +2903,11 @@ export default {
               if (index >= 0) {
                 const { status, current_operator } = response.data
                 this.$set(this.list[index], 'status', status)
-                this.$set(this.list[index], 'current_operator', current_operator)
+                this.$set(
+                  this.list[index],
+                  'current_operator',
+                  current_operator
+                )
               }
               this.dialogProviderVisible = false
               this.$message.success('分配成功')
@@ -2970,7 +3010,11 @@ export default {
             )
             if (index >= 0) {
               this.$set(this.list[index], 'status', statusItem.status)
-              this.$set(this.list[index], 'current_operator', statusItem.current_operator)
+              this.$set(
+                this.list[index],
+                'current_operator',
+                statusItem.current_operator
+              )
             }
           })
           this.$message.success('订单生成成功')
@@ -3148,7 +3192,11 @@ export default {
             if (index >= 0) {
               this.$set(this.list[index], 'status', statusItem.status)
               this.$set(this.list[index], 'can_add_task', 0)
-              this.$set(this.list[index], 'current_operator', statusItem.current_operator)
+              this.$set(
+                this.list[index],
+                'current_operator',
+                statusItem.current_operator
+              )
             }
           })
           this.$message.success('操作成功')
@@ -3207,9 +3255,18 @@ export default {
           }
           createTask(temp)
             .then((response) => {
-              const { id, work_price, work_amount, nums } = response.data
+              const {
+                id,
+                work_price,
+                work_amount,
+                props,
+                demand_nums,
+                demand_work_num,
+                demand_work_amount
+              } = response.data
               temp.task_id = id
               temp.task_status = 0
+              temp.props = props
               let demandIndex = -1
               this.list.some((listItem, listIndex) => {
                 if (listItem.demand_id === temp.demand_id) {
@@ -3223,11 +3280,14 @@ export default {
                 temp.category = this.tempTaskCategory
                 temp.work_price = work_price
                 temp.work_amount = work_amount
-                temp.nums = nums
                 this.list[demandIndex].tasks.unshift(temp)
-                this.$set(this.list[demandIndex], 'nums', this.list[demandIndex].nums + 1)
-                this.$set(this.list[demandIndex], 'work_num', this.list[demandIndex].work_num + nums)
-                this.$set(this.list[demandIndex], 'work_amount', this.list[demandIndex].work_amount + work_amount)
+                this.$set(this.list[demandIndex], 'nums', demand_nums)
+                this.$set(this.list[demandIndex], 'work_num', demand_work_num)
+                this.$set(
+                  this.list[demandIndex],
+                  'work_amount',
+                  demand_work_amount
+                )
               }
               this.dialogTaskVisible = false
               this.$notify({
@@ -3249,15 +3309,32 @@ export default {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempTask))
           updateTask(temp)
-            .then(() => {
+            .then((response) => {
+              const {
+                id,
+                work_price,
+                work_amount,
+                props,
+                demand_nums,
+                demand_work_num,
+                demand_work_amount
+              } = response.data
               const demandIndex = this.list.findIndex(
                 (v) => v.demand_id === temp.demand_id
               )
               const taskIndex = this.list[demandIndex].tasks.findIndex(
                 (v) => v.task_id === temp.task_id
               )
+              temp.work_amount = work_amount
 
               this.list[demandIndex].tasks.splice(taskIndex, 1, temp)
+              this.$set(this.list[demandIndex], 'nums', demand_nums)
+              this.$set(this.list[demandIndex], 'work_num', demand_work_num)
+              this.$set(
+                this.list[demandIndex],
+                'work_amount',
+                demand_work_amount
+              )
               this.dialogTaskVisible = false
               this.$notify({
                 title: '成功',
@@ -3343,11 +3420,7 @@ export default {
                   'tasks',
                   this.list[demandIndex].tasks.concat(response.data.tasks)
                 )
-                this.$set(
-                  this.list[demandIndex],
-                  'nums',
-                  response.data.nums
-                )
+                this.$set(this.list[demandIndex], 'nums', response.data.nums)
                 this.$set(
                   this.list[demandIndex],
                   'work_num',
@@ -3707,7 +3780,6 @@ export default {
       display: block;
     }
   }
-
 }
 .task-detail-dialog {
   .task-detail-title {
