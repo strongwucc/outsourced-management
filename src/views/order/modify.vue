@@ -254,7 +254,10 @@
       </el-table-column>
       <el-table-column label="申请单号" align="left" width="200">
         <template slot-scope="{ row }">
-          {{ row.change_id }}
+          <div class="pending-box">
+            <span class="txt">{{ row.change_id }}</span>
+            <!-- <span v-if="row.pending > 0" class="tag">{{ row.pending }}</span> -->
+          </div>
         </template>
       </el-table-column>
       <el-table-column
@@ -606,14 +609,32 @@ export default {
     /**
      * 获取需求列表
      */
-    getList() {
-      this.listLoading = true
+    getList(needLoading = true) {
+      if (needLoading) {
+        this.listLoading = true
+      }
 
       fetchModifyOrderList(this.listQuery)
         .then((response) => {
           this.listLoading = false
           this.total = response.data.total
-          this.list = response.data.list
+          if (this.$store.getters.pendings['/order/modify']) {
+            const pendings = this.$store.getters.pendings['/order/modify'].children
+            this.list = response.data.list.map(listItem => {
+              let pending = 0
+              pendings.some(pendingItem => {
+                if (pendingItem[listItem.change_id]) {
+                  pending = pendingItem[listItem.change_id]
+                  return true
+                }
+                return false
+              })
+              listItem.pending = pending
+              return listItem
+            })
+          } else {
+            this.list = response.data.list
+          }
         })
         .catch((error) => {
           console.log(error)
@@ -710,14 +731,14 @@ export default {
           const tempData = JSON.parse(JSON.stringify(this.tempVerify))
           changeVerify(tempData)
             .then((response) => {
-              const { change_id, change_status, current_operator } = response.data
-              const changeIndex = this.list.findIndex(
-                (listItem) => listItem.change_id === change_id
-              )
-              if (changeIndex >= 0) {
-                this.$set(this.list[changeIndex], 'change_status', change_status)
-                this.$set(this.list[changeIndex], 'current_operator', current_operator)
-              }
+              // const { change_id, change_status, current_operator } = response.data
+              // const changeIndex = this.list.findIndex(
+              //   (listItem) => listItem.change_id === change_id
+              // )
+              // if (changeIndex >= 0) {
+              //   this.$set(this.list[changeIndex], 'change_status', change_status)
+              //   this.$set(this.list[changeIndex], 'current_operator', current_operator)
+              // }
               this.$notify({
                 title: '成功',
                 message: '处理成功',
@@ -725,6 +746,8 @@ export default {
                 duration: 2000
               })
               this.dialogVerifyVisible = false
+              this.$store.dispatch('user/getPending')
+              this.getList(false)
             })
             .catch((error) => {})
         }
@@ -793,6 +816,23 @@ export default {
     }
   }
   .list-container {
+    .pending-box {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      .tag {
+        margin-left: 10px;
+        font-size: 10px;
+        height: 16px;
+        line-height: 16px;
+        padding: 0 5px;
+        box-sizing: border-box;
+        border-radius: 50%;
+        background-color: #f56c6c;
+        border-color: #f56c6c;
+        color: #fff;
+      }
+    }
   }
   .modify-color {
     color: #f56c6c;

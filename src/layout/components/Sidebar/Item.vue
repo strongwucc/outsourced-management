@@ -10,10 +10,15 @@ export default {
     title: {
       type: String,
       default: ''
+    },
+    pending: {
+      type: Number,
+      default: 0
     }
   },
   render(h, context) {
-    const { icon, title } = context.props
+    const { icon, title, pending } = context.props
+
     const vnodes = []
 
     if (icon) {
@@ -25,17 +30,39 @@ export default {
     }
 
     if (title) {
-      vnodes.push(<span slot='title'>{(title)}</span>)
+      if (pending > 0) {
+        vnodes.push(<span slot='title' class='has-pending'><span>{(title)}</span><span class='pending-tag'>{(pending)}</span></span>)
+      } else {
+        vnodes.push(<span slot='title'>{(title)}</span>)
+      }
     }
+
     return vnodes
   }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .sub-el-icon {
   color: currentColor;
   width: 1em;
   height: 1em;
+}
+.has-pending {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  .pending-tag {
+    margin-left: 10px;
+    font-size: 10px;
+    height: 16px;
+    line-height: 16px;
+    padding: 0 5px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background-color: #f56c6c;
+    border-color: #f56c6c;
+    color: #fff;
+  }
 }
 </style>

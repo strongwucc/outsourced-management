@@ -15,6 +15,13 @@ export function getInfo() {
   })
 }
 
+export function getPending() {
+  return request({
+    url: '/api/auth/pending',
+    method: 'post'
+  })
+}
+
 export function logout() {
   return request({
     url: '/api/auth/logout',

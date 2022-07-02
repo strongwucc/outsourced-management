@@ -265,7 +265,10 @@
       </el-table-column>
       <el-table-column label="验收单号" align="left" width="200">
         <template slot-scope="{ row }">
-          {{ row.receipt_id }}
+          <div class="pending-box">
+            <span class="txt">{{ row.receipt_id }}</span>
+            <!-- <span v-if="row.items.length > 0" class="tag">{{ row.items.length }}</span> -->
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="项目名称" align="center" width="200">
@@ -651,14 +654,32 @@ export default {
     /**
      * 获取需求列表
      */
-    getList() {
-      this.listLoading = true
+    getList(needLoading = true) {
+      if (needLoading) {
+        this.listLoading = true
+      }
 
       fetchCheckOrderList(this.listQuery)
         .then((response) => {
           this.listLoading = false
           this.total = response.data.total
-          this.list = response.data.list
+          if (this.$store.getters.pendings['/order/check']) {
+            const pendings = this.$store.getters.pendings['/order/check'].children
+            this.list = response.data.list.map(listItem => {
+              let pending = 0
+              pendings.some(pendingItem => {
+                if (pendingItem[listItem.receipt_id]) {
+                  pending = pendingItem[listItem.receipt_id]
+                  return true
+                }
+                return false
+              })
+              listItem.pending = pending
+              return listItem
+            })
+          } else {
+            this.list = response.data.list
+          }
         })
         .catch((error) => {
           console.log(error)
@@ -759,24 +780,24 @@ export default {
           const tempData = JSON.parse(JSON.stringify(this.tempModify))
           modifyCheckOrder(tempData)
             .then((response) => {
-              const orderIndex = this.list.findIndex(
-                (listItem) => listItem.receipt_id === tempData.receipt_id
-              )
-              if (orderIndex >= 0) {
-                // this.$set(this.list[orderIndex], "order_status", 1);
-                tempData.task_id.forEach((task_id) => {
-                  const taskIndex = this.list[orderIndex].items.findIndex(
-                    (taskItem) => taskItem.task_id === task_id
-                  )
-                  if (taskIndex >= 0) {
-                    this.$set(
-                      this.list[orderIndex].items[taskIndex],
-                      'task_status',
-                      1
-                    )
-                  }
-                })
-              }
+              // const orderIndex = this.list.findIndex(
+              //   (listItem) => listItem.receipt_id === tempData.receipt_id
+              // )
+              // if (orderIndex >= 0) {
+              //   // this.$set(this.list[orderIndex], "order_status", 1);
+              //   tempData.task_id.forEach((task_id) => {
+              //     const taskIndex = this.list[orderIndex].items.findIndex(
+              //       (taskItem) => taskItem.task_id === task_id
+              //     )
+              //     if (taskIndex >= 0) {
+              //       this.$set(
+              //         this.list[orderIndex].items[taskIndex],
+              //         'task_status',
+              //         1
+              //       )
+              //     }
+              //   })
+              // }
               this.$notify({
                 title: '成功',
                 message: '申请成功',
@@ -784,6 +805,8 @@ export default {
                 duration: 2000
               })
               this.dialogModifyVisible = false
+              this.$store.dispatch('user/getPending')
+              this.getList(false)
             })
             .catch((error) => {})
         }
@@ -820,26 +843,28 @@ export default {
 
       generateStatement({ tasks: taskCheckeds })
         .then((response) => {
-          taskCheckeds.forEach((checkedTaskId) => {
-            let checkedOrderIndex, checkedTaskIndex
-            this.list.some((orderItem, orderIndex) => {
-              return orderItem.items.some((taskItem, taskIndex) => {
-                if (taskItem.task_id === checkedTaskId) {
-                  checkedOrderIndex = orderIndex
-                  checkedTaskIndex = taskIndex
-                  return true
-                }
-                return false
-              })
-            })
-            this.$set(
-              this.list[checkedOrderIndex].items[checkedTaskIndex],
-              'task_status',
-              5
-            )
-          })
+          // taskCheckeds.forEach((checkedTaskId) => {
+          //   let checkedOrderIndex, checkedTaskIndex
+          //   this.list.some((orderItem, orderIndex) => {
+          //     return orderItem.items.some((taskItem, taskIndex) => {
+          //       if (taskItem.task_id === checkedTaskId) {
+          //         checkedOrderIndex = orderIndex
+          //         checkedTaskIndex = taskIndex
+          //         return true
+          //       }
+          //       return false
+          //     })
+          //   })
+          //   this.$set(
+          //     this.list[checkedOrderIndex].items[checkedTaskIndex],
+          //     'task_status',
+          //     5
+          //   )
+          // })
 
           this.$message.success('生成对账单成功')
+          this.$store.dispatch('user/getPending')
+          this.getList(false)
         })
         .catch((error) => {})
     },
@@ -900,27 +925,27 @@ export default {
           const tempData = JSON.parse(JSON.stringify(this.tempVerify))
           verifyCheckOrder(tempData)
             .then((response) => {
-              const statusData = response.data
-              statusData.forEach((statusItem) => {
-                this.list.some((listItem, listIndex) => {
-                  return listItem.items.some((taskItem, taskIndex) => {
-                    if (taskItem.id === statusItem.id) {
-                      this.$set(
-                        this.list[listIndex].items[taskIndex],
-                        'task_status',
-                        statusItem.task_status
-                      )
-                      this.$set(
-                        this.list[listIndex].items[taskIndex],
-                        'dealing',
-                        statusItem.dealing
-                      )
-                      return true
-                    }
-                    return false
-                  })
-                })
-              })
+              // const statusData = response.data
+              // statusData.forEach((statusItem) => {
+              //   this.list.some((listItem, listIndex) => {
+              //     return listItem.items.some((taskItem, taskIndex) => {
+              //       if (taskItem.id === statusItem.id) {
+              //         this.$set(
+              //           this.list[listIndex].items[taskIndex],
+              //           'task_status',
+              //           statusItem.task_status
+              //         )
+              //         this.$set(
+              //           this.list[listIndex].items[taskIndex],
+              //           'dealing',
+              //           statusItem.dealing
+              //         )
+              //         return true
+              //       }
+              //       return false
+              //     })
+              //   })
+              // })
               this.$notify({
                 title: '成功',
                 message: '处理成功',
@@ -928,6 +953,8 @@ export default {
                 duration: 2000
               })
               this.dialogVerifyVisible = false
+              this.$store.dispatch('user/getPending')
+              this.getList(false)
             })
             .catch((error) => {})
         }
@@ -1005,23 +1032,23 @@ export default {
 
           finishCheckOrderTask(temp)
             .then((response) => {
-              temp.task_id.forEach((checkedTaskId) => {
-                this.list.some((listItem, listIndex) => {
-                  return this.list[listIndex].items.some(
-                    (taskItem, taskIndex) => {
-                      if (taskItem.task_id === checkedTaskId) {
-                        this.$set(
-                          this.list[listIndex].items[taskIndex],
-                          'task_status',
-                          3
-                        )
-                        return true
-                      }
-                      return false
-                    }
-                  )
-                })
-              })
+              // temp.task_id.forEach((checkedTaskId) => {
+              //   this.list.some((listItem, listIndex) => {
+              //     return this.list[listIndex].items.some(
+              //       (taskItem, taskIndex) => {
+              //         if (taskItem.task_id === checkedTaskId) {
+              //           this.$set(
+              //             this.list[listIndex].items[taskIndex],
+              //             'task_status',
+              //             3
+              //           )
+              //           return true
+              //         }
+              //         return false
+              //       }
+              //     )
+              //   })
+              // })
 
               this.$notify({
                 title: '成功',
@@ -1030,6 +1057,8 @@ export default {
                 duration: 2000
               })
               this.dialogFinishVisible = false
+              this.$store.dispatch('user/getPending')
+              this.getList(false)
             })
             .catch((error) => {})
         }
@@ -1099,6 +1128,23 @@ export default {
     }
   }
   .list-container {
+    .pending-box {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      .tag {
+        margin-left: 10px;
+        font-size: 10px;
+        height: 16px;
+        line-height: 16px;
+        padding: 0 5px;
+        box-sizing: border-box;
+        border-radius: 50%;
+        background-color: #f56c6c;
+        border-color: #f56c6c;
+        color: #fff;
+      }
+    }
   }
 }
 .dialog-form {

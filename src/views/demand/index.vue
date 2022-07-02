@@ -2013,8 +2013,10 @@ export default {
     /**
      * 获取需求列表
      */
-    getList() {
-      this.listLoading = true
+    getList(needLoading = true) {
+      if (needLoading) {
+        this.listLoading = true
+      }
 
       fetchList(this.listQuery)
         .then((response) => {
@@ -2481,12 +2483,14 @@ export default {
             type: 'success',
             duration: 2000
           })
-          this.$set(this.list[index], 'status', response.data.status)
-          this.$set(
-            this.list[index],
-            'current_operator',
-            response.data.current_operator
-          )
+          // this.$set(this.list[index], 'status', response.data.status)
+          // this.$set(
+          //   this.list[index],
+          //   'current_operator',
+          //   response.data.current_operator
+          // )
+          this.$store.dispatch('user/getPending')
+          this.getList(false)
         })
         .catch((error) => {})
     },
@@ -2671,24 +2675,26 @@ export default {
             reason: this.tempVerify.reason
           })
             .then((response) => {
-              response.data.list.forEach((statusItem) => {
-                const index = this.list.findIndex(
-                  (listItem) => listItem.demand_id === statusItem.demand_id
-                )
-                if (index >= 0) {
-                  this.$set(this.list[index], 'status', statusItem.status)
-                  this.$set(
-                    this.list[index],
-                    'current_operator',
-                    statusItem.current_operator
-                  )
-                }
-              })
+              // response.data.list.forEach((statusItem) => {
+              //   const index = this.list.findIndex(
+              //     (listItem) => listItem.demand_id === statusItem.demand_id
+              //   )
+              //   if (index >= 0) {
+              //     this.$set(this.list[index], 'status', statusItem.status)
+              //     this.$set(
+              //       this.list[index],
+              //       'current_operator',
+              //       statusItem.current_operator
+              //     )
+              //   }
+              // })
               this.dialogVerifyVisible = false
               this.dialogVerifyTaskVisible = false
               this.dialogRejectTaskVisible = false
               this.dialogVerifyOrderVisible = false
               this.$message.success('操作成功')
+              this.$store.dispatch('user/getPending')
+              this.getList(false)
             })
             .catch((error) => {})
         }
@@ -2897,20 +2903,22 @@ export default {
 
           assignSupplier(temp)
             .then((response) => {
-              const index = this.list.findIndex(
-                (listItem) => listItem.demand_id === this.tempProvider.demand_id
-              )
-              if (index >= 0) {
-                const { status, current_operator } = response.data
-                this.$set(this.list[index], 'status', status)
-                this.$set(
-                  this.list[index],
-                  'current_operator',
-                  current_operator
-                )
-              }
+              // const index = this.list.findIndex(
+              //   (listItem) => listItem.demand_id === this.tempProvider.demand_id
+              // )
+              // if (index >= 0) {
+              //   const { status, current_operator } = response.data
+              //   this.$set(this.list[index], 'status', status)
+              //   this.$set(
+              //     this.list[index],
+              //     'current_operator',
+              //     current_operator
+              //   )
+              // }
               this.dialogProviderVisible = false
               this.$message.success('分配成功')
+              this.$store.dispatch('user/getPending')
+              this.getList(false)
             })
             .catch((error) => {})
         }
@@ -3004,20 +3012,22 @@ export default {
 
       createOrder({ demand_id: checkeds })
         .then((response) => {
-          response.data.list.forEach((statusItem) => {
-            const index = this.list.findIndex(
-              (listItem) => listItem.demand_id === statusItem.demand_id
-            )
-            if (index >= 0) {
-              this.$set(this.list[index], 'status', statusItem.status)
-              this.$set(
-                this.list[index],
-                'current_operator',
-                statusItem.current_operator
-              )
-            }
-          })
+          // response.data.list.forEach((statusItem) => {
+          //   const index = this.list.findIndex(
+          //     (listItem) => listItem.demand_id === statusItem.demand_id
+          //   )
+          //   if (index >= 0) {
+          //     this.$set(this.list[index], 'status', statusItem.status)
+          //     this.$set(
+          //       this.list[index],
+          //       'current_operator',
+          //       statusItem.current_operator
+          //     )
+          //   }
+          // })
           this.$message.success('订单生成成功')
+          this.$store.dispatch('user/getPending')
+          this.getList(false)
         })
         .catch((error) => {})
     },
@@ -3100,30 +3110,30 @@ export default {
 
           finishTask(temp)
             .then((response) => {
-              const finishData = response.data
-              finishData.forEach((finishItem) => {
-                const { demand_id, task_id, status } = finishItem
-                const demandIndex = this.list.findIndex(
-                  (demandItem) => demandItem.demand_id === demand_id
-                )
-                if (demandIndex >= 0) {
-                  const taskIndex = this.list[demandIndex].tasks.findIndex(
-                    (taskItem) => taskItem.task_id === task_id
-                  )
-                  if (taskIndex >= 0) {
-                    this.$set(
-                      this.list[demandIndex].tasks[taskIndex],
-                      'task_status',
-                      status
-                    )
-                    this.$set(
-                      this.list[demandIndex].tasks[taskIndex],
-                      'stop_file',
-                      temp.files
-                    )
-                  }
-                }
-              })
+              // const finishData = response.data
+              // finishData.forEach((finishItem) => {
+              //   const { demand_id, task_id, status } = finishItem
+              //   const demandIndex = this.list.findIndex(
+              //     (demandItem) => demandItem.demand_id === demand_id
+              //   )
+              //   if (demandIndex >= 0) {
+              //     const taskIndex = this.list[demandIndex].tasks.findIndex(
+              //       (taskItem) => taskItem.task_id === task_id
+              //     )
+              //     if (taskIndex >= 0) {
+              //       this.$set(
+              //         this.list[demandIndex].tasks[taskIndex],
+              //         'task_status',
+              //         status
+              //       )
+              //       this.$set(
+              //         this.list[demandIndex].tasks[taskIndex],
+              //         'stop_file',
+              //         temp.files
+              //       )
+              //     }
+              //   }
+              // })
               this.$notify({
                 title: '成功',
                 message: '终止成功',
@@ -3131,6 +3141,8 @@ export default {
                 duration: 2000
               })
               this.dialogFinishVisible = false
+              this.$store.dispatch('user/getPending')
+              this.getList(false)
             })
             .catch((error) => {})
         }
@@ -3185,21 +3197,23 @@ export default {
         task_id: checkeds
       })
         .then((response) => {
-          response.data.list.forEach((statusItem) => {
-            const index = this.list.findIndex(
-              (listItem) => listItem.demand_id === statusItem.demand_id
-            )
-            if (index >= 0) {
-              this.$set(this.list[index], 'status', statusItem.status)
-              this.$set(this.list[index], 'can_add_task', 0)
-              this.$set(
-                this.list[index],
-                'current_operator',
-                statusItem.current_operator
-              )
-            }
-          })
+          // response.data.list.forEach((statusItem) => {
+          //   const index = this.list.findIndex(
+          //     (listItem) => listItem.demand_id === statusItem.demand_id
+          //   )
+          //   if (index >= 0) {
+          //     this.$set(this.list[index], 'status', statusItem.status)
+          //     this.$set(this.list[index], 'can_add_task', 0)
+          //     this.$set(
+          //       this.list[index],
+          //       'current_operator',
+          //       statusItem.current_operator
+          //     )
+          //   }
+          // })
           this.$message.success('操作成功')
+          this.$store.dispatch('user/getPending')
+          this.getList(false)
         })
         .catch((error) => {})
     },
@@ -3255,40 +3269,40 @@ export default {
           }
           createTask(temp)
             .then((response) => {
-              const {
-                id,
-                work_price,
-                work_amount,
-                props,
-                demand_nums,
-                demand_work_num,
-                demand_work_amount
-              } = response.data
-              temp.task_id = id
-              temp.task_status = 0
-              temp.props = props
-              let demandIndex = -1
-              this.list.some((listItem, listIndex) => {
-                if (listItem.demand_id === temp.demand_id) {
-                  demandIndex = listIndex
-                  return true
-                }
-                return false
-              })
+              // const {
+              //   id,
+              //   work_price,
+              //   work_amount,
+              //   props,
+              //   demand_nums,
+              //   demand_work_num,
+              //   demand_work_amount
+              // } = response.data
+              // temp.task_id = id
+              // temp.task_status = 0
+              // temp.props = props
+              // let demandIndex = -1
+              // this.list.some((listItem, listIndex) => {
+              //   if (listItem.demand_id === temp.demand_id) {
+              //     demandIndex = listIndex
+              //     return true
+              //   }
+              //   return false
+              // })
 
-              if (demandIndex >= 0) {
-                temp.category = this.tempTaskCategory
-                temp.work_price = work_price
-                temp.work_amount = work_amount
-                this.list[demandIndex].tasks.unshift(temp)
-                this.$set(this.list[demandIndex], 'nums', demand_nums)
-                this.$set(this.list[demandIndex], 'work_num', demand_work_num)
-                this.$set(
-                  this.list[demandIndex],
-                  'work_amount',
-                  demand_work_amount
-                )
-              }
+              // if (demandIndex >= 0) {
+              //   temp.category = this.tempTaskCategory
+              //   temp.work_price = work_price
+              //   temp.work_amount = work_amount
+              //   this.list[demandIndex].tasks.unshift(temp)
+              //   this.$set(this.list[demandIndex], 'nums', demand_nums)
+              //   this.$set(this.list[demandIndex], 'work_num', demand_work_num)
+              //   this.$set(
+              //     this.list[demandIndex],
+              //     'work_amount',
+              //     demand_work_amount
+              //   )
+              // }
               this.dialogTaskVisible = false
               this.$notify({
                 title: '成功',
@@ -3296,6 +3310,8 @@ export default {
                 type: 'success',
                 duration: 2000
               })
+              this.$store.dispatch('user/getPending')
+              this.getList(false)
             })
             .catch((error) => {})
         }
@@ -3310,31 +3326,31 @@ export default {
           const temp = JSON.parse(JSON.stringify(this.tempTask))
           updateTask(temp)
             .then((response) => {
-              const {
-                id,
-                work_price,
-                work_amount,
-                props,
-                demand_nums,
-                demand_work_num,
-                demand_work_amount
-              } = response.data
-              const demandIndex = this.list.findIndex(
-                (v) => v.demand_id === temp.demand_id
-              )
-              const taskIndex = this.list[demandIndex].tasks.findIndex(
-                (v) => v.task_id === temp.task_id
-              )
-              temp.work_amount = work_amount
+              // const {
+              //   id,
+              //   work_price,
+              //   work_amount,
+              //   props,
+              //   demand_nums,
+              //   demand_work_num,
+              //   demand_work_amount
+              // } = response.data
+              // const demandIndex = this.list.findIndex(
+              //   (v) => v.demand_id === temp.demand_id
+              // )
+              // const taskIndex = this.list[demandIndex].tasks.findIndex(
+              //   (v) => v.task_id === temp.task_id
+              // )
+              // temp.work_amount = work_amount
 
-              this.list[demandIndex].tasks.splice(taskIndex, 1, temp)
-              this.$set(this.list[demandIndex], 'nums', demand_nums)
-              this.$set(this.list[demandIndex], 'work_num', demand_work_num)
-              this.$set(
-                this.list[demandIndex],
-                'work_amount',
-                demand_work_amount
-              )
+              // this.list[demandIndex].tasks.splice(taskIndex, 1, temp)
+              // this.$set(this.list[demandIndex], 'nums', demand_nums)
+              // this.$set(this.list[demandIndex], 'work_num', demand_work_num)
+              // this.$set(
+              //   this.list[demandIndex],
+              //   'work_amount',
+              //   demand_work_amount
+              // )
               this.dialogTaskVisible = false
               this.$notify({
                 title: '成功',
@@ -3342,6 +3358,8 @@ export default {
                 type: 'success',
                 duration: 2000
               })
+              this.$store.dispatch('user/getPending')
+              this.getList(false)
             })
             .catch((error) => {})
         }
@@ -3410,31 +3428,33 @@ export default {
           const temp = JSON.parse(JSON.stringify(this.tempImportTask))
           batchAddTasks(temp)
             .then((response) => {
-              const demandIndex = this.list.findIndex(
-                (v) => v.demand_id === temp.demand_id
-              )
+              // const demandIndex = this.list.findIndex(
+              //   (v) => v.demand_id === temp.demand_id
+              // )
 
-              if (demandIndex >= 0) {
-                this.$set(
-                  this.list[demandIndex],
-                  'tasks',
-                  this.list[demandIndex].tasks.concat(response.data.tasks)
-                )
-                this.$set(this.list[demandIndex], 'nums', response.data.nums)
-                this.$set(
-                  this.list[demandIndex],
-                  'work_num',
-                  response.data.work_num
-                )
-                this.$set(
-                  this.list[demandIndex],
-                  'work_amount',
-                  response.data.work_amount
-                )
-              }
+              // if (demandIndex >= 0) {
+              //   this.$set(
+              //     this.list[demandIndex],
+              //     'tasks',
+              //     this.list[demandIndex].tasks.concat(response.data.tasks)
+              //   )
+              //   this.$set(this.list[demandIndex], 'nums', response.data.nums)
+              //   this.$set(
+              //     this.list[demandIndex],
+              //     'work_num',
+              //     response.data.work_num
+              //   )
+              //   this.$set(
+              //     this.list[demandIndex],
+              //     'work_amount',
+              //     response.data.work_amount
+              //   )
+              // }
 
               this.dialogImportTaskVisible = false
               this.$message.success('导入成功')
+              this.$store.dispatch('user/getPending')
+              this.getList(false)
             })
             .catch((error) => {})
         }

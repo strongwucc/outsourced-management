@@ -208,7 +208,10 @@
       </el-table-column>
       <el-table-column label="对账单号" align="left" width="150">
         <template slot-scope="{ row }">
-          {{ row.statement_id }}
+          <div class="pending-box">
+            <span class="txt">{{ row.statement_id }}</span>
+            <!-- <span v-if="row.tasks.length > 0" class="tag">{{ row.tasks.length }}</span> -->
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="项目名称" align="center" width="150">
@@ -743,14 +746,32 @@ export default {
     /**
      * 获取需求列表
      */
-    getList() {
-      this.listLoading = true
+    getList(needLoading = true) {
+      if (needLoading) {
+        this.listLoading = true
+      }
 
       fetchReconcileOrderList(this.listQuery)
         .then((response) => {
           this.listLoading = false
           this.total = response.data.total
-          this.list = response.data.list
+          if (this.$store.getters.pendings['/order/reconcile']) {
+            const pendings = this.$store.getters.pendings['/order/reconcile'].children
+            this.list = response.data.list.map(listItem => {
+              let pending = 0
+              pendings.some(pendingItem => {
+                if (pendingItem[listItem.statement_id]) {
+                  pending = pendingItem[listItem.statement_id]
+                  return true
+                }
+                return false
+              })
+              listItem.pending = pending
+              return listItem
+            })
+          } else {
+            this.list = response.data.list
+          }
         })
         .catch((error) => {
           console.log(error)
@@ -854,14 +875,14 @@ export default {
       const func = tempData.status ? submitStatement : rejectStatement
       func({ statement_id: tempData.statement_id, reason: tempData.reason })
         .then((response) => {
-          tempData.statement_id.forEach(checkedStatementId => {
-            const listIndex = this.list.findIndex(listItem => listItem.statement_id === checkedStatementId)
-            const dataIndex = response.data.findIndex(dataItem => dataItem.statement_id === checkedStatementId)
-            if (listIndex >= 0 && dataIndex >= 0) {
-              this.$set(this.list[listIndex], 'statement_status', response.data[dataIndex].statement_status)
-              this.$set(this.list[listIndex], 'current_operator', response.data[dataIndex].current_operator)
-            }
-          })
+          // tempData.statement_id.forEach(checkedStatementId => {
+          //   const listIndex = this.list.findIndex(listItem => listItem.statement_id === checkedStatementId)
+          //   const dataIndex = response.data.findIndex(dataItem => dataItem.statement_id === checkedStatementId)
+          //   if (listIndex >= 0 && dataIndex >= 0) {
+          //     this.$set(this.list[listIndex], 'statement_status', response.data[dataIndex].statement_status)
+          //     this.$set(this.list[listIndex], 'current_operator', response.data[dataIndex].current_operator)
+          //   }
+          // })
           this.$notify({
             title: '成功',
             message: '处理成功',
@@ -869,6 +890,8 @@ export default {
             duration: 2000
           })
           this.dialogVerifyVisible = false
+          this.$store.dispatch('user/getPending')
+          this.getList(false)
         })
         .catch((error) => {})
     },
@@ -996,13 +1019,13 @@ export default {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempBill))
           uploadInvoiceData(temp).then((response) => {
-            const index = this.list.findIndex(listItem => listItem.statement_id === temp.statement_id)
-            if (index >= 0) {
-              const { statement_status, current_operator } = response.data
-              this.$set(this.list[index], 'statement_status', statement_status)
-              this.$set(this.list[index], 'current_operator', current_operator)
-              this.$set(this.list[index], 'invoice_file', temp.invoice_file_url)
-            }
+            // const index = this.list.findIndex(listItem => listItem.statement_id === temp.statement_id)
+            // if (index >= 0) {
+            //   const { statement_status, current_operator } = response.data
+            //   this.$set(this.list[index], 'statement_status', statement_status)
+            //   this.$set(this.list[index], 'current_operator', current_operator)
+            //   this.$set(this.list[index], 'invoice_file', temp.invoice_file_url)
+            // }
             this.dialogBillVisible = false
             this.$notify({
               title: '成功',
@@ -1010,6 +1033,8 @@ export default {
               type: 'success',
               duration: 2000
             })
+            this.$store.dispatch('user/getPending')
+            this.getList(false)
           })
         }
       })
@@ -1107,6 +1132,23 @@ export default {
     }
   }
   .list-container {
+    .pending-box {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      .tag {
+        margin-left: 10px;
+        font-size: 10px;
+        height: 16px;
+        line-height: 16px;
+        padding: 0 5px;
+        box-sizing: border-box;
+        border-radius: 50%;
+        background-color: #f56c6c;
+        border-color: #f56c6c;
+        color: #fff;
+      }
+    }
   }
 }
 .dialog-form {

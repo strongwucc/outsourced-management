@@ -3,7 +3,7 @@
     <template v-if="hasOneShowingChild(item.children,item) && (!onlyOneChild.children||onlyOneChild.noShowingChildren)&&!item.alwaysShow">
       <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
         <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{'submenu-title-noDropdown':!isNest}">
-          <item :icon="onlyOneChild.meta.icon||(item.meta&&item.meta.icon)" :title="onlyOneChild.meta.title" />
+          <item :icon="onlyOneChild.meta.icon||(item.meta&&item.meta.icon)" :title="onlyOneChild.meta.title" :pending="pending" />
         </el-menu-item>
       </app-link>
     </template>
@@ -55,6 +55,20 @@ export default {
     // TODO: refactor with render function
     this.onlyOneChild = null
     return {}
+  },
+  computed: {
+    pending: function() {
+      let path = ''
+      Object.keys(this.$store.getters.pendings).some((key) => {
+        if (key === this.basePath) {
+          path = key
+          return true
+        }
+        return false
+      })
+
+      return this.$store.getters.pendings[path] ? this.$store.getters.pendings[path].total : 0
+    }
   },
   methods: {
     hasOneShowingChild(children = [], parent) {

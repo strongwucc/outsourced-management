@@ -328,7 +328,12 @@
       </el-table-column>
       <el-table-column label="订单号" align="left" width="200">
         <template slot-scope="{ row }">
-          {{ row.order_id }}
+          <div class="pending-box">
+            <span class="txt">{{ row.order_id }}</span>
+            <!-- <span v-if="row.pending > 0" class="tag">{{
+              row.pending
+            }}</span> -->
+          </div>
         </template>
       </el-table-column>
       <el-table-column
@@ -926,7 +931,23 @@ export default {
         .then((response) => {
           this.listLoading = false
           this.total = response.data.total
-          this.list = response.data.list
+          if (this.$store.getters.pendings['/order/index']) {
+            const pendings = this.$store.getters.pendings['/order/index'].children
+            this.list = response.data.list.map(listItem => {
+              let pending = 0
+              pendings.some(pendingItem => {
+                if (pendingItem[listItem.order_id]) {
+                  pending = pendingItem[listItem.order_id]
+                  return true
+                }
+                return false
+              })
+              listItem.pending = pending
+              return listItem
+            })
+          } else {
+            this.list = response.data.list
+          }
         })
         .catch((error) => {
           console.log(error)
@@ -1027,24 +1048,23 @@ export default {
           const tempData = JSON.parse(JSON.stringify(this.tempModify))
           modifyOrder(tempData)
             .then((response) => {
-              const orderIndex = this.list.findIndex(
-                (listItem) => listItem.order_id === tempData.order_id
-              )
-              if (orderIndex >= 0) {
-                // this.$set(this.list[orderIndex], "order_status", 1);
-                tempData.task_id.forEach((task_id) => {
-                  const taskIndex = this.list[orderIndex].tasks.findIndex(
-                    (taskItem) => taskItem.task_id === task_id
-                  )
-                  if (taskIndex >= 0) {
-                    this.$set(
-                      this.list[orderIndex].tasks[taskIndex],
-                      'task_status',
-                      1
-                    )
-                  }
-                })
-              }
+              // const orderIndex = this.list.findIndex(
+              //   (listItem) => listItem.order_id === tempData.order_id
+              // )
+              // if (orderIndex >= 0) {
+              //   tempData.task_id.forEach((task_id) => {
+              //     const taskIndex = this.list[orderIndex].tasks.findIndex(
+              //       (taskItem) => taskItem.task_id === task_id
+              //     )
+              //     if (taskIndex >= 0) {
+              //       this.$set(
+              //         this.list[orderIndex].tasks[taskIndex],
+              //         'task_status',
+              //         1
+              //       )
+              //     }
+              //   })
+              // }
               this.$notify({
                 title: '成功',
                 message: '申请成功',
@@ -1052,6 +1072,8 @@ export default {
                 duration: 2000
               })
               this.dialogModifyVisible = false
+              this.$store.dispatch('user/getPending')
+              this.getList(false)
             })
             .catch((error) => {})
         }
@@ -1100,26 +1122,28 @@ export default {
 
       toCheckOrder({ tasks: taskCheckeds })
         .then((response) => {
-          taskCheckeds.forEach((checkedTaskItem) => {
-            let checkedOrderIndex, checkedTaskIndex
-            this.list.some((orderItem, orderIndex) => {
-              return orderItem.tasks.some((taskItem, taskIndex) => {
-                if (taskItem.task_id === checkedTaskItem.task_id) {
-                  checkedOrderIndex = orderIndex
-                  checkedTaskIndex = taskIndex
-                  return true
-                }
-                return false
-              })
-            })
-            this.$set(
-              this.list[checkedOrderIndex].tasks[checkedTaskIndex],
-              'task_status',
-              2
-            )
-          })
+          // taskCheckeds.forEach((checkedTaskItem) => {
+          //   let checkedOrderIndex, checkedTaskIndex
+          //   this.list.some((orderItem, orderIndex) => {
+          //     return orderItem.tasks.some((taskItem, taskIndex) => {
+          //       if (taskItem.task_id === checkedTaskItem.task_id) {
+          //         checkedOrderIndex = orderIndex
+          //         checkedTaskIndex = taskIndex
+          //         return true
+          //       }
+          //       return false
+          //     })
+          //   })
+          //   this.$set(
+          //     this.list[checkedOrderIndex].tasks[checkedTaskIndex],
+          //     'task_status',
+          //     2
+          //   )
+          // })
 
           this.$message.success('交付验收成功')
+          this.$store.dispatch('user/getPending')
+          this.getList(false)
         })
         .catch((error) => {})
     },
@@ -1135,7 +1159,6 @@ export default {
       taskIndex,
       keyName
     ) {
-      console.log(11111, response, file, fileList)
       const fileArr = fileList.map((fileItem) => {
         return {
           name: fileItem.name,
@@ -1156,7 +1179,11 @@ export default {
       const task = this.list[orderIndex].tasks[taskIndex]
       const upType = keyName === 'display_area' ? 1 : 0
 
-      uploadWorkImage({ task_id: task.task_id, up_type: upType, file_id: fileStr })
+      uploadWorkImage({
+        task_id: task.task_id,
+        up_type: upType,
+        file_id: fileStr
+      })
         .then((response) => {
           this.$set(this.list[orderIndex].tasks[taskIndex], keyName, fileArr)
           this.$message.success('上传成功')
@@ -1271,36 +1298,36 @@ export default {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempTask))
           addTask(temp).then((response) => {
-            const task = response.data
-            let orderIndex = -1
-            this.list.some((listItem, listIndex) => {
-              if (listItem.order_id === task.order_id) {
-                orderIndex = listIndex
-                return true
-              }
-              return false
-            })
+            // const task = response.data
+            // let orderIndex = -1
+            // this.list.some((listItem, listIndex) => {
+            //   if (listItem.order_id === task.order_id) {
+            //     orderIndex = listIndex
+            //     return true
+            //   }
+            //   return false
+            // })
 
-            if (orderIndex >= 0) {
-              this.$set(this.list[orderIndex], 'order_status', 1)
-              this.$set(
-                this.list[orderIndex],
-                'nums',
-                parseInt(this.list[orderIndex].nums) + 1
-              )
-              this.$set(
-                this.list[orderIndex],
-                'work_num',
-                parseInt(this.list[orderIndex].work_num) + parseInt(task.nums)
-              )
-              this.$set(
-                this.list[orderIndex],
-                'work_amount',
-                parseFloat(this.list[orderIndex].work_amount) +
-                  parseFloat(task.amount)
-              )
-              this.list[orderIndex].tasks.unshift(task)
-            }
+            // if (orderIndex >= 0) {
+            //   this.$set(this.list[orderIndex], 'order_status', 1)
+            //   this.$set(
+            //     this.list[orderIndex],
+            //     'nums',
+            //     parseInt(this.list[orderIndex].nums) + 1
+            //   )
+            //   this.$set(
+            //     this.list[orderIndex],
+            //     'work_num',
+            //     parseInt(this.list[orderIndex].work_num) + parseInt(task.nums)
+            //   )
+            //   this.$set(
+            //     this.list[orderIndex],
+            //     'work_amount',
+            //     parseFloat(this.list[orderIndex].work_amount) +
+            //       parseFloat(task.amount)
+            //   )
+            //   this.list[orderIndex].tasks.unshift(task)
+            // }
             this.dialogTaskVisible = false
             this.$notify({
               title: '成功',
@@ -1308,6 +1335,8 @@ export default {
               type: 'success',
               duration: 2000
             })
+            this.$store.dispatch('user/getPending')
+            this.getList(false)
           })
         }
       })
@@ -1384,6 +1413,23 @@ export default {
     }
     .upload-box {
       display: inline-block;
+    }
+    .pending-box {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      .tag {
+        margin-left: 10px;
+        font-size: 10px;
+        height: 16px;
+        line-height: 16px;
+        padding: 0 5px;
+        box-sizing: border-box;
+        border-radius: 50%;
+        background-color: #f56c6c;
+        border-color: #f56c6c;
+        color: #fff;
+      }
     }
   }
 }
