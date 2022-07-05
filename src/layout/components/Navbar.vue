@@ -6,7 +6,8 @@
 
     <div class="right-menu">
       <div class="avatar-box">
-        <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar">
+        <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar"> -->
+        <img src="@/icons/logo.jpg" class="user-avatar">
       </div>
       <el-dropdown class="wrapper-container" trigger="click">
         <div class="name-box">

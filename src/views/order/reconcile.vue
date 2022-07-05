@@ -280,6 +280,7 @@
             上传发票
           </el-button>
           <el-button
+            v-if="row.bill_file"
             v-permission="[3]"
             type="primary"
             size="mini"
@@ -289,6 +290,7 @@
             查看对账单
           </el-button>
           <el-button
+            v-if="row.invoice_file"
             v-permission="[3]"
             type="primary"
             size="mini"
@@ -574,9 +576,9 @@ export default {
       let name = category.category_name
       if (category.parent) {
         name = `${category.parent.category_name}/${name}`
-      }
-      if (category.parent.parent) {
-        name = `${category.parent.parent.category_name}/${name}`
+        if (category.parent.parent) {
+          name = `${category.parent.parent.category_name}/${name}`
+        }
       }
       return name
     },

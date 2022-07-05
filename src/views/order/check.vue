@@ -498,9 +498,9 @@ export default {
       let name = category.category_name
       if (category.parent) {
         name = `${category.parent.category_name}/${name}`
-      }
-      if (category.parent.parent) {
-        name = `${category.parent.parent.category_name}/${name}`
+        if (category.parent.parent) {
+          name = `${category.parent.parent.category_name}/${name}`
+        }
       }
       return name
     },

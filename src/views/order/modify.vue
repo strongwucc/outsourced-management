@@ -181,11 +181,7 @@
                   <task-detail :task-id="scope.row.task_id" />
                 </template>
               </el-table-column>
-              <el-table-column
-                prop="order_id"
-                label="订单号"
-                align="center"
-              />
+              <el-table-column prop="order_id" label="订单号" align="center" />
               <el-table-column
                 prop="task_name"
                 label="物件名称"
@@ -297,7 +293,7 @@
       </el-table-column>
       <el-table-column label="当前操作人" align="center" width="120">
         <template slot-scope="{ row }">
-          {{ row.current_operator || '-' }}
+          {{ row.current_operator || "-" }}
         </template>
       </el-table-column>
       <el-table-column label="审核状态" align="center" width="120">
@@ -465,9 +461,9 @@ export default {
       let name = category.category_name
       if (category.parent) {
         name = `${category.parent.category_name}/${name}`
-      }
-      if (category.parent.parent) {
-        name = `${category.parent.parent.category_name}/${name}`
+        if (category.parent.parent) {
+          name = `${category.parent.parent.category_name}/${name}`
+        }
       }
       return name
     },
@@ -619,10 +615,11 @@ export default {
           this.listLoading = false
           this.total = response.data.total
           if (this.$store.getters.pendings['/order/modify']) {
-            const pendings = this.$store.getters.pendings['/order/modify'].children
-            this.list = response.data.list.map(listItem => {
+            const pendings =
+              this.$store.getters.pendings['/order/modify'].children
+            this.list = response.data.list.map((listItem) => {
               let pending = 0
-              pendings.some(pendingItem => {
+              pendings.some((pendingItem) => {
                 if (pendingItem[listItem.change_id]) {
                   pending = pendingItem[listItem.change_id]
                   return true
