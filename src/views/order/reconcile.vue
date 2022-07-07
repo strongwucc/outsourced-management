@@ -93,12 +93,14 @@
       element-loading-text="拼命加载中"
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.8)"
+      class="list-container"
       :data="list"
       fit
       highlight-current-row
       row-key="statement_id"
       :expand-row-keys="expandRowKeys"
       @expand-change="expandChange"
+      @row-click="clickRowHandle"
     >
       <el-table-column width="50" align="center">
         <div slot="header" slot-scope="scope">
@@ -116,7 +118,7 @@
       </el-table-column>
       <el-table-column type="expand" width="20">
         <template slot-scope="{ row, $index }">
-          <div class="expand-table-box" style="padding-left: 50px">
+          <div class="expand-table-box">
             <el-table class="task-list" border :data="row.tasks" fit stripe>
               <el-table-column label="" width="50" align="center">
                 <template slot-scope="scope">
@@ -265,7 +267,7 @@
             type="primary"
             size="mini"
             plain
-            @click="handleUploadReconcile(row)"
+            @click.stop="handleUploadReconcile(row)"
           >
             上传对账单
           </el-button>
@@ -275,7 +277,7 @@
             type="primary"
             size="mini"
             plain
-            @click="handleUploadBill(row)"
+            @click.stop="handleUploadBill(row)"
           >
             上传发票
           </el-button>
@@ -285,7 +287,7 @@
             type="primary"
             size="mini"
             plain
-            @click="handleShowReconcile(row)"
+            @click.stop="handleShowReconcile(row)"
           >
             查看对账单
           </el-button>
@@ -295,7 +297,7 @@
             type="primary"
             size="mini"
             plain
-            @click="handleShowBill(row)"
+            @click.stop="handleShowBill(row)"
           >
             查看发票
           </el-button>
@@ -686,6 +688,13 @@ export default {
         return row.statement_id
       })
     },
+    clickRowHandle(row, column, event) {
+      if (this.expandRowKeys.includes(row.statement_id)) {
+        this.expandRowKeys = this.expandRowKeys.filter(val => val !== row.statement_id)
+      } else {
+        this.expandRowKeys.push(row.statement_id)
+      }
+    },
     /**
      * 全选所有
      */
@@ -760,15 +769,7 @@ export default {
           if (this.$store.getters.pendings['/order/reconcile']) {
             const pendings = this.$store.getters.pendings['/order/reconcile'].children
             this.list = response.data.list.map(listItem => {
-              let pending = 0
-              pendings.some(pendingItem => {
-                if (pendingItem[listItem.statement_id]) {
-                  pending = pendingItem[listItem.statement_id]
-                  return true
-                }
-                return false
-              })
-              listItem.pending = pending
+              listItem.pending = pendings[listItem.statement_id] || 0
               return listItem
             })
           } else {

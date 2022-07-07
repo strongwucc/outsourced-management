@@ -103,6 +103,7 @@
       row-key="order_id"
       :expand-row-keys="expandRowKeys"
       @expand-change="expandChange"
+      @row-click="clickRowHandle"
     >
       <el-table-column width="50" align="center">
         <div slot="header" slot-scope="scope">
@@ -120,7 +121,7 @@
       </el-table-column>
       <el-table-column type="expand" width="20">
         <template slot-scope="{ row, $index }">
-          <div class="expand-table-box" style="padding-left: 50px">
+          <div class="expand-table-box">
             <el-table class="task-list" border :data="row.tasks" fit stripe>
               <el-table-column label="" width="50" align="center">
                 <template slot-scope="scope">
@@ -207,6 +208,16 @@
                 width="80"
                 align="center"
               />
+              <el-table-column label="停留时间" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.stay_time }}小时
+                </template>
+              </el-table-column>
+              <el-table-column label="当前处理人" align="center" min-width="120">
+                <template slot-scope="scope">
+                  {{ scope.row.dealing }}
+                </template>
+              </el-table-column>
               <el-table-column
                 prop="task_status"
                 label="物件状态"
@@ -391,7 +402,7 @@
           {{ row.work_amount }}
         </template>
       </el-table-column>
-      <el-table-column label="停留时间" align="center" width="80">
+      <!-- <el-table-column label="停留时间" align="center" width="80">
         <template slot-scope="{ row }">
           {{ row.stay_time | stayTimeHours }}小时
         </template>
@@ -405,7 +416,7 @@
         <template slot-scope="{ row }">
           {{ row.dealing || "-" }}
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column label="单据状态" align="center" width="100">
         <template slot-scope="{ row }">
           {{ row.order_status | statusText }}
@@ -423,7 +434,7 @@
             type="primary"
             size="mini"
             plain
-            @click="handleCreateTask(row)"
+            @click.stop="handleCreateTask(row)"
           >
             新增物件
           </el-button>
@@ -860,6 +871,13 @@ export default {
         return row.order_id
       })
     },
+    clickRowHandle(row, column, event) {
+      if (this.expandRowKeys.includes(row.order_id)) {
+        this.expandRowKeys = this.expandRowKeys.filter(val => val !== row.order_id)
+      } else {
+        this.expandRowKeys.push(row.order_id)
+      }
+    },
     /**
      * 全选所有
      */
@@ -934,15 +952,7 @@ export default {
           if (this.$store.getters.pendings['/order/index']) {
             const pendings = this.$store.getters.pendings['/order/index'].children
             this.list = response.data.list.map(listItem => {
-              let pending = 0
-              pendings.some(pendingItem => {
-                if (pendingItem[listItem.order_id]) {
-                  pending = pendingItem[listItem.order_id]
-                  return true
-                }
-                return false
-              })
-              listItem.pending = pending
+              listItem.pending = pendings[listItem.order_id] || 0
               return listItem
             })
           } else {

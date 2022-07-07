@@ -144,6 +144,7 @@
       row-key="change_id"
       :expand-row-keys="expandRowKeys"
       @expand-change="expandChange"
+      @row-click="clickRowHandle"
     >
       <el-table-column width="50" align="center">
         <div slot="header" slot-scope="scope">
@@ -161,7 +162,7 @@
       </el-table-column>
       <el-table-column type="expand" width="20">
         <template slot-scope="{ row, $index }">
-          <div class="expand-table-box" style="padding-left: 50px">
+          <div class="expand-table-box">
             <el-table class="task-list" border :data="row.tasks" fit stripe>
               <el-table-column label="" width="50" align="center">
                 <template slot-scope="scope">
@@ -199,7 +200,7 @@
               </el-table-column>
               <el-table-column label="交付日期" width="200" align="center">
                 <template slot-scope="scope">
-                  <div
+                  <!-- <div
                     v-if="
                       scope.row.deliver_new_date !== scope.row.deliver_old_date
                     "
@@ -209,7 +210,14 @@
                     <i class="el-icon-right" />
                     <span>{{ scope.row.deliver_new_date }}</span>
                   </div>
-                  <span v-else>{{ scope.row.deliver_old_date }}</span>
+                  <span v-else>{{ scope.row.deliver_old_date }}</span> -->
+                  <div
+                    class="modify-color"
+                  >
+                    <span>{{ scope.row.deliver_old_date }}</span>
+                    <i class="el-icon-right" />
+                    <span>{{ scope.row.deliver_new_date }}</span>
+                  </div>
                 </template>
               </el-table-column>
               <el-table-column label="工作单位" align="center">
@@ -219,7 +227,7 @@
               </el-table-column>
               <el-table-column label="数量" align="center">
                 <template slot-scope="scope">
-                  <div
+                  <!-- <div
                     v-if="scope.row.old_nums !== scope.row.new_nums"
                     class="modify-color"
                   >
@@ -227,7 +235,14 @@
                     <i class="el-icon-right" />
                     <span>{{ scope.row.new_nums }}</span>
                   </div>
-                  <span v-else>{{ scope.row.old_nums }}</span>
+                  <span v-else>{{ scope.row.old_nums }}</span> -->
+                  <div
+                    class="modify-color"
+                  >
+                    <span>{{ scope.row.old_nums }}</span>
+                    <i class="el-icon-right" />
+                    <span>{{ scope.row.new_nums }}</span>
+                  </div>
                 </template>
               </el-table-column>
               <el-table-column prop="price" label="单价" align="center" />
@@ -312,7 +327,7 @@
             type="primary"
             size="mini"
             plain
-            @click="handleModifyReason(row)"
+            @click.stop="handleModifyReason(row)"
           >
             变更原因
           </el-button>
@@ -321,7 +336,7 @@
             type="primary"
             size="mini"
             plain
-            @click="handleRejectReason(row)"
+            @click.stop="handleRejectReason(row)"
           >
             驳回原因
           </el-button>
@@ -543,6 +558,13 @@ export default {
         return row.change_id
       })
     },
+    clickRowHandle(row, column, event) {
+      if (this.expandRowKeys.includes(row.change_id)) {
+        this.expandRowKeys = this.expandRowKeys.filter(val => val !== row.change_id)
+      } else {
+        this.expandRowKeys.push(row.change_id)
+      }
+    },
     /**
      * 全选所有
      */
@@ -618,15 +640,7 @@ export default {
             const pendings =
               this.$store.getters.pendings['/order/modify'].children
             this.list = response.data.list.map((listItem) => {
-              let pending = 0
-              pendings.some((pendingItem) => {
-                if (pendingItem[listItem.change_id]) {
-                  pending = pendingItem[listItem.change_id]
-                  return true
-                }
-                return false
-              })
-              listItem.pending = pending
+              listItem.pending = pendings[listItem.change_id] || 0
               return listItem
             })
           } else {

@@ -385,13 +385,13 @@
               align="center"
             />
             <el-table-column
-              prop="title"
+              prop="content"
               label="内容"
               width="180"
               align="center"
             />
-            <el-table-column prop="datetime" label="操作时间" align="center" />
-            <el-table-column prop="stay_time" label="耗时" align="center" />
+            <el-table-column prop="created_at" label="操作时间" align="center" />
+            <el-table-column prop="time" label="耗时" align="center" />
           </el-table>
         </el-tab-pane>
       </el-tabs>

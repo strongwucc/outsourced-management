@@ -135,12 +135,14 @@
       element-loading-text="拼命加载中"
       element-loading-spinner="el-icon-loading"
       element-loading-background="rgba(0, 0, 0, 0.8)"
+      class="list-container"
       :data="list"
       fit
       highlight-current-row
       row-key="receipt_id"
       :expand-row-keys="expandRowKeys"
       @expand-change="expandChange"
+      @row-click="clickRowHandle"
     >
       <el-table-column width="50" align="center">
         <div slot="header" slot-scope="scope">
@@ -158,7 +160,7 @@
       </el-table-column>
       <el-table-column type="expand" width="20">
         <template slot-scope="{ row, $index }">
-          <div class="expand-table-box" style="padding-left: 50px">
+          <div class="expand-table-box">
             <el-table class="task-list" border :data="row.items" fit stripe>
               <el-table-column label="" width="50" align="center">
                 <template slot-scope="scope">
@@ -298,7 +300,10 @@
       </el-table-column>
       <el-table-column label="订单状态" align="center">
         <template slot-scope="{ row }">
-          {{ row.receipts_status | statusText }}
+          <!-- {{ row.receipts_status | statusText }} -->
+          <span :style="{ color: statusColor(row.receipts_status) }">
+            {{ row.receipts_status | statusText }}
+          </span>
         </template>
       </el-table-column>
     </el-table>
@@ -528,6 +533,16 @@ export default {
   },
   data() {
     return {
+      statusColor(status) {
+        const statusMap = {
+          0: '#606266;',
+          1: '#606266',
+          2: '#606266',
+          3: '#606266',
+          4: '#cccccc'
+        }
+        return statusMap[status]
+      },
       globelCheckedAll: false,
       expandRowKeys: [],
       total: 0,
@@ -591,6 +606,13 @@ export default {
       this.expandRowKeys = expandedRows.map((row) => {
         return row.receipt_id
       })
+    },
+    clickRowHandle(row, column, event) {
+      if (this.expandRowKeys.includes(row.receipt_id)) {
+        this.expandRowKeys = this.expandRowKeys.filter(val => val !== row.receipt_id)
+      } else {
+        this.expandRowKeys.push(row.receipt_id)
+      }
     },
     /**
      * 全选所有
@@ -666,15 +688,7 @@ export default {
           if (this.$store.getters.pendings['/order/check']) {
             const pendings = this.$store.getters.pendings['/order/check'].children
             this.list = response.data.list.map(listItem => {
-              let pending = 0
-              pendings.some(pendingItem => {
-                if (pendingItem[listItem.receipt_id]) {
-                  pending = pendingItem[listItem.receipt_id]
-                  return true
-                }
-                return false
-              })
-              listItem.pending = pending
+              listItem.pending = pendings[listItem.receipt_id] || 0
               return listItem
             })
           } else {

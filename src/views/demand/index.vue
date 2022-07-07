@@ -181,9 +181,10 @@
       row-key="demand_id"
       :expand-row-keys="expandRowKeys"
       @expand-change="expandChange"
+      @row-click="clickRowHandle"
     >
       >
-      <el-table-column width="50" align="center" fixed="left">
+      <el-table-column width="50" align="center">
         <div slot="header" slot-scope="scope">
           <el-checkbox
             v-model="globelCheckedAll"
@@ -197,9 +198,9 @@
           />
         </template>
       </el-table-column>
-      <el-table-column type="expand" width="20" fixed="left">
+      <el-table-column type="expand" width="20">
         <template slot-scope="{ row, $index }">
-          <div class="expand-table-box" style="padding-left: 50px">
+          <div class="expand-table-box">
             <el-table class="task-list" border :data="row.tasks" stripe>
               <el-table-column
                 v-if="$store.getters.roles.indexOf(0) < 0"
@@ -416,7 +417,7 @@
       <el-table-column
         label="状态"
         align="center"
-        width="120"
+        width="150"
         :show-overflow-tooltip="true"
       >
         <template slot-scope="{ row }">
@@ -429,7 +430,6 @@
       <el-table-column
         label="操作"
         align="center"
-        fixed="right"
         min-width="200"
         class-name="small-padding fixed-width"
       >
@@ -440,7 +440,7 @@
             size="mini"
             plain
             :loading="row.copyLoading"
-            @click="handleCopy(row, $index)"
+            @click.stop="handleCopy(row, $index)"
           >
             复制
           </el-button>
@@ -449,7 +449,7 @@
             size="mini"
             plain
             :loading="row.detailLoading"
-            @click="handleDetail(row, $index)"
+            @click.stop="handleDetail(row, $index)"
           >
             详情
           </el-button>
@@ -459,7 +459,7 @@
             size="mini"
             plain
             :loading="row.editLoading"
-            @click="handleUpdate(row, $index)"
+            @click.stop="handleUpdate(row, $index)"
           >
             编辑
           </el-button>
@@ -468,7 +468,7 @@
             type="primary"
             size="mini"
             plain
-            @click="showReason(row, $index)"
+            @click.stop="showReason(row, $index)"
           >
             驳回原因
           </el-button>
@@ -478,7 +478,7 @@
             type="primary"
             size="mini"
             plain
-            @click="showReason(row, $index)"
+            @click.stop="showReason(row, $index)"
           >
             驳回原因
           </el-button>
@@ -488,7 +488,7 @@
             type="primary"
             size="mini"
             plain
-            @click="showReason(row, $index)"
+            @click.stop="showReason(row, $index)"
           >
             驳回原因
           </el-button>
@@ -498,7 +498,7 @@
             size="mini"
             plain
             :loading="row.assignLoading"
-            @click="handleProvider(row, $index)"
+            @click.stop="handleProvider(row, $index)"
           >
             分配供应商
           </el-button>
@@ -507,7 +507,7 @@
             type="primary"
             size="mini"
             plain
-            @click="handleCreateTask(row)"
+            @click.stop="handleCreateTask(row)"
           >
             新增物件
           </el-button>
@@ -516,7 +516,7 @@
             type="primary"
             size="mini"
             plain
-            @click="handleImportTask(row)"
+            @click.stop="handleImportTask(row)"
           >
             导入物件
           </el-button>
@@ -526,7 +526,7 @@
             title="确定删除吗？"
             @confirm="handleDelete(row, $index)"
           >
-            <el-button slot="reference" size="mini" type="danger" plain>
+            <el-button slot="reference" size="mini" type="danger" plain @click.stop>
               删除
             </el-button>
           </el-popconfirm>
@@ -536,7 +536,7 @@
             title="确定提交审核吗？"
             @confirm="handleToVerify(row, $index)"
           >
-            <el-button slot="reference" size="mini" type="primary" plain>
+            <el-button slot="reference" size="mini" type="primary" plain @click.stop>
               提交审核
             </el-button>
           </el-popconfirm>
@@ -1612,13 +1612,13 @@
               align="center"
             />
             <el-table-column
-              prop="title"
+              prop="content"
               label="内容"
               width="180"
               align="center"
             />
-            <el-table-column prop="datetime" label="操作时间" align="center" />
-            <el-table-column prop="stay_time" label="耗时" align="center" />
+            <el-table-column prop="created_at" label="操作时间" align="center" />
+            <el-table-column prop="time" label="耗时" align="center" />
           </el-table>
         </el-tab-pane>
       </el-tabs>
@@ -1877,6 +1877,7 @@ export default {
           { required: true, message: '请选择需求品类', trigger: 'change' }
         ]
       },
+      posting: false,
       processLoading: false,
       process: [],
       members: [],
@@ -2009,6 +2010,13 @@ export default {
       this.expandRowKeys = expandedRows.map((row) => {
         return row.demand_id
       })
+    },
+    clickRowHandle(row, column, event) {
+      if (this.expandRowKeys.includes(row.demand_id)) {
+        this.expandRowKeys = this.expandRowKeys.filter(val => val !== row.demand_id)
+      } else {
+        this.expandRowKeys.push(row.demand_id)
+      }
     },
     /**
      * 获取需求列表
@@ -2201,6 +2209,9 @@ export default {
      * 增加需求
      */
     createData(status = 0) {
+      if (this.posting) {
+        return false
+      }
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const temp = Object.assign({}, this.temp)
@@ -2208,8 +2219,10 @@ export default {
           postTemp.status = status
           // temp.demand_id = parseInt(Math.random() * 100) + 1024
           temp.status = status
+          this.posting = true
           createDemand(postTemp)
             .then((response) => {
+              this.posting = false
               const checkedNodes =
                 this.$refs.categoryCascader.getCheckedNodes()
               if (checkedNodes.length > 0) {
@@ -2259,7 +2272,10 @@ export default {
                 })
               }
             })
-            .catch((error) => {})
+            .catch((error) => {
+              console.log(error)
+              this.posting = false
+            })
         }
       })
     },

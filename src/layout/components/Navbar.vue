@@ -97,8 +97,8 @@ export default {
       margin-right: 10px;
       .user-avatar {
           cursor: pointer;
-          width: 40px;
-          height: 40px;
+          // width: 22px;
+          height: 22px;
           border-radius: 10px;
         }
     }

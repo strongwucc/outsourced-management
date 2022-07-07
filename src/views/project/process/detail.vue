@@ -208,7 +208,7 @@
       </el-form-item>
       <el-divider class="form-divider" content-position="left" />
       <div class="form-title">审核信息配置</div>
-      <el-form-item label="需求卡审批:" prop="needs_verify_json">
+      <el-form-item label="需求卡审批（项目组负责人）:" prop="needs_verify_json">
         <div class="needs-verify-box json-normal-box">
           <div
             v-for="(item, itemIndex) in detail.needs_verify_json"
@@ -220,7 +220,7 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
+                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
               >
                 <el-option
                   v-for="member in filterNeedsVerify"
@@ -229,7 +229,7 @@
                   :value="member.id"
                 >
                   <span style="float: left">{{ member.name }}</span>
-                  <span style="float: right">{{ member.mobile }}</span>
+                  <span style="float: right">{{ member.group_name }}</span>
                 </el-option>
               </el-select>
             </div>
@@ -237,7 +237,7 @@
         </div>
       </el-form-item>
 
-      <el-form-item label="分配供应商:" prop="assign_supplier_json">
+      <el-form-item label="分配供应商（供管）:" prop="assign_supplier_json">
         <div class="assign-supplier-box json-normal-box item-member">
           <el-select
             v-model="detail.assign_supplier_json"
@@ -255,13 +255,13 @@
               :value="member.id"
             >
               <span style="float: left">{{ member.name }}</span>
-              <span style="float: right">{{ member.mobile }}</span>
+              <span style="float: right">{{ member.group_name }}</span>
             </el-option>
           </el-select>
         </div>
       </el-form-item>
 
-      <el-form-item label="物件审核:" prop="wj_verify_json">
+      <el-form-item label="物件审核（项目组）:" prop="wj_verify_json">
         <div class="wj-verify-box json-normal-box">
           <div
             v-for="(item, itemIndex) in detail.wj_verify_json"
@@ -274,7 +274,7 @@
                 :disabled="itemIndex === 0"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批系统默认' : '二级审批'"
+                :placeholder="itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'"
               >
                 <el-option
                   v-for="member in filterWjVerify"
@@ -283,7 +283,7 @@
                   :value="member.id"
                 >
                   <span style="float: left">{{ member.name }}</span>
-                  <span style="float: right">{{ member.mobile }}</span>
+                  <span style="float: right">{{ member.group_name }}</span>
                 </el-option>
               </el-select>
             </div>
@@ -291,7 +291,7 @@
         </div>
       </el-form-item>
 
-      <el-form-item label="拟制订单:" prop="order_create_json">
+      <el-form-item label="拟制订单（供管）:" prop="order_create_json">
         <div class="order-create-box json-normal-box item-member">
           <el-select
             v-model="detail.order_create_json"
@@ -309,13 +309,13 @@
               :value="member.id"
             >
               <span style="float: left">{{ member.name }}</span>
-              <span style="float: right">{{ member.mobile }}</span>
+              <span style="float: right">{{ member.group_name }}</span>
             </el-option>
           </el-select>
         </div>
       </el-form-item>
 
-      <el-form-item label="订单审批:" prop="order_verify_json">
+      <el-form-item label="订单审批（供管负责人）:" prop="order_verify_json">
         <div class="order-verify-box json-normal-box">
           <div
             v-for="(item, itemIndex) in detail.order_verify_json"
@@ -327,7 +327,7 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
+                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
               >
                 <el-option
                   v-for="member in filterOrderVerify"
@@ -336,7 +336,7 @@
                   :value="member.id"
                 >
                   <span style="float: left">{{ member.name }}</span>
-                  <span style="float: right">{{ member.mobile }}</span>
+                  <span style="float: right">{{ member.group_name }}</span>
                 </el-option>
               </el-select>
             </div>
@@ -344,7 +344,7 @@
         </div>
       </el-form-item>
 
-      <el-form-item label="验收资源:" prop="check_json">
+      <el-form-item label="验收资源（项目组）:" prop="check_json">
         <div class="check-source-box json-normal-box">
           <div
             v-for="(item, itemIndex) in detail.check_json"
@@ -357,7 +357,7 @@
                 :disabled="itemIndex === 0"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批系统默认' : '二级审批'"
+                :placeholder="itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'"
               >
                 <el-option
                   v-for="member in filterWjVerify"
@@ -366,7 +366,7 @@
                   :value="member.id"
                 >
                   <span style="float: left">{{ member.name }}</span>
-                  <span style="float: right">{{ member.mobile }}</span>
+                  <span style="float: right">{{ member.group_name }}</span>
                 </el-option>
               </el-select>
             </div>
@@ -389,7 +389,7 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
+                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
               >
                 <el-option
                   v-for="member in filterNeedsVerify"
@@ -398,7 +398,7 @@
                   :value="member.id"
                 >
                   <span style="float: left">{{ member.name }}</span>
-                  <span style="float: right">{{ member.mobile }}</span>
+                  <span style="float: right">{{ member.group_name }}</span>
                 </el-option>
               </el-select>
             </div>
@@ -421,7 +421,7 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
+                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
               >
                 <el-option
                   v-for="member in filterOrderCreate"
@@ -430,7 +430,7 @@
                   :value="member.id"
                 >
                   <span style="float: left">{{ member.name }}</span>
-                  <span style="float: right">{{ member.mobile }}</span>
+                  <span style="float: right">{{ member.group_name }}</span>
                 </el-option>
               </el-select>
             </div>
@@ -455,7 +455,7 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
+                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
               >
                 <el-option
                   v-for="member in filterOrderVerify"
@@ -464,7 +464,7 @@
                   :value="member.id"
                 >
                   <span style="float: left">{{ member.name }}</span>
-                  <span style="float: right">{{ member.mobile }}</span>
+                  <span style="float: right">{{ member.group_name }}</span>
                 </el-option>
               </el-select>
             </div>
@@ -472,7 +472,7 @@
         </div>
       </el-form-item>
 
-      <el-form-item label="推送结算申请:" prop="push_settle_json">
+      <el-form-item label="推送结算申请（供管）:" prop="push_settle_json">
         <div class="push-settle-box json-normal-box item-member">
           <el-select
             v-model="detail.push_settle_json"
@@ -490,7 +490,7 @@
               :value="member.id"
             >
               <span style="float: left">{{ member.name }}</span>
-              <span style="float: right">{{ member.mobile }}</span>
+              <span style="float: right">{{ member.group_name }}</span>
             </el-option>
           </el-select>
         </div>
@@ -498,7 +498,7 @@
 
       <el-divider class="form-divider" content-position="left" />
       <div class="form-title">供应商变更审核配置</div>
-      <el-form-item label="变更审批:" prop="change_verify_json">
+      <el-form-item label="变更审批（项目组/项目组负责人）:" prop="change_verify_json">
         <div class="change-verify-box json-normal-box">
           <div
             v-for="(item, itemIndex) in detail.change_verify_json"
@@ -511,7 +511,7 @@
                 :disabled="itemIndex === 0"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批系统默认' : '二级审批'"
+                :placeholder="itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'"
               >
                 <el-option
                   v-for="member in filterWjVerify"
@@ -520,7 +520,7 @@
                   :value="member.id"
                 >
                   <span style="float: left">{{ member.name }}</span>
-                  <span style="float: right">{{ member.mobile }}</span>
+                  <span style="float: right">{{ member.group_name }}</span>
                 </el-option>
               </el-select>
             </div>
@@ -528,7 +528,7 @@
         </div>
       </el-form-item>
 
-      <el-form-item label="变更复审:" prop="change_review_json">
+      <el-form-item label="变更复审（供管/供管负责人）:" prop="change_review_json">
         <div class="change-review-box json-normal-box">
           <div
             v-for="(item, itemIndex) in detail.change_review_json"
@@ -540,7 +540,7 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
+                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
               >
                 <el-option
                   v-for="member in filterOrderCreate"
@@ -549,7 +549,7 @@
                   :value="member.id"
                 >
                   <span style="float: left">{{ member.name }}</span>
-                  <span style="float: right">{{ member.mobile }}</span>
+                  <span style="float: right">{{ member.group_name }}</span>
                 </el-option>
               </el-select>
             </div>
@@ -559,7 +559,7 @@
 
       <el-divider class="form-divider" content-position="left" />
       <div class="form-title">验收变更审核配置</div>
-      <el-form-item label="验收变更:" prop="change_check_json">
+      <el-form-item label="验收变更（项目组负责人）:" prop="change_check_json">
         <div class="change-check-box json-normal-box">
           <div
             v-for="(item, itemIndex) in detail.change_check_json"
@@ -571,7 +571,7 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
+                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
               >
                 <el-option
                   v-for="member in filterNeedsVerify"
@@ -580,7 +580,7 @@
                   :value="member.id"
                 >
                   <span style="float: left">{{ member.name }}</span>
-                  <span style="float: right">{{ member.mobile }}</span>
+                  <span style="float: right">{{ member.group_name }}</span>
                 </el-option>
               </el-select>
             </div>
@@ -600,7 +600,7 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批'"
+                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
               >
                 <el-option
                   v-for="member in allMembers"
@@ -609,7 +609,7 @@
                   :value="member.id"
                 >
                   <span style="float: left">{{ member.name }}</span>
-                  <span style="float: right">{{ member.mobile }}</span>
+                  <span style="float: right">{{ member.group_name }}</span>
                 </el-option>
               </el-select>
             </div>

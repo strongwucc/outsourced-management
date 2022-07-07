@@ -133,7 +133,8 @@ export default {
               // const accessRoutes = await this.$store.dispatch('permission/generateRoutes')
               // this.$router.addRoutes(accessRoutes)
               this.loading = false
-              this.$router.push({ path: this.redirect || '/' })
+              // this.$router.push({ path: this.redirect || '/' })
+              this.$router.push({ path: '/' })
             })
             .catch(() => {
               this.loading = false

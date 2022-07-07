@@ -59,7 +59,7 @@ export default {
     line-height: 16px;
     padding: 0 5px;
     box-sizing: border-box;
-    border-radius: 50%;
+    border-radius: 6px;
     background-color: #f56c6c;
     border-color: #f56c6c;
     color: #fff;
