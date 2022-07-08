@@ -211,6 +211,7 @@
                 <template slot-scope="scope">
                   <el-checkbox
                     v-model="scope.row.checked"
+                    :disabled="row.status === 10"
                     @change="clickCheckItemFn(row, scope.row)"
                   />
                 </template>
@@ -353,7 +354,10 @@
         :show-overflow-tooltip="true"
       >
         <template slot-scope="{ row }">
-          {{ row.demand_id }}
+          <div class="pending-box">
+            <span class="txt">{{ row.demand_id }}</span>
+            <span v-if="row.pending > 0" class="tag" />
+          </div>
         </template>
       </el-table-column>
 
@@ -526,7 +530,13 @@
             title="确定删除吗？"
             @confirm="handleDelete(row, $index)"
           >
-            <el-button slot="reference" size="mini" type="danger" plain @click.stop>
+            <el-button
+              slot="reference"
+              size="mini"
+              type="danger"
+              plain
+              @click.stop
+            >
               删除
             </el-button>
           </el-popconfirm>
@@ -536,7 +546,13 @@
             title="确定提交审核吗？"
             @confirm="handleToVerify(row, $index)"
           >
-            <el-button slot="reference" size="mini" type="primary" plain @click.stop>
+            <el-button
+              slot="reference"
+              size="mini"
+              type="primary"
+              plain
+              @click.stop
+            >
               提交审核
             </el-button>
           </el-popconfirm>
@@ -1617,7 +1633,11 @@
               width="180"
               align="center"
             />
-            <el-table-column prop="created_at" label="操作时间" align="center" />
+            <el-table-column
+              prop="created_at"
+              label="操作时间"
+              align="center"
+            />
             <el-table-column prop="time" label="耗时" align="center" />
           </el-table>
         </el-tab-pane>
@@ -2013,7 +2033,9 @@ export default {
     },
     clickRowHandle(row, column, event) {
       if (this.expandRowKeys.includes(row.demand_id)) {
-        this.expandRowKeys = this.expandRowKeys.filter(val => val !== row.demand_id)
+        this.expandRowKeys = this.expandRowKeys.filter(
+          (val) => val !== row.demand_id
+        )
       } else {
         this.expandRowKeys.push(row.demand_id)
       }
@@ -2030,8 +2052,34 @@ export default {
         .then((response) => {
           this.listLoading = false
           this.total = response.data.total
-          this.list = response.data.list
-          this.updateCheckedAllBtnStatus(false)
+          let list = response.data.list
+          if (this.$store.getters.pendings['/demand/index']) {
+            const pendings =
+              this.$store.getters.pendings['/demand/index'].children
+            list = response.data.list.map((listItem) => {
+              listItem.pending = pendings[listItem.demand_id] || 0
+              // 是否已选中
+              const demandIndex = this.list.findIndex(
+                (demandItem) => demandItem.demand_id === listItem.demand_id
+              )
+              if (demandIndex >= 0) {
+                listItem.checked = this.list[demandIndex].checked === true
+                listItem.tasks = listItem.tasks.map((child) => {
+                  const taskIndex = this.list[demandIndex].tasks.findIndex(
+                    (taskItem) => taskItem.task_id === child.task_id
+                  )
+                  if (taskIndex >= 0) {
+                    child.checked =
+                      this.list[demandIndex].tasks[taskIndex].checked === true
+                  }
+                  return child
+                })
+              }
+              return listItem
+            })
+          }
+          this.list = list
+          this.updateCheckedAllBtnStatus()
         })
         .catch((error) => {
           console.log(error)
@@ -2492,7 +2540,7 @@ export default {
      */
     handleToVerify(row, index) {
       toVerifyDemand({ demand_id: row.demand_id })
-        .then((response) => {
+        .then(async(response) => {
           this.$notify({
             title: '成功',
             message: '提交成功',
@@ -2505,7 +2553,7 @@ export default {
           //   'current_operator',
           //   response.data.current_operator
           // )
-          this.$store.dispatch('user/getPending')
+          await this.$store.dispatch('user/getPending')
           this.getList(false)
         })
         .catch((error) => {})
@@ -2690,7 +2738,7 @@ export default {
             status,
             reason: this.tempVerify.reason
           })
-            .then((response) => {
+            .then(async(response) => {
               // response.data.list.forEach((statusItem) => {
               //   const index = this.list.findIndex(
               //     (listItem) => listItem.demand_id === statusItem.demand_id
@@ -2709,7 +2757,7 @@ export default {
               this.dialogRejectTaskVisible = false
               this.dialogVerifyOrderVisible = false
               this.$message.success('操作成功')
-              this.$store.dispatch('user/getPending')
+              await this.$store.dispatch('user/getPending')
               this.getList(false)
             })
             .catch((error) => {})
@@ -2918,7 +2966,7 @@ export default {
           const temp = Object.assign({}, this.tempProvider)
 
           assignSupplier(temp)
-            .then((response) => {
+            .then(async(response) => {
               // const index = this.list.findIndex(
               //   (listItem) => listItem.demand_id === this.tempProvider.demand_id
               // )
@@ -2933,7 +2981,7 @@ export default {
               // }
               this.dialogProviderVisible = false
               this.$message.success('分配成功')
-              this.$store.dispatch('user/getPending')
+              await this.$store.dispatch('user/getPending')
               this.getList(false)
             })
             .catch((error) => {})
@@ -2957,7 +3005,7 @@ export default {
     /**
      * 手动更改全选按钮的状态
      */
-    updateCheckedAllBtnStatus(value) {
+    updateCheckedAllBtnStatus() {
       this.list = JSON.parse(JSON.stringify(this.list))
     },
     /**
@@ -3027,7 +3075,7 @@ export default {
       }
 
       createOrder({ demand_id: checkeds })
-        .then((response) => {
+        .then(async(response) => {
           // response.data.list.forEach((statusItem) => {
           //   const index = this.list.findIndex(
           //     (listItem) => listItem.demand_id === statusItem.demand_id
@@ -3042,7 +3090,7 @@ export default {
           //   }
           // })
           this.$message.success('订单生成成功')
-          this.$store.dispatch('user/getPending')
+          await this.$store.dispatch('user/getPending')
           this.getList(false)
         })
         .catch((error) => {})
@@ -3125,7 +3173,7 @@ export default {
           const temp = Object.assign({}, this.tempFinish)
 
           finishTask(temp)
-            .then((response) => {
+            .then(async(response) => {
               // const finishData = response.data
               // finishData.forEach((finishItem) => {
               //   const { demand_id, task_id, status } = finishItem
@@ -3157,7 +3205,7 @@ export default {
                 duration: 2000
               })
               this.dialogFinishVisible = false
-              this.$store.dispatch('user/getPending')
+              await this.$store.dispatch('user/getPending')
               this.getList(false)
             })
             .catch((error) => {})
@@ -3212,7 +3260,7 @@ export default {
       toVerifyTask({
         task_id: checkeds
       })
-        .then((response) => {
+        .then(async(response) => {
           // response.data.list.forEach((statusItem) => {
           //   const index = this.list.findIndex(
           //     (listItem) => listItem.demand_id === statusItem.demand_id
@@ -3228,7 +3276,7 @@ export default {
           //   }
           // })
           this.$message.success('操作成功')
-          this.$store.dispatch('user/getPending')
+          await this.$store.dispatch('user/getPending')
           this.getList(false)
         })
         .catch((error) => {})
@@ -3284,7 +3332,7 @@ export default {
             delete temp.task_id
           }
           createTask(temp)
-            .then((response) => {
+            .then(async(response) => {
               // const {
               //   id,
               //   work_price,
@@ -3326,7 +3374,7 @@ export default {
                 type: 'success',
                 duration: 2000
               })
-              this.$store.dispatch('user/getPending')
+              await this.$store.dispatch('user/getPending')
               this.getList(false)
             })
             .catch((error) => {})
@@ -3341,7 +3389,7 @@ export default {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempTask))
           updateTask(temp)
-            .then((response) => {
+            .then(async(response) => {
               // const {
               //   id,
               //   work_price,
@@ -3374,7 +3422,7 @@ export default {
                 type: 'success',
                 duration: 2000
               })
-              this.$store.dispatch('user/getPending')
+              await this.$store.dispatch('user/getPending')
               this.getList(false)
             })
             .catch((error) => {})
@@ -3408,6 +3456,7 @@ export default {
       })
       this.dialogStatus = 'import_task'
       this.dialogImportTaskVisible = true
+      this.tempImportTaskFileName = ''
       this.$nextTick(() => {
         this.$refs['importTaskDataForm'].clearValidate()
       })
@@ -3443,7 +3492,7 @@ export default {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempImportTask))
           batchAddTasks(temp)
-            .then((response) => {
+            .then(async(response) => {
               // const demandIndex = this.list.findIndex(
               //   (v) => v.demand_id === temp.demand_id
               // )
@@ -3469,7 +3518,7 @@ export default {
 
               this.dialogImportTaskVisible = false
               this.$message.success('导入成功')
-              this.$store.dispatch('user/getPending')
+              await this.$store.dispatch('user/getPending')
               this.getList(false)
             })
             .catch((error) => {})
@@ -3763,6 +3812,19 @@ export default {
       width: calc(100vw - 100px);
       padding: 20px;
       background: #fff; //盖住fixed产生的阴影
+    }
+
+    .pending-box {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      .tag {
+        margin-left: 10px;
+        height: 8px;
+        width: 8px;
+        border-radius: 50%;
+        background-color: #f56c6c;
+      }
     }
   }
 }

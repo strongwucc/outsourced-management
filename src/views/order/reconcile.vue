@@ -120,14 +120,14 @@
         <template slot-scope="{ row, $index }">
           <div class="expand-table-box">
             <el-table class="task-list" border :data="row.tasks" fit stripe>
-              <el-table-column label="" width="50" align="center">
+              <!-- <el-table-column label="" width="50" align="center">
                 <template slot-scope="scope">
                   <el-checkbox
                     v-model="scope.row.checked"
                     @change="clickCheckItemFn(row, scope.row)"
                   />
                 </template>
-              </el-table-column>
+              </el-table-column> -->
               <el-table-column
                 prop="task_id"
                 label="物件单号"
@@ -212,7 +212,7 @@
         <template slot-scope="{ row }">
           <div class="pending-box">
             <span class="txt">{{ row.statement_id }}</span>
-            <!-- <span v-if="row.tasks.length > 0" class="tag">{{ row.tasks.length }}</span> -->
+            <span v-if="row.pending > 0" class="tag" />
           </div>
         </template>
       </el-table-column>
@@ -221,7 +221,7 @@
           {{ row.project.project_name }}
         </template>
       </el-table-column>
-      <el-table-column label="供应商" align="center" width="150">
+      <el-table-column label="供应商" align="center" width="150" show-overflow-tooltip>
         <template slot-scope="{ row }">
           {{ row.supplier.name }}
         </template>
@@ -244,7 +244,7 @@
       <el-table-column label="停留时间" align="center" width="100">
         <template slot-scope="{ row }"> {{ row.stay_time }}小时 </template>
       </el-table-column>
-      <el-table-column label="当前处理人" align="center" width="100">
+      <el-table-column label="当前处理人" align="center" width="100" show-overflow-tooltip>
         <template slot-scope="{ row }">
           {{ row.current_operator }}
         </template>
@@ -466,6 +466,7 @@
       <el-form
         ref="billDataForm"
         class="dialog-form"
+        :disabled="dialogStatus === 'bill_show'"
         :rules="billRules"
         :model="tempBill"
         label-position="left"
@@ -541,7 +542,7 @@
           />
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <div v-if="dialogStatus === 'bill'" slot="footer" class="dialog-footer">
         <el-button size="mini" @click="dialogBillVisible = false">
           取消
         </el-button>
@@ -613,7 +614,8 @@ export default {
         resolve: '通过',
         reject: '驳回',
         reconcile: '上传对账单',
-        bill: '上传发票'
+        bill: '上传发票',
+        bill_show: '查看发票'
       },
       dialogStatus: '',
       dialogRejectReasonVisible: false,
@@ -766,15 +768,30 @@ export default {
         .then((response) => {
           this.listLoading = false
           this.total = response.data.total
+          let list = response.data.list
           if (this.$store.getters.pendings['/order/reconcile']) {
             const pendings = this.$store.getters.pendings['/order/reconcile'].children
-            this.list = response.data.list.map(listItem => {
+            list = response.data.list.map(listItem => {
               listItem.pending = pendings[listItem.statement_id] || 0
+              // 是否已选中
+              const orderIndex = this.list.findIndex(orderItem => orderItem.statement_id === listItem.statement_id)
+              if (orderIndex >= 0) {
+                listItem.checked = this.list[orderIndex].checked === true
+                listItem.tasks = listItem.tasks.map((child) => {
+                  const taskIndex = this.list[orderIndex].tasks.findIndex(
+                    (taskItem) => taskItem.task_id === child.task_id
+                  )
+                  if (taskIndex >= 0) {
+                    child.checked =
+                      this.list[orderIndex].tasks[taskIndex].checked === true
+                  }
+                  return child
+                })
+              }
               return listItem
             })
-          } else {
-            this.list = response.data.list
           }
+          this.list = list
         })
         .catch((error) => {
           console.log(error)
@@ -877,7 +894,7 @@ export default {
       const tempData = JSON.parse(JSON.stringify(this.tempVerify))
       const func = tempData.status ? submitStatement : rejectStatement
       func({ statement_id: tempData.statement_id, reason: tempData.reason })
-        .then((response) => {
+        .then(async(response) => {
           // tempData.statement_id.forEach(checkedStatementId => {
           //   const listIndex = this.list.findIndex(listItem => listItem.statement_id === checkedStatementId)
           //   const dataIndex = response.data.findIndex(dataItem => dataItem.statement_id === checkedStatementId)
@@ -893,7 +910,7 @@ export default {
             duration: 2000
           })
           this.dialogVerifyVisible = false
-          this.$store.dispatch('user/getPending')
+          await this.$store.dispatch('user/getPending')
           this.getList(false)
         })
         .catch((error) => {})
@@ -941,7 +958,6 @@ export default {
       this.handleReconcileFileChange(file, fileList)
     },
     handleReconcileFileChange(file, fileList) {
-      console.log(1111111, file, fileList)
       if (fileList.length === 0) {
         this.tempReconcile = Object.assign({}, this.tempReconcile, {
           bill_file: '',
@@ -1021,7 +1037,7 @@ export default {
       this.$refs['billDataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempBill))
-          uploadInvoiceData(temp).then((response) => {
+          uploadInvoiceData(temp).then(async(response) => {
             // const index = this.list.findIndex(listItem => listItem.statement_id === temp.statement_id)
             // if (index >= 0) {
             //   const { statement_status, current_operator } = response.data
@@ -1036,7 +1052,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-            this.$store.dispatch('user/getPending')
+            await this.$store.dispatch('user/getPending')
             this.getList(false)
           })
         }
@@ -1087,11 +1103,23 @@ export default {
      */
     handleShowBill(row) {
       // this.$set(this.list[index], 'showViewer', true)
-      if (!row.invoice_file) {
-        this.$message.error('还未上传发票')
-        return false
-      }
-      previewFile('发票', row.invoice_file)
+      // if (!row.invoice_file) {
+      //   this.$message.error('还未上传发票')
+      //   return false
+      // }
+      // previewFile('发票', row.invoice_file)
+      this.tempBill = Object.assign({}, this.tempBill, {
+        statement_id: row.statement_id,
+        invoice_file_url: row.invoice_file || '',
+        invoice_serial: row.invoice_serial || '',
+        invoice_type: row.invoice_type || 0,
+        invoice_date: row.invoice_date || '',
+        invoice_code: row.invoice_code || '',
+        invoice_number: row.invoice_number || '',
+        invoice_amount: row.invoice_amount || ''
+      })
+      this.dialogStatus = 'bill_show'
+      this.dialogBillVisible = true
     }
     // closeViewer(index) {
     //   this.$set(this.list[index], 'showViewer', false)
@@ -1141,15 +1169,10 @@ export default {
       align-items: center;
       .tag {
         margin-left: 10px;
-        font-size: 10px;
-        height: 16px;
-        line-height: 16px;
-        padding: 0 5px;
-        box-sizing: border-box;
+        height: 8px;
+        width: 8px;
         border-radius: 50%;
         background-color: #f56c6c;
-        border-color: #f56c6c;
-        color: #fff;
       }
     }
   }

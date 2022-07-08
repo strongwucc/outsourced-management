@@ -127,6 +127,7 @@
                 <template slot-scope="scope">
                   <el-checkbox
                     v-model="scope.row.checked"
+                    :disabled="[0, 4].indexOf(scope.row.task_status) < 0"
                     @change="clickCheckItemFn(row, scope.row)"
                   />
                 </template>
@@ -341,9 +342,9 @@
         <template slot-scope="{ row }">
           <div class="pending-box">
             <span class="txt">{{ row.order_id }}</span>
-            <!-- <span v-if="row.pending > 0" class="tag">{{
+            <span v-if="row.pending > 0" class="tag">{{
               row.pending
-            }}</span> -->
+            }}</span>
           </div>
         </template>
       </el-table-column>
@@ -370,7 +371,7 @@
       <el-table-column
         label="供应商"
         align="center"
-        width="150"
+        width="200"
         show-overflow-tooltip
       >
         <template slot-scope="{ row }">
@@ -380,7 +381,7 @@
       <el-table-column
         label="供管"
         align="center"
-        width="100"
+        width="150"
         show-overflow-tooltip
       >
         <template slot-scope="{ row }">
@@ -417,11 +418,11 @@
           {{ row.dealing || "-" }}
         </template>
       </el-table-column> -->
-      <el-table-column label="单据状态" align="center" width="100">
+      <!-- <el-table-column label="单据状态" align="center" width="100">
         <template slot-scope="{ row }">
           {{ row.order_status | statusText }}
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column
         label="操作"
         align="center"
@@ -859,7 +860,8 @@ export default {
       modifyRules: {},
       dialogRejectReasonVisible: false,
       dialogStopReasonVisible: false,
-      fileList: []
+      fileList: [],
+      posting: false
     }
   },
   created() {
@@ -949,15 +951,30 @@ export default {
         .then((response) => {
           this.listLoading = false
           this.total = response.data.total
+          let list = response.data.list
           if (this.$store.getters.pendings['/order/index']) {
             const pendings = this.$store.getters.pendings['/order/index'].children
-            this.list = response.data.list.map(listItem => {
+            list = response.data.list.map(listItem => {
               listItem.pending = pendings[listItem.order_id] || 0
+              // 是否已选中
+              const orderIndex = this.list.findIndex(orderItem => orderItem.order_id === listItem.order_id)
+              if (orderIndex >= 0) {
+                listItem.checked = this.list[orderIndex].checked === true
+                listItem.tasks = listItem.tasks.map((child) => {
+                  const taskIndex = this.list[orderIndex].tasks.findIndex(
+                    (taskItem) => taskItem.task_id === child.task_id
+                  )
+                  if (taskIndex >= 0) {
+                    child.checked =
+                      this.list[orderIndex].tasks[taskIndex].checked === true
+                  }
+                  return child
+                })
+              }
               return listItem
             })
-          } else {
-            this.list = response.data.list
           }
+          this.list = list
         })
         .catch((error) => {
           console.log(error)
@@ -1053,11 +1070,16 @@ export default {
      * 确认变更
      */
     confirmModify() {
+      if (this.posting) {
+        return false
+      }
       this.$refs['modifyDataForm'].validate((valid) => {
         if (valid) {
           const tempData = JSON.parse(JSON.stringify(this.tempModify))
+          this.posting = true
           modifyOrder(tempData)
-            .then((response) => {
+            .then(async(response) => {
+              this.posting = false
               // const orderIndex = this.list.findIndex(
               //   (listItem) => listItem.order_id === tempData.order_id
               // )
@@ -1082,10 +1104,13 @@ export default {
                 duration: 2000
               })
               this.dialogModifyVisible = false
-              this.$store.dispatch('user/getPending')
+              await this.$store.dispatch('user/getPending')
               this.getList(false)
             })
-            .catch((error) => {})
+            .catch((error) => {
+              console.log(error)
+              this.posting = false
+            })
         }
       })
     },
@@ -1131,7 +1156,7 @@ export default {
       }
 
       toCheckOrder({ tasks: taskCheckeds })
-        .then((response) => {
+        .then(async(response) => {
           // taskCheckeds.forEach((checkedTaskItem) => {
           //   let checkedOrderIndex, checkedTaskIndex
           //   this.list.some((orderItem, orderIndex) => {
@@ -1152,7 +1177,7 @@ export default {
           // })
 
           this.$message.success('交付验收成功')
-          this.$store.dispatch('user/getPending')
+          await this.$store.dispatch('user/getPending')
           this.getList(false)
         })
         .catch((error) => {})
@@ -1307,7 +1332,7 @@ export default {
       this.$refs['taskDataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempTask))
-          addTask(temp).then((response) => {
+          addTask(temp).then(async(response) => {
             // const task = response.data
             // let orderIndex = -1
             // this.list.some((listItem, listIndex) => {
@@ -1345,7 +1370,7 @@ export default {
               type: 'success',
               duration: 2000
             })
-            this.$store.dispatch('user/getPending')
+            await this.$store.dispatch('user/getPending')
             this.getList(false)
           })
         }
@@ -1435,7 +1460,7 @@ export default {
         line-height: 16px;
         padding: 0 5px;
         box-sizing: border-box;
-        border-radius: 50%;
+        border-radius: 6px;
         background-color: #f56c6c;
         border-color: #f56c6c;
         color: #fff;

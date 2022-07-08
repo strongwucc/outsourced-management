@@ -164,14 +164,14 @@
         <template slot-scope="{ row, $index }">
           <div class="expand-table-box">
             <el-table class="task-list" border :data="row.tasks" fit stripe>
-              <el-table-column label="" width="50" align="center">
+              <!-- <el-table-column label="" width="50" align="center">
                 <template slot-scope="scope">
                   <el-checkbox
                     v-model="scope.row.checked"
                     @change="clickCheckItemFn(row, scope.row)"
                   />
                 </template>
-              </el-table-column>
+              </el-table-column> -->
               <el-table-column
                 prop="task_id"
                 label="物件单号"
@@ -267,7 +267,7 @@
         <template slot-scope="{ row }">
           <div class="pending-box">
             <span class="txt">{{ row.change_id }}</span>
-            <!-- <span v-if="row.pending > 0" class="tag">{{ row.pending }}</span> -->
+            <span v-if="row.pending > 0" class="tag">{{ row.pending }}</span>
           </div>
         </template>
       </el-table-column>
@@ -306,7 +306,7 @@
           {{ row.change_type | typeTxt }}
         </template>
       </el-table-column>
-      <el-table-column label="当前操作人" align="center" width="120">
+      <el-table-column label="当前操作人" align="center" width="120" show-overflow-tooltip>
         <template slot-scope="{ row }">
           {{ row.current_operator || "-" }}
         </template>
@@ -636,16 +636,30 @@ export default {
         .then((response) => {
           this.listLoading = false
           this.total = response.data.total
+          let list = response.data.list
           if (this.$store.getters.pendings['/order/modify']) {
-            const pendings =
-              this.$store.getters.pendings['/order/modify'].children
-            this.list = response.data.list.map((listItem) => {
+            const pendings = this.$store.getters.pendings['/order/modify'].children
+            list = response.data.list.map(listItem => {
               listItem.pending = pendings[listItem.change_id] || 0
+              // 是否已选中
+              const orderIndex = this.list.findIndex(orderItem => orderItem.change_id === listItem.change_id)
+              if (orderIndex >= 0) {
+                listItem.checked = this.list[orderIndex].checked === true
+                listItem.tasks = listItem.tasks.map((child) => {
+                  const taskIndex = this.list[orderIndex].tasks.findIndex(
+                    (taskItem) => taskItem.task_id === child.task_id
+                  )
+                  if (taskIndex >= 0) {
+                    child.checked =
+                      this.list[orderIndex].tasks[taskIndex].checked === true
+                  }
+                  return child
+                })
+              }
               return listItem
             })
-          } else {
-            this.list = response.data.list
           }
+          this.list = list
         })
         .catch((error) => {
           console.log(error)
@@ -741,7 +755,7 @@ export default {
         if (valid) {
           const tempData = JSON.parse(JSON.stringify(this.tempVerify))
           changeVerify(tempData)
-            .then((response) => {
+            .then(async(response) => {
               // const { change_id, change_status, current_operator } = response.data
               // const changeIndex = this.list.findIndex(
               //   (listItem) => listItem.change_id === change_id
@@ -757,7 +771,7 @@ export default {
                 duration: 2000
               })
               this.dialogVerifyVisible = false
-              this.$store.dispatch('user/getPending')
+              await this.$store.dispatch('user/getPending')
               this.getList(false)
             })
             .catch((error) => {})
@@ -838,7 +852,7 @@ export default {
         line-height: 16px;
         padding: 0 5px;
         box-sizing: border-box;
-        border-radius: 50%;
+        border-radius: 6px;
         background-color: #f56c6c;
         border-color: #f56c6c;
         color: #fff;
