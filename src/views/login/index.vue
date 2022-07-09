@@ -303,14 +303,16 @@ $light_gray: #eee;
       flex: 1;
       height: 100%;
       .login-form {
-        height: 100%;
+        // height: 100%;
+        margin-top: 115px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         .title {
+          width: 330px;
           display: flex;
-          justify-content: center;
+          justify-content: flex-start;
           align-items: center;
           .title-logo {
             width: 50px;
@@ -337,7 +339,7 @@ $light_gray: #eee;
           }
         }
         .inputs {
-          margin-top: 36px;
+          margin-top: 50px;
           .input-item {
             margin-bottom: 25px;
             .item-label {
@@ -355,7 +357,7 @@ $light_gray: #eee;
                   height: 16px;
                 }
                 ::v-deep input {
-                  width: 303px;
+                  width: 350px;
                   height: 37px;
                   background: #fafafb;
                   border: 0px solid #fafafb;
@@ -381,7 +383,7 @@ $light_gray: #eee;
         }
 
         .btn {
-          width: 303px;
+          width: 350px;
           margin-top: 10px;
           ::v-deep .el-button {
             height: 37px;
