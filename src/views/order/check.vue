@@ -12,6 +12,14 @@
           @keyup.enter.native="handleFilter"
         />
         <el-input
+          v-model="listQuery.task_id"
+          placeholder="输入物件单号"
+          style="width: 200px"
+          class="filter-item"
+          size="mini"
+          @keyup.enter.native="handleFilter"
+        />
+        <el-input
           v-model="listQuery.order_id"
           placeholder="输入订单号"
           style="width: 200px"
@@ -551,6 +559,7 @@ export default {
       listLoading: true,
       listQuery: {
         receipt_id: '',
+        task_id: '',
         order_id: '',
         project_name: '',
         supplier_name: '',

@@ -12,6 +12,14 @@
           @keyup.enter.native="handleFilter"
         />
         <el-input
+          v-model="listQuery.task_id"
+          placeholder="输入物件单号"
+          style="width: 200px"
+          class="filter-item"
+          size="mini"
+          @keyup.enter.native="handleFilter"
+        />
+        <el-input
           v-model="listQuery.project_name"
           placeholder="输入项目名称"
           style="width: 200px"
@@ -516,6 +524,7 @@ export default {
       statusMap: statusMap,
       listQuery: {
         change_id: '',
+        task_id: '',
         project_name: '',
         supplier_name: '',
         sponsor: '',

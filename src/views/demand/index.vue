@@ -19,6 +19,14 @@
           size="mini"
           @keyup.enter.native="handleFilter"
         />
+        <!-- <el-input
+          v-model="listQuery.task_id"
+          placeholder="输入物件单号"
+          style="width: 200px"
+          class="filter-item"
+          size="mini"
+          @keyup.enter.native="handleFilter"
+        /> -->
         <el-input
           v-model="listQuery.category_name"
           placeholder="输入需求品类"
@@ -1855,6 +1863,7 @@ export default {
       listQuery: {
         name: '',
         demand_id: '',
+        task_id: '',
         category_name: '',
         tag: '',
         page: 1,
