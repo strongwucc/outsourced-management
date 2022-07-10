@@ -47,3 +47,11 @@ export function fetchProcessVerifyMember(params) {
     params
   })
 }
+
+export function deleteProcess(data) {
+  return request({
+    url: '/api/project/delProcess',
+    method: 'post',
+    data
+  })
+}

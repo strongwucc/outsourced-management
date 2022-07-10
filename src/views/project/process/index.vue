@@ -99,55 +99,55 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="主项目" align="center">
+      <el-table-column label="主项目" align="center" show-overflow-tooltip>
         <template slot-scope="{ row }">
           {{ row.project | projectText }}
         </template>
       </el-table-column>
 
-      <el-table-column label="流程名称" align="center">
+      <el-table-column label="流程名称" align="center" show-overflow-tooltip>
         <template slot-scope="{ row }">
           {{ row.flow_name }}
         </template>
       </el-table-column>
 
-      <el-table-column label="流程代码" align="center">
+      <el-table-column label="流程代码" align="center" show-overflow-tooltip>
         <template slot-scope="{ row }">
           {{ row.bn }}
         </template>
       </el-table-column>
 
-      <el-table-column label="需求方" align="center">
+      <el-table-column label="需求方" align="center" show-overflow-tooltip>
         <template slot-scope="{ row }">
           {{ row.demand }}
         </template>
       </el-table-column>
 
-      <el-table-column label="预算使用方" align="center">
+      <el-table-column label="预算使用方" align="center" show-overflow-tooltip>
         <template slot-scope="{ row }">
           {{ row.budget_dep | budgetDepText }}
         </template>
       </el-table-column>
 
-      <el-table-column label="发起部门" align="center">
+      <el-table-column label="发起部门" align="center" show-overflow-tooltip>
         <template slot-scope="{ row }">
           {{ row.launch_dep | launchDepText }}
         </template>
       </el-table-column>
 
-      <el-table-column label="合同主体" align="center">
+      <el-table-column label="合同主体" align="center" show-overflow-tooltip>
         <template slot-scope="{ row }">
           {{ row.sub | subText }}
         </template>
       </el-table-column>
 
-      <el-table-column label="核算部门" align="center">
+      <el-table-column label="核算部门" align="center" show-overflow-tooltip>
         <template slot-scope="{ row }">
           {{ row.account_dep | accountDepText }}
         </template>
       </el-table-column>
 
-      <el-table-column label="创建时间" align="center">
+      <el-table-column label="创建时间" align="center" show-overflow-tooltip>
         <template slot-scope="{ row }">
           {{ row.created_at }}
         </template>
@@ -157,8 +157,9 @@
         label="操作"
         align="center"
         class-name="small-padding fixed-width"
+        min-width="150"
       >
-        <template slot-scope="{ row }">
+        <template slot-scope="{ row, $index }">
           <el-button
             type="primary"
             size="mini"
@@ -167,6 +168,22 @@
           >
             查看
           </el-button>
+          <el-popconfirm
+            style="margin-left: 10px"
+            title="确定删除吗？"
+            @confirm="handleDelete(row, $index)"
+          >
+            <el-button
+              slot="reference"
+              :disabled="row.deletable === false"
+              size="mini"
+              type="danger"
+              plain
+              @click.stop
+            >
+              删除
+            </el-button>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -902,7 +919,7 @@
 </template>
 
 <script>
-import { fetchList, createProcess } from '@/api/project/process'
+import { fetchList, createProcess, deleteProcess } from '@/api/project/process'
 import { fetchAllProject } from '@/api/project/index'
 import { fetchAllDepartment } from '@/api/system/department'
 import { fetchAllSub } from '@/api/project/sub'
@@ -944,7 +961,7 @@ export default {
     }
 
     const validateJsonRepeat = (rule, value, callback) => {
-      if (typeof value === 'object' && value[0] && value[1]) {
+      if (typeof value === 'object' && value[0].id && value[1].id) {
         if (value[0].id === value[1].id) {
           callback(new Error('一二级审批人不能重复'))
         } else {
@@ -1486,6 +1503,7 @@ export default {
             })
 
             temp.created_at = parseTime(new Date())
+            temp.deletable = true
 
             this.list.unshift(temp)
             this.dialogFormVisible = false
@@ -1555,6 +1573,22 @@ export default {
       const oldArray = JSON.parse(JSON.stringify(this.temp.needs_create_json))
       oldArray.splice(index, 1)
       this.temp = Object.assign({}, this.temp, { needs_create_json: oldArray })
+    },
+    /**
+     * 删除流程
+     */
+    handleDelete(row, index) {
+      deleteProcess({ process_id: row.process_id })
+        .then(() => {
+          this.$notify({
+            title: '成功',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.list.splice(index, 1)
+        })
+        .catch((error) => {})
     }
   }
 }

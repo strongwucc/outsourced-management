@@ -183,7 +183,9 @@
                     :value="member.id"
                   >
                     <span style="float: left">{{ member.name }}</span>
-                    <span style="float: right">{{ member.group.group_name }}</span>
+                    <span style="float: right">{{
+                      member.group.group_name
+                    }}</span>
                   </el-option>
                 </el-select>
               </div>
@@ -208,7 +210,10 @@
       </el-form-item>
       <el-divider class="form-divider" content-position="left" />
       <div class="form-title">审核信息配置</div>
-      <el-form-item label="需求卡审批（项目组负责人）:" prop="needs_verify_json">
+      <el-form-item
+        label="需求卡审批（项目组负责人）:"
+        prop="needs_verify_json"
+      >
         <div class="needs-verify-box json-normal-box">
           <div
             v-for="(item, itemIndex) in detail.needs_verify_json"
@@ -220,7 +225,9 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
+                :placeholder="
+                  itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                "
               >
                 <el-option
                   v-for="member in filterNeedsVerify"
@@ -274,7 +281,9 @@
                 :disabled="itemIndex === 0"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'"
+                :placeholder="
+                  itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'
+                "
               >
                 <el-option
                   v-for="member in filterWjVerify"
@@ -327,7 +336,9 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
+                :placeholder="
+                  itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                "
               >
                 <el-option
                   v-for="member in filterOrderVerify"
@@ -357,7 +368,9 @@
                 :disabled="itemIndex === 0"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'"
+                :placeholder="
+                  itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'
+                "
               >
                 <el-option
                   v-for="member in filterWjVerify"
@@ -389,7 +402,9 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
+                :placeholder="
+                  itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                "
               >
                 <el-option
                   v-for="member in filterNeedsVerify"
@@ -421,7 +436,9 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
+                :placeholder="
+                  itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                "
               >
                 <el-option
                   v-for="member in filterOrderCreate"
@@ -455,7 +472,9 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
+                :placeholder="
+                  itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                "
               >
                 <el-option
                   v-for="member in filterOrderVerify"
@@ -498,7 +517,10 @@
 
       <el-divider class="form-divider" content-position="left" />
       <div class="form-title">供应商变更审核配置</div>
-      <el-form-item label="变更审批（项目组/项目组负责人）:" prop="change_verify_json">
+      <el-form-item
+        label="变更审批（项目组/项目组负责人）:"
+        prop="change_verify_json"
+      >
         <div class="change-verify-box json-normal-box">
           <div
             v-for="(item, itemIndex) in detail.change_verify_json"
@@ -511,7 +533,9 @@
                 :disabled="itemIndex === 0"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'"
+                :placeholder="
+                  itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'
+                "
               >
                 <el-option
                   v-for="member in filterWjVerify"
@@ -528,7 +552,10 @@
         </div>
       </el-form-item>
 
-      <el-form-item label="变更复审（供管/供管负责人）:" prop="change_review_json">
+      <el-form-item
+        label="变更复审（供管/供管负责人）:"
+        prop="change_review_json"
+      >
         <div class="change-review-box json-normal-box">
           <div
             v-for="(item, itemIndex) in detail.change_review_json"
@@ -540,7 +567,9 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
+                :placeholder="
+                  itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                "
               >
                 <el-option
                   v-for="member in filterOrderCreate"
@@ -571,7 +600,9 @@
                 v-model="item.id"
                 clearable
                 filterable
-                :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
+                :placeholder="
+                  itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                "
               >
                 <el-option
                   v-for="member in filterNeedsVerify"
@@ -644,6 +675,18 @@ export default {
         callback()
       } else {
         callback(new Error(rule.message))
+      }
+    }
+
+    const validateJsonRepeat = (rule, value, callback) => {
+      if (typeof value === 'object' && value[0].id && value[1].id) {
+        if (value[0].id === value[1].id) {
+          callback(new Error('一二级审批人不能重复'))
+        } else {
+          callback()
+        }
+      } else {
+        callback()
       }
     }
 
@@ -795,14 +838,12 @@ export default {
             trigger: 'change'
           }
         ],
-        // needs_verify_json: [
-        //   {
-        //     required: true,
-        //     validator: validateJsonObj,
-        //     message: '请选择需求卡审批人员',
-        //     trigger: 'change'
-        //   }
-        // ],
+        needs_verify_json: [
+          {
+            validator: validateJsonRepeat,
+            trigger: 'change'
+          }
+        ],
         assign_supplier_json: [
           {
             required: true,
@@ -833,6 +874,10 @@ export default {
             validator: validateJsonObj,
             message: '请选择订单审核人员',
             trigger: 'change'
+          },
+          {
+            validator: validateJsonRepeat,
+            trigger: 'change'
           }
         ],
         // check_json: [
@@ -849,6 +894,10 @@ export default {
             validator: validateJsonObj,
             message: '请选择确认验收资源人员',
             trigger: 'change'
+          },
+          {
+            validator: validateJsonRepeat,
+            trigger: 'change'
           }
         ],
         check_confirm_supplier_json: [
@@ -857,6 +906,10 @@ export default {
             validator: validateJsonObj,
             message: '请选择确认验收资源人员',
             trigger: 'change'
+          },
+          {
+            validator: validateJsonRepeat,
+            trigger: 'change'
           }
         ],
         check_confirm_supplier_charge_json: [
@@ -864,6 +917,10 @@ export default {
             required: true,
             validator: validateJsonObj,
             message: '请选择确认验收资源人员',
+            trigger: 'change'
+          },
+          {
+            validator: validateJsonRepeat,
             trigger: 'change'
           }
         ],
@@ -889,16 +946,18 @@ export default {
             validator: validateJsonObj,
             message: '请选择变更复审人员',
             trigger: 'change'
+          },
+          {
+            validator: validateJsonRepeat,
+            trigger: 'change'
+          }
+        ],
+        change_check_json: [
+          {
+            validator: validateJsonRepeat,
+            trigger: 'change'
           }
         ]
-        // change_check_json: [
-        //   {
-        //     required: true,
-        //     validator: validateJsonObj,
-        //     message: '请选择验收变更人员',
-        //     trigger: 'change'
-        //   }
-        // ],
         // change_check_verify_json: [
         //   {
         //     required: true,
@@ -946,11 +1005,68 @@ export default {
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.8)'
       })
-      await this.getAllProject()
-      await this.getAllCategory()
-      await this.getAllDepart()
-      await this.getAllMember()
-      await this.getAllSub()
+      const projectData = await fetchAllProject().catch((error) => {})
+      this.allProjects = projectData.data.list
+      const categoryData = await fetchAllCategory().catch((error) => {})
+      this.categorys = categoryData.data.list.map((first) => {
+        const seconds = first.children.map((second) => {
+          const thirds = second.children.map((third) => {
+            return {
+              label: third.category_name,
+              value: third.cat_id
+            }
+          })
+          return {
+            label: second.category_name,
+            value: second.cat_id,
+            children: thirds
+          }
+        })
+        return {
+          label: first.category_name,
+          value: first.cat_id,
+          children: seconds
+        }
+      })
+      const departData = await fetchAllDepartment().catch((error) => {})
+      departData.data.list.forEach((depart) => {
+        if (depart.tag === 0) {
+          this.launchDeps.push(depart)
+        } else if (depart.tag === 1) {
+          this.accountDeps.push(depart)
+        } else if (depart.tag === 2) {
+          this.budgetDeps.push(depart)
+        }
+      })
+
+      const memberData = await fetchAllMember().catch((error) => {})
+      memberData.data.list.forEach((member) => {
+        if (member.group && member.group.type === 5) {
+          this.projectProducerList.push(member)
+        }
+        if (member.group && [1, 3].indexOf(member.group.type) >= 0) {
+          this.filterNeedsCreate.push(member)
+        }
+        if (member.group && member.group.type === 2) {
+          this.filterNeedsVerify.push(member)
+        }
+        if (member.group && [3, 4].indexOf(member.group.type) >= 0) {
+          this.filterAssignSupplier.push(member)
+        }
+        if (member.group && member.group.type === 1) {
+          this.filterWjVerify.push(member)
+        }
+        if (member.group && member.group.type === 3) {
+          this.filterOrderCreate.push(member)
+        }
+        if (member.group && member.group.type === 4) {
+          this.filterOrderVerify.push(member)
+        }
+      })
+
+      const subData = await fetchAllSub().catch((error) => {})
+      this.allSubs = subData.data.list
+
       this.getDetail(id)
     },
     getMemberGroupType(member_id) {
@@ -964,90 +1080,6 @@ export default {
         return false
       })
       return group_type
-    },
-    getAllCategory() {
-      fetchAllCategory()
-        .then((response) => {
-          this.categorys = response.data.list.map((first) => {
-            const seconds = first.children.map((second) => {
-              const thirds = second.children.map((third) => {
-                return {
-                  label: third.category_name,
-                  value: third.cat_id
-                }
-              })
-              return {
-                label: second.category_name,
-                value: second.cat_id,
-                children: thirds
-              }
-            })
-            return {
-              label: first.category_name,
-              value: first.cat_id,
-              children: seconds
-            }
-          })
-        })
-        .catch((error) => {})
-    },
-    getAllDepart() {
-      fetchAllDepartment()
-        .then((response) => {
-          response.data.list.forEach((depart) => {
-            if (depart.tag === 0) {
-              this.launchDeps.push(depart)
-            } else if (depart.tag === 1) {
-              this.accountDeps.push(depart)
-            } else if (depart.tag === 2) {
-              this.budgetDeps.push(depart)
-            }
-          })
-        })
-        .catch((error) => {})
-    },
-    getAllMember() {
-      fetchAllMember()
-        .then((response) => {
-          response.data.list.forEach((member) => {
-            if (member.group && member.group.type === 5) {
-              this.projectProducerList.push(member)
-            }
-            if (member.group && [1, 3].indexOf(member.group.type) >= 0) {
-              this.filterNeedsCreate.push(member)
-            }
-            if (member.group && member.group.type === 2) {
-              this.filterNeedsVerify.push(member)
-            }
-            if (member.group && [3, 4].indexOf(member.group.type) >= 0) {
-              this.filterAssignSupplier.push(member)
-            }
-            if (member.group && member.group.type === 1) {
-              this.filterWjVerify.push(member)
-            }
-            if (member.group && member.group.type === 3) {
-              this.filterOrderCreate.push(member)
-            }
-            if (member.group && member.group.type === 4) {
-              this.filterOrderVerify.push(member)
-            }
-          })
-        })
-        .catch((error) => {})
-    },
-    getAllProject() {
-      fetchAllProject()
-        .then((response) => {
-          this.allProjects = response.data.list
-        })
-        .catch((error) => {})
-    },
-    getAllSub(query) {
-      fetchAllSub({ name: query })
-        .then((response) => {
-          this.allSubs = response.data.list
-        })
-        .catch((error) => {})
     },
     fetchMemberList(query, group_id = 0) {
       this.memberLoading = true
@@ -1124,9 +1156,7 @@ export default {
           const temp = JSON.parse(JSON.stringify(this.detail))
 
           const postTemp = JSON.parse(JSON.stringify(temp))
-          postTemp.project_producer = JSON.stringify(
-            temp.project_producer
-          )
+          postTemp.project_producer = JSON.stringify(temp.project_producer)
           postTemp.needs_create_json = JSON.stringify(temp.needs_create_json)
           postTemp.needs_verify_json = JSON.stringify(
             temp.needs_verify_json.map((item) => {
