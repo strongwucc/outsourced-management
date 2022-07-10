@@ -409,7 +409,12 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="停留时间" align="center" width="80">
+      <el-table-column
+        label="停留时间"
+        align="center"
+        width="80"
+        show-overflow-tooltip
+      >
         <template slot-scope="{ row }">
           {{ row.stay_time | stayTimeHours }}小时
         </template>
@@ -1283,6 +1288,7 @@
       title="物件详情"
       :visible.sync="dialogTaskDetailVisible"
       width="65%"
+      top="20px"
       class="task-detail-dialog"
     >
       <el-tabs v-if="tempTaskDetail.task_id">
@@ -1625,7 +1631,7 @@
         <el-tab-pane label="操作记录">
           <el-table
             :data="tempTaskDetail.records"
-            height="250"
+            height="500"
             border
             style="width: 100%"
           >
@@ -2221,7 +2227,7 @@ export default {
       if (this.$store.getters.roles.indexOf(3) >= 0) {
         this.rules = Object.assign({}, this.rules, {
           verify_id: [
-            { required: true, message: '请选择项审核人', trigger: 'change' }
+            { required: true, message: '请选择审核人', trigger: 'change' }
           ]
         })
       } else {
@@ -3804,19 +3810,6 @@ export default {
     }
   }
   .list-container {
-    ::v-deep .el-table__body-wrapper {
-      .el-table__expanded-cell {
-        z-index: 100;
-        padding: 0;
-      }
-    }
-    ::v-deep .el-table__fixed,
-    ::v-deep .el-table__fixed-right {
-      .el-table__expanded-cell {
-        visibility: hidden;
-        padding: 0;
-      }
-    }
     .expand {
       width: calc(100vw - 100px);
       padding: 20px;

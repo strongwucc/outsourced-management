@@ -183,6 +183,7 @@
       :title="textMap[dialogStatus]"
       :visible.sync="dialogFormVisible"
       width="70vw"
+      top="20px"
     >
       <el-form
         ref="dataForm"

@@ -217,12 +217,12 @@
                 width="80"
                 align="center"
               />
-              <el-table-column label="停留时间" align="center">
+              <el-table-column label="停留时间" align="center" show-overflow-tooltip>
                 <template slot-scope="scope">
                   {{ scope.row.stay_time }}小时
                 </template>
               </el-table-column>
-              <el-table-column label="当前处理人" align="center" min-width="120">
+              <el-table-column label="当前处理人" align="center" min-width="120" show-overflow-tooltip>
                 <template slot-scope="scope">
                   {{ scope.row.dealing }}
                 </template>
@@ -1437,19 +1437,6 @@ export default {
     }
   }
   .list-container {
-    ::v-deep .el-table__body-wrapper {
-      .el-table__expanded-cell {
-        z-index: 100;
-        padding: 0;
-      }
-    }
-    ::v-deep .el-table__fixed,
-    ::v-deep .el-table__fixed-right {
-      .el-table__expanded-cell {
-        visibility: hidden;
-        padding: 0;
-      }
-    }
     .expand {
       width: calc(100vw - 100px);
       padding: 20px;

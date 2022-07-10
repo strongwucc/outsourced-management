@@ -600,8 +600,8 @@ export default {
       this.dialogDetailVisible = true
     },
     async handleUpdate(row, index) {
-      this.$set(this.list[index], 'editLoading', true)
       this.temp = JSON.parse(JSON.stringify(row))
+      this.$set(this.list[index], 'editLoading', true)
       const providerData = await fetchAllProvider().catch(error => {})
       this.providers = providerData.data.list
       const subData = await fetchSubject().catch(error => {})

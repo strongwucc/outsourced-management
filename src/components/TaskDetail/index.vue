@@ -6,6 +6,7 @@
       title="物件详情"
       :visible.sync="dialogTaskDetailVisible"
       width="65%"
+      top="20px"
       class="task-detail-dialog"
       append-to-body
     >
@@ -374,7 +375,7 @@
         <el-tab-pane label="操作记录">
           <el-table
             :data="tempTaskDetail.records"
-            height="250"
+            height="500"
             border
             style="width: 100%"
           >

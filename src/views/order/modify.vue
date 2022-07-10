@@ -185,12 +185,13 @@
                 label="物件单号"
                 width="200"
                 align="center"
+                show-overflow-tooltip
               >
                 <template slot-scope="scope">
                   <task-detail :task-id="scope.row.task_id" />
                 </template>
               </el-table-column>
-              <el-table-column prop="order_id" label="订单号" align="center" />
+              <el-table-column prop="order_id" label="订单号" align="center" show-overflow-tooltip />
               <el-table-column
                 prop="task_name"
                 label="物件名称"

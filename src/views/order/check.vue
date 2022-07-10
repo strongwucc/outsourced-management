@@ -208,6 +208,7 @@
                 prop="task_name"
                 label="物件名称"
                 align="center"
+                show-overflow-tooltip
               />
               <el-table-column
                 label="物件品类"
@@ -233,12 +234,12 @@
               <el-table-column prop="work_num" label="数量" align="center" />
               <el-table-column prop="work_price" label="单价" align="center" />
               <el-table-column prop="work_amount" label="总价" align="center" />
-              <el-table-column label="停留时间" align="center">
+              <el-table-column label="停留时间" align="center" show-overflow-tooltip>
                 <template slot-scope="scope">
                   {{ scope.row.stay_time }}小时
                 </template>
               </el-table-column>
-              <el-table-column label="当前处理人" align="center" min-width="120">
+              <el-table-column label="当前处理人" align="center" min-width="120" show-overflow-tooltip>
                 <template slot-scope="scope">
                   {{ scope.row.dealing }}
                 </template>

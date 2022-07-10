@@ -150,6 +150,7 @@
                 prop="order_id"
                 label="订单号"
                 align="center"
+                show-overflow-tooltip
               />
               <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
