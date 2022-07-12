@@ -515,7 +515,7 @@
 
             <el-form-item label="预估数量:" prop="work_num">
               <el-input
-                v-model="tempTask.work_num"
+                v-model.number="tempTask.work_num"
                 placeholder="请输入预估数量"
                 class="dialog-form-item"
               />
@@ -846,7 +846,7 @@ export default {
           { required: true, message: '请选择工作单位', trigger: 'change' }
         ],
         work_num: [
-          { required: true, message: '请输入预估数量', trigger: 'blur' }
+          { required: true, type: 'integer', message: '请输入预估数量', trigger: 'blur' }
         ],
         deliver_date: [
           { required: true, message: '请选择日期', trigger: 'blur' }

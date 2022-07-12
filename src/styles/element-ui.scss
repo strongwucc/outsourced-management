@@ -80,14 +80,14 @@
     }
 
     .el-table__row.expanded > td {
-      background: #409eff !important;
-      color: #ffffff;
+      background: #eef5fe !important;
+      // color: #ffffff;
       .el-icon-arrow-right:before {
-        color: #ffffff;
+        // color: #ffffff;
       }
       &:hover > td {
-        background: #409eff !important;
-        color: #ffffff;
+        background: #eef5fe !important;
+        // color: #ffffff;
       }
     }
   }

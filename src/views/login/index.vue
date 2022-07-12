@@ -277,7 +277,9 @@ $light_gray: #eee;
 .login-container {
   position: relative;
   height: 100%;
+  background: #ebedf5;
   .login-box {
+    background: #ffffff;
     position: absolute;
     top: 0;
     left: 0;
@@ -303,8 +305,8 @@ $light_gray: #eee;
       flex: 1;
       height: 100%;
       .login-form {
-        // height: 100%;
-        margin-top: 115px;
+        height: 100%;
+        // margin-top: 115px;
         display: flex;
         flex-direction: column;
         justify-content: center;
