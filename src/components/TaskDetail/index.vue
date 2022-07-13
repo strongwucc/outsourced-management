@@ -257,7 +257,7 @@
               <el-form-item prop="display_area" :disabled="false">
                 <span
                   slot="label"
-                  style="font-size: 16px; font-weight: 700"
+                  style="font-size: 16px; font-weight: 700; color: #599CF7;"
                 >展示图</span>
                 <el-upload
                   v-if="taskDetailEditable"
@@ -271,8 +271,9 @@
                 </el-upload>
               </el-form-item>
             </div>
-            <div class="file-box" style="width: 100%">
-              <div
+            <div class="file-box display-area" style="width: 100%; display: flex; justify-content: flex-start; align-items: center;">
+              <el-image v-for="(image, imageIndex) in tempTaskDetail.display_area" :key="imageIndex" style="width: 100px; height: 100px; margin: 0 10px 10px 0;" :src="image.url" :preview-src-list="displayAreaList" />
+              <!-- <div
                 v-for="(file, fileIndex) in tempTaskDetail.display_area"
                 :key="fileIndex"
                 class="file-item"
@@ -301,13 +302,13 @@
                     @click="deleteTaskDisplayArea(fileIndex)"
                   >删除</el-button>
                 </div>
-              </div>
+              </div> -->
             </div>
             <div class="file-title" style="margin-top: 20px">
               <el-form-item prop="finished_product" :disabled="false">
                 <span
                   slot="label"
-                  style="font-size: 16px; font-weight: 700"
+                  style="font-size: 16px; font-weight: 700; color: #599CF7;"
                 >作品</span>
                 <el-upload
                   v-if="taskDetailEditable"
@@ -464,6 +465,11 @@ export default {
         )
       }
       return false
+    },
+    displayAreaList: function() {
+      return this.tempTaskDetail.display_area.map(item => {
+        return item.url
+      })
     }
   },
   methods: {

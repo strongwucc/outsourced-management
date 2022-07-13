@@ -295,7 +295,7 @@
                     v-if="[0, 4].indexOf(scope.row.task_status) >= 0"
                     v-permission="[0]"
                     class="upload-box"
-                    :action="`${$baseUrl}/api/tools/upfile`"
+                    :action="`/api/tools/upfile`"
                     :show-file-list="false"
                     style="margin-left: 10px"
                     :file-list="scope.row.display_area"
