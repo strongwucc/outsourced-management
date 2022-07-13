@@ -705,13 +705,13 @@ export default {
               const orderIndex = this.list.findIndex(orderItem => orderItem.receipt_id === listItem.receipt_id)
               if (orderIndex >= 0) {
                 listItem.checked = this.list[orderIndex].checked === true
-                listItem.tasks = listItem.tasks.map((child) => {
-                  const taskIndex = this.list[orderIndex].tasks.findIndex(
+                listItem.items = listItem.items.map((child) => {
+                  const taskIndex = this.list[orderIndex].items.findIndex(
                     (taskItem) => taskItem.task_id === child.task_id
                   )
                   if (taskIndex >= 0) {
                     child.checked =
-                      this.list[orderIndex].tasks[taskIndex].checked === true
+                      this.list[orderIndex].items[taskIndex].checked === true
                   }
                   return child
                 })
