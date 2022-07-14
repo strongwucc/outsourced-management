@@ -643,7 +643,20 @@
                   selectedProcess.budget_dep.budget
                 }}
               </div>
-              <div class="process-box" style="flex: auto; margin-left: 10px">
+              <div
+                class="process-box"
+                style="
+                  flex: auto;
+                  margin-left: 10px;
+                  padding: 2px;
+                  box-sizing: border-box;
+                  border-radius: 100px;
+                  background-color: #ebeef5;
+                  overflow: hidden;
+                  position: relative;
+                  vertical-align: middle;
+                "
+              >
                 <el-progress
                   :text-inside="true"
                   :stroke-width="18"
@@ -1529,12 +1542,12 @@
               <el-form-item prop="display_area" :disabled="false">
                 <span
                   slot="label"
-                  style="font-size: 16px; font-weight: 700; color: #599CF7;"
+                  style="font-size: 16px; font-weight: 700; color: #599cf7"
                 >展示图</span>
                 <el-upload
                   v-if="taskDetailEditable"
                   class="upload-demo"
-                  :action="`${$baseUrl}/api/tools/upfile`"
+                  :action="`/api/tools/upfile`"
                   :on-success="handleAddTaskDisplayAreaSucc"
                   :show-file-list="false"
                   :file-list="tempTaskDetail.display_area"
@@ -1543,36 +1556,44 @@
                 </el-upload>
               </el-form-item>
             </div>
-            <div class="file-box display-area" style="width: 100%; display: flex; justify-content: flex-start; align-items: center;">
-              <el-image v-for="(image, imageIndex) in tempTaskDetail.display_area" :key="imageIndex" style="width: 100px; height: 100px; margin: 0 10px 10px 0;" :src="image.url" :preview-src-list="displayAreaList" />
-              <!-- <div
-                v-for="(file, fileIndex) in tempTaskDetail.display_area"
-                :key="fileIndex"
-                class="file-item"
+            <div class="file-box display-area">
+              <div
+                v-for="(image, imageIndex) in tempTaskDetail.display_area"
+                :key="imageIndex"
+                class="img-item"
               >
-                <div class="file-name">{{ file.name }}</div>
-                <div class="btns">
-                  <el-button
-                    type="primary"
-                    size="mini"
-                    plain
-                    @click="downLoadContract(file.name, file.url)"
-                  >下载</el-button>
-                  <el-button
+                <el-image
+                  style="width: 100px; height: 100px"
+                  :src="image.url"
+                />
+                <div class="img-actions">
+                  <span
+                    class="btn-item"
+                    @click="handlePictureCardPreview(image)"
+                  >
+                    <i class="el-icon-zoom-in" />
+                  </span>
+                  <span
+                    class="btn-item"
+                    @click="downLoadContract(image.name, image.url)"
+                  >
+                    <i class="el-icon-download" />
+                  </span>
+                  <span
                     v-if="taskDetailEditable"
-                    type="danger"
-                    size="mini"
-                    plain
-                    @click="deleteTaskDisplayArea(fileIndex)"
-                  >删除</el-button>
+                    class="btn-item"
+                    @click="deleteTaskDisplayArea(imageIndex)"
+                  >
+                    <i class="el-icon-delete" />
+                  </span>
                 </div>
-              </div> -->
+              </div>
             </div>
             <div class="file-title" style="margin-top: 20px">
               <el-form-item prop="finished_product" :disabled="false">
                 <span
                   slot="label"
-                  style="font-size: 16px; font-weight: 700; color: #599CF7;"
+                  style="font-size: 16px; font-weight: 700; color: #599cf7"
                 >作品</span>
                 <el-upload
                   v-if="taskDetailEditable"
@@ -1693,6 +1714,9 @@
           </div>
         </el-form-item>
       </el-form></el-dialog>
+    <el-dialog :visible.sync="dialogImageVisible" append-to-body>
+      <img width="100%" :src="dialogImageUrl" alt="">
+    </el-dialog>
   </div>
 </template>
 
@@ -1987,7 +2011,12 @@ export default {
           { required: true, message: '请选择工作单位', trigger: 'change' }
         ],
         work_num: [
-          { required: true, type: 'integer', message: '请输入预估数量', trigger: 'blur' }
+          {
+            required: true,
+            type: 'integer',
+            message: '请输入预估数量',
+            trigger: 'blur'
+          }
         ],
         deliver_date: [
           { required: true, message: '请选择日期', trigger: 'blur' }
@@ -2007,7 +2036,9 @@ export default {
       },
       dialogStopReasonVisible: false,
       demandFileList: [],
-      demandSupplierFileList: []
+      demandSupplierFileList: [],
+      dialogImageUrl: '',
+      dialogImageVisible: false
     }
   },
   computed: {
@@ -2037,7 +2068,7 @@ export default {
       }
     },
     displayAreaList: function() {
-      return this.tempTaskDetail.display_area.map(item => {
+      return this.tempTaskDetail.display_area.map((item) => {
         return item.url
       })
     }
@@ -3603,7 +3634,7 @@ export default {
           let { file_id, name, url, response } = file
           if (response) {
             file_id = response.data.file_id
-            url = URL.createObjectURL(file.raw)
+            url = response.data.url
           }
           return { file_id, name, url }
         })
@@ -3672,7 +3703,7 @@ export default {
           let { file_id, name, url, response } = file
           if (response) {
             file_id = response.data.file_id
-            url = URL.createObjectURL(file.raw)
+            url = response.data.url
           }
           return { file_id, name, url }
         })
@@ -3787,6 +3818,10 @@ export default {
           downloadFileStream(baseName(filePath), response)
         })
         .catch((error) => {})
+    },
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url
+      this.dialogImageVisible = true
     }
   }
 }
@@ -3901,6 +3936,45 @@ export default {
       align-items: center;
       &:not(:last-child) {
         margin-bottom: 10px;
+      }
+    }
+    &.display-area {
+      width: 100%;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      .img-item {
+        margin: 0 10px 10px 0;
+        position: relative;
+        transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+        width: 100px;
+        height: 100px;
+        .img-actions {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          left: 0;
+          top: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: default;
+          text-align: center;
+          color: #fff;
+          opacity: 0;
+          font-size: 20px;
+          background-color: rgba(0, 0, 0, 0.5);
+          transition: opacity 0.3s;
+          &:hover {
+            opacity: 1;
+          }
+          .btn-item {
+            cursor: pointer;
+            &:not(:last-child) {
+              margin-right: 5px;
+            }
+          }
+        }
       }
     }
   }

@@ -257,7 +257,7 @@
               <el-form-item prop="display_area" :disabled="false">
                 <span
                   slot="label"
-                  style="font-size: 16px; font-weight: 700; color: #599CF7;"
+                  style="font-size: 16px; font-weight: 700; color: #599cf7"
                 >展示图</span>
                 <el-upload
                   v-if="taskDetailEditable"
@@ -271,44 +271,44 @@
                 </el-upload>
               </el-form-item>
             </div>
-            <div class="file-box display-area" style="width: 100%; display: flex; justify-content: flex-start; align-items: center;">
-              <el-image v-for="(image, imageIndex) in tempTaskDetail.display_area" :key="imageIndex" style="width: 100px; height: 100px; margin: 0 10px 10px 0;" :src="image.url" :preview-src-list="displayAreaList" />
-              <!-- <div
-                v-for="(file, fileIndex) in tempTaskDetail.display_area"
-                :key="fileIndex"
-                class="file-item"
-                style="
-                  width: 50%;
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  margin-bottom: 10px;
-                "
+            <div class="file-box display-area">
+              <div
+                v-for="(image, imageIndex) in tempTaskDetail.display_area"
+                :key="imageIndex"
+                class="img-item"
               >
-                <div class="file-name">{{ file.name }}</div>
-                <div class="btns">
-                  <el-button
-                    type="primary"
-                    :disabled="false"
-                    size="mini"
-                    plain
-                    @click="downLoadContract(file.name, file.url)"
-                  >下载</el-button>
-                  <el-button
+                <el-image
+                  style="width: 100px; height: 100px"
+                  :src="image.url"
+                />
+                <div class="img-actions">
+                  <span
+                    class="btn-item"
+                    @click="handlePictureCardPreview(image)"
+                  >
+                    <i class="el-icon-zoom-in" />
+                  </span>
+                  <span
+                    class="btn-item"
+                    @click="downLoadContract(image.name, image.url)"
+                  >
+                    <i class="el-icon-download" />
+                  </span>
+                  <span
                     v-if="taskDetailEditable"
-                    type="danger"
-                    size="mini"
-                    plain
-                    @click="deleteTaskDisplayArea(fileIndex)"
-                  >删除</el-button>
+                    class="btn-item"
+                    @click="deleteTaskDisplayArea(imageIndex)"
+                  >
+                    <i class="el-icon-delete" />
+                  </span>
                 </div>
-              </div> -->
+              </div>
             </div>
             <div class="file-title" style="margin-top: 20px">
               <el-form-item prop="finished_product" :disabled="false">
                 <span
                   slot="label"
-                  style="font-size: 16px; font-weight: 700; color: #599CF7;"
+                  style="font-size: 16px; font-weight: 700; color: #599cf7"
                 >作品</span>
                 <el-upload
                   v-if="taskDetailEditable"
@@ -392,17 +392,24 @@
               width="180"
               align="center"
             />
-            <el-table-column prop="created_at" label="操作时间" align="center" />
+            <el-table-column
+              prop="created_at"
+              label="操作时间"
+              align="center"
+            />
             <el-table-column prop="time" label="耗时" align="center" />
           </el-table>
         </el-tab-pane>
       </el-tabs>
     </el-dialog>
+    <el-dialog :visible.sync="dialogImageVisible" append-to-body>
+      <img width="100%" :src="dialogImageUrl" alt="">
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { fetchTaskDetail } from '@/api/demand/task'
+import { fetchTaskDetail, updateTask } from '@/api/demand/task'
 import { downloadFile } from '@/api/system/file'
 import { downloadFileStream, baseName } from '@/utils/index'
 const tagList = [
@@ -453,7 +460,9 @@ export default {
       dialogTaskDetailVisible: false,
       tempTaskDetail: {
         extends: []
-      }
+      },
+      dialogImageUrl: '',
+      dialogImageVisible: false
     }
   },
   computed: {
@@ -467,7 +476,7 @@ export default {
       return false
     },
     displayAreaList: function() {
-      return this.tempTaskDetail.display_area.map(item => {
+      return this.tempTaskDetail.display_area.map((item) => {
         return item.url
       })
     }
@@ -523,6 +532,88 @@ export default {
           downloadFileStream(baseName(filePath), response)
         })
         .catch((error) => {})
+    },
+    /**
+     * 上传物件展示图成功
+     */
+    handleAddTaskDisplayAreaSucc(response, file, fileList) {
+      this.$set(
+        this.tempTaskDetail,
+        'display_area',
+        fileList.map((file) => {
+          let { file_id, name, url, response } = file
+          if (response) {
+            file_id = response.data.file_id
+            url = response.data.url
+          }
+          return { file_id, name, url }
+        })
+      )
+    },
+    /**
+     * 上传物件作品成功
+     */
+    handleAddTaskFinishedProductSucc(response, file, fileList) {
+      this.$set(
+        this.tempTaskDetail,
+        'finished_product',
+        fileList.map((file) => {
+          let { file_id, name, url, response } = file
+          if (response) {
+            file_id = response.data.file_id
+            url = response.data.url
+          }
+          return { file_id, name, url }
+        })
+      )
+    },
+    /**
+     * 物件详情弹窗确认
+     */
+    confirmTaskDetail() {
+      const temp = JSON.parse(JSON.stringify(this.tempTaskDetail))
+      const task_id = temp.task_id
+      const demand_id = temp.demand_id
+      const extend = temp.extends.map((extend) => {
+        return { name: extend.name, value: extend.value }
+      })
+      const display_area = temp.display_area
+        .map((display_area_item) => {
+          return display_area_item.file_id
+        })
+        .join(',')
+      const finished_product = temp.finished_product
+        .map((finished_product_item) => {
+          return finished_product_item.file_id
+        })
+        .join(',')
+      updateTask({ demand_id, task_id, extend, display_area, finished_product })
+        .then(() => {
+          this.dialogTaskDetailVisible = false
+          this.$notify({
+            title: '成功',
+            message: '修改成功',
+            type: 'success',
+            duration: 2000
+          })
+        })
+        .catch((error) => {})
+    },
+    /**
+     * 删除物件展示图
+     */
+    deleteTaskDisplayArea(fileIndex) {
+      this.tempTaskDetail.display_area.splice(fileIndex, 1)
+    },
+    /**
+     * 删除物件作品
+     */
+    deleteTaskFinishedProduct(fileIndex) {
+      this.tempTaskDetail.finished_product.splice(fileIndex, 1)
+    },
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url
+      this.dialogImageVisible = true
     }
   }
 }
@@ -538,21 +629,59 @@ export default {
       cursor: pointer;
     }
   }
-
-  .task-detail-dialog {
-    .task-detail-title {
-      margin-top: 20px;
+}
+.task-detail-dialog {
+  .task-detail-title {
+    margin-top: 20px;
+  }
+  .plan-box,
+  .file-box {
+    .plan-item,
+    .file-item {
+      width: 50%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      &:not(:last-child) {
+        margin-bottom: 10px;
+      }
     }
-    .plan-box,
-    .file-box {
-      .plan-item,
-      .file-item {
-        width: 50%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        &:not(:last-child) {
-          margin-bottom: 10px;
+    &.display-area {
+      width: 100%;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      .img-item {
+        margin: 0 10px 10px 0;
+        position: relative;
+        transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+        width: 100px;
+        height: 100px;
+        .img-actions {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          left: 0;
+          top: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: default;
+          text-align: center;
+          color: #fff;
+          opacity: 0;
+          font-size: 20px;
+          background-color: rgba(0, 0, 0, 0.5);
+          transition: opacity 0.3s;
+          &:hover {
+            opacity: 1;
+          }
+          .btn-item {
+            cursor: pointer;
+            &:not(:last-child) {
+              margin-right: 5px;
+            }
+          }
         }
       }
     }

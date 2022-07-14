@@ -409,8 +409,15 @@ export default {
         white-space: nowrap;
       }
       .progress {
+        padding: 2px;
+        box-sizing: border-box;
         margin-left: 10px;
         width: 150px;
+        border-radius: 100px;
+        background-color: #ebeef5;
+        overflow: hidden;
+        position: relative;
+        vertical-align: middle;
       }
     }
   }

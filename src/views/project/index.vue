@@ -280,14 +280,16 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      fetchList(this.listQuery).then((response) => {
-        this.listLoading = false
-        this.list = response.data.list
-        this.total = response.data.total
-      }).catch(error => {
-        console.log(error)
-        this.listLoading = false
-      })
+      fetchList(this.listQuery)
+        .then((response) => {
+          this.listLoading = false
+          this.list = response.data.list
+          this.total = response.data.total
+        })
+        .catch((error) => {
+          console.log(error)
+          this.listLoading = false
+        })
     },
     handleFilter() {
       this.listQuery.page = 1
@@ -355,7 +357,9 @@ export default {
           delete tempData.project_name
           delete tempData.budget_used
           updateProject(tempData).then(() => {
-            const index = this.list.findIndex((v) => v.project_id === tempData.project_id)
+            const index = this.list.findIndex(
+              (v) => v.project_id === tempData.project_id
+            )
             const newItem = Object.assign({}, this.list[index], {
               budget_cost: tempData.budget_cost,
               warning_cost: tempData.warning_cost
@@ -416,8 +420,15 @@ export default {
         white-space: nowrap;
       }
       .progress {
+        padding: 2px;
+        box-sizing: border-box;
         margin-left: 10px;
         width: 150px;
+        border-radius: 100px;
+        background-color: #ebeef5;
+        overflow: hidden;
+        position: relative;
+        vertical-align: middle;
       }
     }
   }

@@ -288,7 +288,7 @@
             plain
             @click.stop="handleUploadBill(row)"
           >
-            上传发票
+            申请结算
           </el-button>
           <el-button
             v-if="row.bill_file"
@@ -624,7 +624,7 @@ export default {
         resolve: '通过',
         reject: '驳回',
         reconcile: '上传对账单',
-        bill: '上传发票',
+        bill: '结算申请',
         bill_show: '查看发票'
       },
       dialogStatus: '',
