@@ -103,7 +103,7 @@
       v-loading="listLoading"
       element-loading-text="拼命加载中"
       element-loading-spinner="el-icon-loading"
-      element-loading-background="rgba(0, 0, 0, 0.8)"
+      element-loading-background="rgba(237, 244, 253, 0.8)"
       class="list-container"
       :data="list"
       fit
@@ -604,6 +604,7 @@
                   class="task-image"
                 >
                 <i v-else class="el-icon-plus task-image-uploader-icon" />
+                <div slot="tip" class="el-upload__tip">只能上传jpg/png/jpeg文件，且不超过2M</div>
               </el-upload>
             </el-form-item>
             <el-form-item>
