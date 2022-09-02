@@ -1,6 +1,9 @@
 <template>
   <div :class="{'has-logo':showLogo}">
     <logo v-if="showLogo" :collapse="isCollapse" />
+    <div class="new-demand-box">
+      <el-button v-permission="[1, 3]" type="primary" icon="el-icon-plus" @click="handleCreateDemand">发布需求</el-button>
+    </div>
     <el-scrollbar wrap-class="scrollbar-wrapper">
       <el-menu
         :default-active="activeMenu"
@@ -24,9 +27,11 @@ import { mapGetters } from 'vuex'
 import Logo from './Logo'
 import SidebarItem from './SidebarItem'
 import variables from '@/styles/variables.scss'
+import permission from '@/directive/permission/index.js' // 权限判断指令
 
 export default {
   components: { SidebarItem, Logo },
+  directives: { permission },
   data() {
     return {
       openeds: ['/project', '/demand', '/order', '/provider', '/system']
@@ -57,6 +62,14 @@ export default {
     },
     isCollapse() {
       return !this.sidebar.opened
+    }
+  },
+  methods: {
+    /**
+     * 触发创建需求
+     */
+    handleCreateDemand() {
+      this.$bus.$emit('createDemandEvent')
     }
   }
 }

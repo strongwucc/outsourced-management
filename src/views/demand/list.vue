@@ -63,7 +63,7 @@
         </el-button>
       </div>
       <div class="filter-right">
-        <el-button
+        <!-- <el-button
           v-permission="[1, 3]"
           class="filter-item"
           style="margin-left: 10px"
@@ -173,7 +173,7 @@
           @click="handleResolveOrder(false)"
         >
           驳回
-        </el-button>
+        </el-button> -->
       </div>
     </div>
 
@@ -306,7 +306,7 @@
                   >
                     详情
                   </el-button>
-                  <el-button
+                  <!-- <el-button
                     v-if="[4, 6].indexOf(row.status) >= 0"
                     v-permission="[0]"
                     type="primary"
@@ -348,7 +348,7 @@
                     <el-button slot="reference" size="mini" type="danger" plain>
                       删除
                     </el-button>
-                  </el-popconfirm>
+                  </el-popconfirm> -->
                 </template>
               </el-table-column>
             </el-table>
@@ -451,7 +451,7 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
-          <el-button
+          <!-- <el-button
             v-permission="[1, 3]"
             type="primary"
             size="mini"
@@ -460,7 +460,7 @@
             @click.stop="handleCopy(row, $index)"
           >
             复制
-          </el-button>
+          </el-button> -->
           <el-button
             type="primary"
             size="mini"
@@ -470,7 +470,7 @@
           >
             详情
           </el-button>
-          <el-button
+          <!-- <el-button
             v-if="row.is_creator === 1 && [0, 2].indexOf(row.status) >= 0"
             type="primary"
             size="mini"
@@ -568,7 +568,7 @@
             >
               提交审核
             </el-button>
-          </el-popconfirm>
+          </el-popconfirm> -->
         </template>
       </el-table-column>
     </el-table>
@@ -1769,7 +1769,7 @@ const tagList = [
 ]
 
 export default {
-  name: 'Type',
+  name: 'DemandList',
   components: { Pagination, TaskDetail },
   directives: { waves, permission },
   filters: {
@@ -1899,7 +1899,8 @@ export default {
         category_name: '',
         tag: '',
         page: 1,
-        page_num: 10
+        page_num: 10,
+        all: true
       },
       dialogStatus: '',
       dialogFormVisible: false,

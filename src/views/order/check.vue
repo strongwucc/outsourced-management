@@ -74,7 +74,7 @@
         >
           收起
         </el-button>
-        <el-popconfirm
+        <!-- <el-popconfirm
           v-permission="[0]"
           title="确定生成对账单吗？"
           @confirm="handleReconcile"
@@ -133,7 +133,7 @@
           @click="handleFinish"
         >
           终止
-        </el-button>
+        </el-button> -->
       </div>
     </div>
 
@@ -174,7 +174,7 @@
                 <template slot-scope="scope">
                   <el-checkbox
                     v-model="scope.row.checked"
-                    :disabled="[4,5].indexOf(scope.row.task_status) >= 0"
+                    :disabled="[4, 5].indexOf(scope.row.task_status) >= 0"
                     @change="clickCheckItemFn(row, scope.row)"
                   />
                 </template>
@@ -234,12 +234,21 @@
               <el-table-column prop="work_num" label="数量" align="center" />
               <el-table-column prop="work_price" label="单价" align="center" />
               <el-table-column prop="work_amount" label="总价" align="center" />
-              <el-table-column label="停留时间" align="center" show-overflow-tooltip>
+              <el-table-column
+                label="停留时间"
+                align="center"
+                show-overflow-tooltip
+              >
                 <template slot-scope="scope">
                   {{ scope.row.stay_time }}小时
                 </template>
               </el-table-column>
-              <el-table-column label="当前处理人" align="center" min-width="120" show-overflow-tooltip>
+              <el-table-column
+                label="当前处理人"
+                align="center"
+                min-width="120"
+                show-overflow-tooltip
+              >
                 <template slot-scope="scope">
                   {{ scope.row.dealing }}
                 </template>
@@ -249,12 +258,13 @@
                 label="物件状态"
                 width="100"
                 align="center"
+                show-overflow-tooltip
               >
                 <template slot-scope="scope">
                   {{ scope.row.task_status | taskStatusText }}
                 </template>
               </el-table-column>
-              <el-table-column
+              <!-- <el-table-column
                 label="操作"
                 align="center"
                 min-width="100"
@@ -270,7 +280,7 @@
                     下载
                   </el-button>
                 </template>
-              </el-table-column>
+              </el-table-column> -->
             </el-table>
           </div>
         </template>
@@ -566,7 +576,8 @@ export default {
         supplier_name: '',
         tag: '',
         page: 1,
-        page_num: 10
+        page_num: 10,
+        all: true
       },
       textMap: {
         modify: '申请变更',
@@ -620,7 +631,9 @@ export default {
     },
     clickRowHandle(row, column, event) {
       if (this.expandRowKeys.includes(row.receipt_id)) {
-        this.expandRowKeys = this.expandRowKeys.filter(val => val !== row.receipt_id)
+        this.expandRowKeys = this.expandRowKeys.filter(
+          (val) => val !== row.receipt_id
+        )
       } else {
         this.expandRowKeys.push(row.receipt_id)
       }
@@ -698,11 +711,14 @@ export default {
           this.total = response.data.total
           let list = response.data.list
           if (this.$store.getters.pendings['/order/check']) {
-            const pendings = this.$store.getters.pendings['/order/check'].children
-            list = response.data.list.map(listItem => {
+            const pendings =
+              this.$store.getters.pendings['/order/check'].children
+            list = response.data.list.map((listItem) => {
               listItem.pending = pendings[listItem.receipt_id] || 0
               // 是否已选中
-              const orderIndex = this.list.findIndex(orderItem => orderItem.receipt_id === listItem.receipt_id)
+              const orderIndex = this.list.findIndex(
+                (orderItem) => orderItem.receipt_id === listItem.receipt_id
+              )
               if (orderIndex >= 0) {
                 listItem.checked = this.list[orderIndex].checked === true
                 listItem.items = listItem.items.map((child) => {

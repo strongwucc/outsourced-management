@@ -114,7 +114,7 @@
         >
           收起
         </el-button>
-        <el-button
+        <!-- <el-button
           slot="reference"
           v-permission="[1, 2, 3, 4, 0]"
           class="filter-item"
@@ -135,7 +135,7 @@
           @click="handleVerify(false)"
         >
           驳回
-        </el-button>
+        </el-button> -->
       </div>
     </div>
 
@@ -183,7 +183,7 @@
               <el-table-column
                 prop="task_id"
                 label="物件单号"
-                width="200"
+                min-width="200"
                 align="center"
                 show-overflow-tooltip
               >
@@ -191,7 +191,13 @@
                   <task-detail :task-id="scope.row.task_id" />
                 </template>
               </el-table-column>
-              <el-table-column prop="order_id" label="订单号" align="center" show-overflow-tooltip />
+              <el-table-column
+                prop="order_id"
+                label="订单号"
+                align="center"
+                min-width="200"
+                show-overflow-tooltip
+              />
               <el-table-column
                 prop="task_name"
                 label="物件名称"
@@ -200,14 +206,14 @@
               <el-table-column
                 label="物件品类"
                 align="center"
-                width="150"
+                min-width="150"
                 show-overflow-tooltip
               >
                 <template slot-scope="scope">
                   {{ scope.row.category | categoryText }}
                 </template>
               </el-table-column>
-              <el-table-column label="交付日期" width="200" align="center">
+              <el-table-column label="交付日期" min-width="200" align="center">
                 <template slot-scope="scope">
                   <!-- <div
                     v-if="
@@ -220,9 +226,7 @@
                     <span>{{ scope.row.deliver_new_date }}</span>
                   </div>
                   <span v-else>{{ scope.row.deliver_old_date }}</span> -->
-                  <div
-                    class="modify-color"
-                  >
+                  <div class="modify-color">
                     <span>{{ scope.row.deliver_old_date }}</span>
                     <i class="el-icon-right" />
                     <span>{{ scope.row.deliver_new_date }}</span>
@@ -245,9 +249,7 @@
                     <span>{{ scope.row.new_nums }}</span>
                   </div>
                   <span v-else>{{ scope.row.old_nums }}</span> -->
-                  <div
-                    class="modify-color"
-                  >
+                  <div class="modify-color">
                     <span>{{ scope.row.old_nums }}</span>
                     <i class="el-icon-right" />
                     <span>{{ scope.row.new_nums }}</span>
@@ -255,7 +257,7 @@
                 </template>
               </el-table-column>
               <el-table-column prop="price" label="单价" align="center" />
-              <el-table-column label="总价" align="center">
+              <el-table-column label="总价" align="center" min-width="150">
                 <template slot-scope="scope">
                   <div
                     v-if="scope.row.new_amount !== scope.row.old_amount"
@@ -272,7 +274,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="申请单号" align="left" width="200">
+      <el-table-column label="申请单号" align="left" min-width="200">
         <template slot-scope="{ row }">
           <div class="pending-box">
             <span class="txt">{{ row.change_id }}</span>
@@ -283,7 +285,7 @@
       <el-table-column
         label="项目名称"
         align="center"
-        width="150"
+        min-width="150"
         show-overflow-tooltip
       >
         <template slot-scope="{ row }">
@@ -293,39 +295,44 @@
       <el-table-column
         label="供应商"
         align="center"
-        width="150"
+        min-width="150"
         show-overflow-tooltip
       >
         <template slot-scope="{ row }">
           {{ row.supplier.name }}
         </template>
       </el-table-column>
-      <el-table-column label="物件数量" align="center" width="120">
+      <el-table-column label="物件数量" align="center" min-width="120">
         <template slot-scope="{ row }">
           {{ row.tasks.length }}
         </template>
       </el-table-column>
-      <el-table-column label="发起方" align="center" width="120">
+      <el-table-column label="发起方" align="center" min-width="120">
         <template slot-scope="{ row }">
           {{ row.sponsor | initiatorTxt }}
         </template>
       </el-table-column>
-      <el-table-column label="变更类型" align="center" width="120">
+      <el-table-column label="变更类型" align="center" min-width="120">
         <template slot-scope="{ row }">
           {{ row.change_type | typeTxt }}
         </template>
       </el-table-column>
-      <el-table-column label="当前操作人" align="center" width="120" show-overflow-tooltip>
+      <el-table-column
+        label="当前操作人"
+        align="center"
+        min-width="120"
+        show-overflow-tooltip
+      >
         <template slot-scope="{ row }">
           {{ row.current_operator || "-" }}
         </template>
       </el-table-column>
-      <el-table-column label="审核状态" align="center" width="120">
+      <el-table-column label="审核状态" align="center" min-width="120">
         <template slot-scope="{ row }">
           {{ row.change_status | statusTxt }}
         </template>
       </el-table-column>
-      <el-table-column
+      <!-- <el-table-column
         label="操作"
         align="center"
         min-width="150"
@@ -350,7 +357,7 @@
             驳回原因
           </el-button>
         </template>
-      </el-table-column>
+      </el-table-column> -->
     </el-table>
 
     <!--分页-->
@@ -533,7 +540,8 @@ export default {
         change_status: '',
         tag: '',
         page: 1,
-        page_num: 10
+        page_num: 10,
+        all: true
       },
       textMap: {
         modify: '申请变更',
@@ -570,7 +578,9 @@ export default {
     },
     clickRowHandle(row, column, event) {
       if (this.expandRowKeys.includes(row.change_id)) {
-        this.expandRowKeys = this.expandRowKeys.filter(val => val !== row.change_id)
+        this.expandRowKeys = this.expandRowKeys.filter(
+          (val) => val !== row.change_id
+        )
       } else {
         this.expandRowKeys.push(row.change_id)
       }
@@ -648,11 +658,14 @@ export default {
           this.total = response.data.total
           let list = response.data.list
           if (this.$store.getters.pendings['/order/modify']) {
-            const pendings = this.$store.getters.pendings['/order/modify'].children
-            list = response.data.list.map(listItem => {
+            const pendings =
+              this.$store.getters.pendings['/order/modify'].children
+            list = response.data.list.map((listItem) => {
               listItem.pending = pendings[listItem.change_id] || 0
               // 是否已选中
-              const orderIndex = this.list.findIndex(orderItem => orderItem.change_id === listItem.change_id)
+              const orderIndex = this.list.findIndex(
+                (orderItem) => orderItem.change_id === listItem.change_id
+              )
               if (orderIndex >= 0) {
                 listItem.checked = this.list[orderIndex].checked === true
                 listItem.tasks = listItem.tasks.map((child) => {

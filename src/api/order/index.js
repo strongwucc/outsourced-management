@@ -8,6 +8,14 @@ export function fetchOrderList(params) {
   })
 }
 
+export function fetchOrderDetail(params) {
+  return request({
+    url: '/api/order/detail',
+    method: 'post',
+    params
+  })
+}
+
 export function addTask(data) {
   return request({
     url: '/api/order/changeTask',
@@ -40,6 +48,14 @@ export function fetchModifyOrderList(params) {
   })
 }
 
+export function fetchChangeDetail(params) {
+  return request({
+    url: '/api/order/changeDetail',
+    method: 'post',
+    params
+  })
+}
+
 export function changeVerify(data) {
   return request({
     url: '/api/order/changeVerify',
@@ -56,9 +72,25 @@ export function fetchCheckOrderList(params) {
   })
 }
 
+export function fetchCheckDetail(params) {
+  return request({
+    url: '/api/order/receiveDetail',
+    method: 'post',
+    params
+  })
+}
+
 export function fetchReconcileOrderList(params) {
   return request({
     url: '/api/statement/list',
+    method: 'post',
+    params
+  })
+}
+
+export function fetchReconcileDetail(params) {
+  return request({
+    url: '/api/statement/detail',
     method: 'post',
     params
   })

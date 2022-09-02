@@ -112,3 +112,11 @@ export function batchAddTasks(data) {
     data
   })
 }
+
+export function uploadDemandPaperclip(data) {
+  return request({
+    url: '/api/needs/upFile',
+    method: 'post',
+    data
+  })
+}

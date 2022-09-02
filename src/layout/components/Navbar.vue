@@ -1,14 +1,38 @@
 <template>
   <div class="navbar">
-    <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+    <div class="left-box">
+      <hamburger
+        :is-active="sidebar.opened"
+        class="hamburger-container"
+        @toggleClick="toggleSideBar"
+      />
 
-    <breadcrumb class="breadcrumb-container" />
+      <breadcrumb class="breadcrumb-container" />
+      <div v-if="isPending" class="search-box">
+        <el-input
+          v-model="keyword"
+          placeholder="请输入搜索内容"
+          style="width: 200px"
+          class="filter-item"
+          size="mini"
+        />
+        <el-button
+          class="filter-item"
+          type="primary"
+          icon="el-icon-search"
+          size="mini"
+          @click.stop="navSearch"
+        >
+          搜索
+        </el-button>
+      </div>
+    </div>
 
     <div class="right-menu">
-      <div class="avatar-box">
-        <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar"> -->
-        <img src="@/icons/logo.jpg" class="user-avatar">
-      </div>
+      <!-- <div class="avatar-box"> -->
+      <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar"> -->
+      <!-- <img src="@/icons/logo.jpg" class="user-avatar"> -->
+      <!-- </div> -->
       <el-dropdown class="wrapper-container" trigger="click">
         <div class="name-box">
           <span>{{ name }}</span>
@@ -16,7 +40,7 @@
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
           <el-dropdown-item @click.native="logout">
-            <span style="display:block;">退出登录</span>
+            <span style="display: block">退出登录</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -35,11 +59,15 @@ export default {
     Hamburger
   },
   computed: {
-    ...mapGetters([
-      'sidebar',
-      'avatar',
-      'name'
-    ])
+    ...mapGetters(['sidebar', 'avatar', 'name']),
+    isPending() {
+      return this.$route.path.startsWith('/pending')
+    }
+  },
+  data() {
+    return {
+      keyword: ''
+    }
   },
   methods: {
     toggleSideBar() {
@@ -48,6 +76,9 @@ export default {
     async logout() {
       await this.$store.dispatch('user/logout')
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+    },
+    navSearch() {
+      this.$bus.$emit('navSearch', this.keyword)
     }
   }
 }
@@ -59,23 +90,35 @@ export default {
   overflow: hidden;
   position: relative;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0,21,41,.08);
-
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .left-box {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    .search-box {
+      margin-left: 200px;
+      .filter-item {
+        margin-right: 10px;
+      }
+    }
+  }
   .hamburger-container {
     line-height: 46px;
     height: 100%;
     float: left;
     cursor: pointer;
-    transition: background .3s;
-    -webkit-tap-highlight-color:transparent;
+    transition: background 0.3s;
+    -webkit-tap-highlight-color: transparent;
 
     &:hover {
-      background: rgba(0, 0, 0, .025)
+      background: rgba(0, 0, 0, 0.025);
     }
   }
 
   .breadcrumb-container {
-    float: left;
   }
 
   .right-menu {
@@ -96,11 +139,11 @@ export default {
       align-items: center;
       margin-right: 10px;
       .user-avatar {
-          cursor: pointer;
-          // width: 22px;
-          height: 22px;
-          border-radius: 10px;
-        }
+        cursor: pointer;
+        // width: 22px;
+        height: 22px;
+        border-radius: 10px;
+      }
     }
 
     .wrapper-container {

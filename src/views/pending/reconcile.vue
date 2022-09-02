@@ -1,145 +1,231 @@
 <template>
   <div class="app-container">
-    <!--筛选-->
-    <div class="filter-container">
-      <div class="filter-left">
-        <el-input
-          v-model="listQuery.statement_id"
-          placeholder="输入对账单号"
-          style="width: 200px"
-          class="filter-item"
-          size="mini"
-          @keyup.enter.native="handleFilter"
-        />
-        <el-input
-          v-model="listQuery.task_id"
-          placeholder="输入物件单号"
-          style="width: 200px"
-          class="filter-item"
-          size="mini"
-          @keyup.enter.native="handleFilter"
-        />
-        <el-input
-          v-model="listQuery.project_name"
-          placeholder="输入项目名称"
-          style="width: 200px"
-          class="filter-item"
-          size="mini"
-          @keyup.enter.native="handleFilter"
-        />
-        <el-input
-          v-model="listQuery.supplier_name"
-          placeholder="输入供应商名称"
-          style="width: 200px"
-          class="filter-item"
-          size="mini"
-          @keyup.enter.native="handleFilter"
-        />
-
-        <el-button
-          v-waves
-          class="filter-btn"
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleFilter"
-        >
-          搜索
-        </el-button>
-      </div>
-      <div class="filter-right">
-        <el-button
-          class="filter-item"
-          style="margin-left: 10px"
-          type="primary"
-          size="mini"
-          @click="handleExpand(true)"
-        >
-          展开
-        </el-button>
-        <el-button
-          class="filter-item"
-          style="margin-left: 10px"
-          type="primary"
-          size="mini"
-          @click="handleExpand(false)"
-        >
-          收起
-        </el-button>
-        <!-- <el-popconfirm
-          v-permission="[3]"
-          title="确定提交吗？"
-          @confirm="handleVerify(true)"
-        ><el-button
-          slot="reference"
-          class="filter-item"
-          style="margin-left: 10px"
-          type="primary"
-          size="mini"
-        >
-          提交
-        </el-button></el-popconfirm>
-        <el-popconfirm
-          v-permission="[3]"
-          title="确定驳回吗？"
-          @confirm="handleVerify(false)"
-        ><el-button
-          slot="reference"
-          class="filter-item"
-          style="margin-left: 10px"
-          type="primary"
-          size="mini"
-        >
-          驳回
-        </el-button></el-popconfirm> -->
-      </div>
-    </div>
-
-    <!--列表-->
-    <el-table
-      v-loading="listLoading"
-      element-loading-text="拼命加载中"
-      element-loading-spinner="el-icon-loading"
-      element-loading-background="rgba(237, 244, 253, 0.8)"
-      class="list-container"
-      :data="list"
-      fit
-      highlight-current-row
-      row-key="statement_id"
-      :expand-row-keys="expandRowKeys"
-      @expand-change="expandChange"
-      @row-click="clickRowHandle"
-    >
-      <el-table-column width="50" align="center">
-        <div slot="header" slot-scope="scope">
-          <el-checkbox
-            v-model="globelCheckedAll"
-            @change="clickCheckAll(scope)"
-          />
+    <div class="lucien-row">
+      <div class="lucien-col col-left">
+        <div class="grid-content list-container">
+          <el-table
+            ref="listTable"
+            :data="list"
+            style="width: 100%"
+            height="100%"
+            class="list-table"
+            highlight-current-row
+            row-key="statement_id"
+            :show-header="showHeader"
+            @selection-change="handleSelectionChange"
+            @row-click="handleCurrentChange"
+          >
+            <el-table-column type="selection" width="50" />
+            <el-table-column>
+              <template slot="header">
+                <el-button
+                  v-permission="[0]"
+                  type="primary"
+                  size="mini"
+                  @click.stop="handleUploadBill(true)"
+                >
+                  申请结算
+                </el-button>
+                <el-button
+                  v-permission="[3]"
+                  type="primary"
+                  size="mini"
+                  @click="handleVerify(true, true)"
+                >
+                  提交
+                </el-button>
+                <el-button
+                  v-permission="[3]"
+                  type="primary"
+                  size="mini"
+                  @click="handleVerify(false, true)"
+                >
+                  驳回
+                </el-button>
+              </template>
+              <template slot-scope="scope">
+                <div class="item-box">
+                  <span class="item-no">{{ scope.row.statement_id }}</span>
+                  <!-- <span class="item-name">{{ scope.row.name }}</span> -->
+                  <span class="item-supplier">{{
+                    scope.row.supplier.name
+                  }}</span>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
         </div>
-        <template slot-scope="scope">
-          <el-checkbox
-            v-model="scope.row.checked"
-            @change="handleSelectionChange(scope.row)"
-          />
-        </template>
-      </el-table-column>
-      <el-table-column type="expand" width="20">
-        <template slot-scope="{ row, $index }">
-          <div class="expand-table-box">
-            <el-table class="task-list" border :data="row.tasks" fit stripe>
-              <!-- <el-table-column label="" width="50" align="center">
-                <template slot-scope="scope">
-                  <el-checkbox
-                    v-model="scope.row.checked"
-                    @change="clickCheckItemFn(row, scope.row)"
-                  />
+      </div>
+      <div
+        v-loading="detailLoading"
+        class="lucien-col col-right"
+        element-loading-text="拼命加载中"
+        element-loading-spinner="el-icon-loading"
+        element-loading-background="rgba(237, 244, 253, 0.8)"
+      >
+        <div v-if="detailLoaded" class="grid-content detail-container">
+          <div v-if="detail.demand" class="info-content">
+            <div class="title">
+              <i class="el-icon-s-management" />
+              <span>需求状态预览</span>
+            </div>
+            <el-divider />
+            <div class="description">
+              <el-descriptions
+                class="margin-top"
+                :column="4"
+                :label-style="{
+                  'font-weight': 'bold',
+                  'align-items': 'center',
+                }"
+              >
+                <el-descriptions-item label="项目代码">{{
+                  detail.project ? detail.project.project_name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item label="发起部门">{{
+                  detail.demand.flow ? detail.demand.flow.launch_dep.name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item label="核算部门">{{
+                  detail.demand.flow ? detail.demand.flow.account_dep.name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item label="经费使用">
+                  {{ detail.project ? detail.project.budget_used : 0 }}/{{
+                    detail.project ? detail.project.budget_cost : 0
+                  }}
+                </el-descriptions-item>
+                <el-descriptions-item label="需求创建人">{{
+                  detail.demand.creator ? detail.demand.creator.name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item label="创建时间" span="3">{{
+                  detail.demand.created_at
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求名称" span="3">
+                  <span>{{ detail.demand.name }}</span>
+                  <el-tag size="mini" style="margin-left: 10px">{{
+                    detail.demand.tag | demandTagText
+                  }}</el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item label="需求单号">{{
+                  detail.demand.demand_id
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求状态" span="4">{{
+                  detail.demand.status | demandStatusText
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求说明" span="4">{{
+                  detail.demand.introduce
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求品类" span="4">{{
+                  detail.demand.category | categoryText
+                }}</el-descriptions-item>
+                <!-- <el-descriptions-item label="需求附件" span="6">
+                  <div class="file-box" style="width: 50%">
+                    <div
+                      v-for="(file, fileIndex) in detail.files"
+                      :key="fileIndex"
+                      class="file-item"
+                    >
+                      <div class="file-name">{{ file.name }}</div>
+                      <el-button
+                        type="primary"
+                        size="mini"
+                        plain
+                        @click="downLoadContract(file.name, file.url)"
+                      >下载</el-button>
+                    </div>
+                  </div>
+                </el-descriptions-item> -->
+                <el-descriptions-item label="意向供应商" span="4">{{
+                  detail.supplier ? detail.supplier.name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item label="备注说明" span="4">{{
+                  detail.remark
+                }}</el-descriptions-item>
+              </el-descriptions>
+            </div>
+            <el-table :data="[detail]" class="table-info" width="100%" border>
+              <el-table-column label="对账单号" align="left" min-width="150">
+                <template slot-scope="{ row }">
+                  <div class="pending-box">
+                    <span class="txt">{{ row.statement_id }}</span>
+                  </div>
                 </template>
-              </el-table-column> -->
+              </el-table-column>
+              <el-table-column label="项目名称" align="center" min-width="150">
+                <template slot-scope="{ row }">
+                  {{ row.project.project_name }}
+                </template>
+              </el-table-column>
+              <el-table-column
+                label="供应商"
+                align="center"
+                min-width="250"
+                show-overflow-tooltip
+              >
+                <template slot-scope="{ row }">
+                  {{ row.supplier.name }}
+                </template>
+              </el-table-column>
+              <el-table-column label="物件数量" align="center" min-width="100">
+                <template slot-scope="{ row }">
+                  {{ row.nums }}
+                </template>
+              </el-table-column>
+              <el-table-column label="工作总量" align="center" min-width="100">
+                <template slot-scope="{ row }">
+                  {{ row.work_num }}
+                </template>
+              </el-table-column>
+              <el-table-column label="总金额" align="center" min-width="100">
+                <template slot-scope="{ row }">
+                  {{ row.work_amount }}
+                </template>
+              </el-table-column>
+              <el-table-column label="停留时间" align="center" min-width="100">
+                <template slot-scope="{ row }">
+                  {{ row.stay_time }}小时
+                </template>
+              </el-table-column>
+              <el-table-column
+                label="当前处理人"
+                align="center"
+                min-width="200"
+                show-overflow-tooltip
+              >
+                <template slot-scope="{ row }">
+                  {{ row.current_operator }}
+                </template>
+              </el-table-column>
+              <el-table-column label="订单状态" align="center" width="100">
+                <template slot-scope="{ row }">
+                  {{ row.statement_status | statusText }}
+                </template>
+              </el-table-column>
+            </el-table>
+            <div class="actions" />
+          </div>
+          <el-divider />
+          <div
+            v-if="
+              (detail.tasks && detail.tasks.length > 0) || detail.status >= 4
+            "
+            class="task-content"
+          >
+            <div class="title">
+              <i class="el-icon-s-management" />
+              <span>物件明细</span>
+            </div>
+            <el-table
+              :data="detail.tasks"
+              class="task-table"
+              width="100%"
+              border
+              row-key="task_id"
+              @selection-change="handleTaskSelectionChange"
+            >
               <el-table-column
                 prop="task_id"
                 label="物件单号"
-                min-width="200"
+                width="200"
                 align="center"
               >
                 <template slot-scope="scope">
@@ -148,7 +234,6 @@
               </el-table-column>
               <el-table-column
                 prop="order_id"
-                min-width="200"
                 label="订单号"
                 align="center"
                 show-overflow-tooltip
@@ -176,7 +261,7 @@
               <el-table-column
                 label="物件品类"
                 align="center"
-                min-width="150"
+                width="150"
                 show-overflow-tooltip
               >
                 <template slot-scope="scope">
@@ -186,18 +271,14 @@
               <el-table-column
                 prop="deliver_date"
                 label="交付日期"
-                min-width="200"
-                align="center"
-              />
-              <el-table-column
-                prop="work_unit"
-                label="工作单位"
+                width="200"
                 align="center"
               />
               <el-table-column prop="work_num" label="数量" align="center" />
+              <el-table-column prop="work_unit" label="单位" align="center" />
               <el-table-column prop="work_price" label="单价" align="center" />
               <el-table-column prop="work_amount" label="总价" align="center" />
-              <!-- <el-table-column
+              <el-table-column
                 label="作品"
                 align="center"
                 min-width="100"
@@ -208,132 +289,84 @@
                     type="primary"
                     size="mini"
                     plain
-                    @click="handleDownloadWork(scope.row, scope.$index, $index)"
+                    @click="handleDownloadWork(scope.row, scope.$index)"
                   >
                     下载
                   </el-button>
                 </template>
-              </el-table-column> -->
+              </el-table-column>
             </el-table>
+            <div class="actions">
+              <el-button
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-zhihuan"
+                size="mini"
+                plain
+              >
+                申请用印
+              </el-button>
+              <el-button
+                v-if="detail.invoice_file"
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-search"
+                size="mini"
+                plain
+                @click.stop="handleShowBill()"
+              >
+                查看发票
+              </el-button>
+              <el-button
+                v-if="[0, 1, 3].indexOf(detail.statement_status) >= 0"
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-document"
+                size="mini"
+                plain
+                @click.stop="handleUploadReconcile()"
+              >
+                上传对账单
+              </el-button>
+              <el-button
+                v-if="[0].indexOf(detail.statement_status) >= 0"
+                v-permission="[0]"
+                type="primary"
+                icon="el-icon-document"
+                size="mini"
+                @click.stop="handleUploadBill(false)"
+              >
+                申请结算
+              </el-button>
+            </div>
           </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="对账单号" align="left" min-width="150">
-        <template slot-scope="{ row }">
-          <div class="pending-box">
-            <span class="txt">{{ row.statement_id }}</span>
-            <span v-if="row.pending > 0" class="tag" />
+          <div
+            v-if="detail.demand && detail.demand.supplier_files.length > 0"
+            class="download-content"
+          >
+            <div class="title">
+              <i class="el-icon-s-management" />
+              <span>下载附件</span>
+            </div>
+            <div class="files">
+              <div
+                v-for="(file, fileIndex) in detail.demand.supplier_files"
+                :key="fileIndex"
+                class="file-item"
+              >
+                <div class="file-name">{{ file.name }}</div>
+                <el-button
+                  type="primary"
+                  size="mini"
+                  plain
+                  @click="downLoadContract(file.name, file.url)"
+                >下载</el-button>
+              </div>
+            </div>
           </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="项目名称" align="center" min-width="150">
-        <template slot-scope="{ row }">
-          {{ row.project.project_name }}
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="供应商"
-        align="center"
-        min-width="150"
-        show-overflow-tooltip
-      >
-        <template slot-scope="{ row }">
-          {{ row.supplier.name }}
-        </template>
-      </el-table-column>
-      <el-table-column label="物件数量" align="center" min-width="100">
-        <template slot-scope="{ row }">
-          {{ row.nums }}
-        </template>
-      </el-table-column>
-      <el-table-column label="工作总量" align="center" min-width="100">
-        <template slot-scope="{ row }">
-          {{ row.work_num }}
-        </template>
-      </el-table-column>
-      <el-table-column label="总金额" align="center" min-width="100">
-        <template slot-scope="{ row }">
-          {{ row.work_amount }}
-        </template>
-      </el-table-column>
-      <el-table-column label="停留时间" align="center" min-width="100">
-        <template slot-scope="{ row }"> {{ row.stay_time }}小时 </template>
-      </el-table-column>
-      <el-table-column
-        label="当前处理人"
-        align="center"
-        min-width="100"
-        show-overflow-tooltip
-      >
-        <template slot-scope="{ row }">
-          {{ row.current_operator }}
-        </template>
-      </el-table-column>
-      <el-table-column label="订单状态" align="center" min-width="100">
-        <template slot-scope="{ row }">
-          {{ row.statement_status | statusText }}
-        </template>
-      </el-table-column>
-      <!-- <el-table-column
-        label="操作"
-        align="center"
-        min-width="250"
-        class-name="small-padding fixed-width"
-      >
-        <template slot-scope="{ row, $index }">
-          <el-button
-            v-if="[0, 1, 3].indexOf(row.statement_status) >= 0"
-            v-permission="[3]"
-            type="primary"
-            size="mini"
-            plain
-            @click.stop="handleUploadReconcile(row)"
-          >
-            上传对账单
-          </el-button>
-          <el-button
-            v-if="[0].indexOf(row.statement_status) >= 0"
-            v-permission="[0]"
-            type="primary"
-            size="mini"
-            plain
-            @click.stop="handleUploadBill(row)"
-          >
-            申请结算
-          </el-button>
-          <el-button
-            v-if="row.bill_file"
-            v-permission="[3]"
-            type="primary"
-            size="mini"
-            plain
-            @click.stop="handleShowReconcile(row)"
-          >
-            查看对账单
-          </el-button>
-          <el-button
-            v-if="row.invoice_file"
-            v-permission="[3]"
-            type="primary"
-            size="mini"
-            plain
-            @click.stop="handleShowBill(row)"
-          >
-            查看发票
-          </el-button>
-        </template>
-      </el-table-column> -->
-    </el-table>
-
-    <!--分页-->
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="listQuery.page"
-      :limit.sync="listQuery.page_num"
-      @pagination="getList"
-    />
-
+        </div>
+      </div>
+    </div>
     <!--申请变更-->
     <el-dialog
       :title="textMap[dialogStatus]"
@@ -361,7 +394,7 @@
         <el-form-item label="数量:" prop="work_num">
           <el-input
             v-model="tempModify.work_num"
-            placeholder="请输入变更数量"
+            placeholder="请输入变更后的数量"
             class="dialog-form-item"
           />
         </el-form-item>
@@ -459,7 +492,7 @@
       >
         <el-form-item label="对账单" prop="bill_file">
           <el-upload
-            :action="`${$baseUrl}/api/tools/upfile`"
+            :action="`${$baseUrl}api/tools/upfile`"
             :on-success="handleAddReconcileFileSucc"
             :on-remove="handleReconcileFileChange"
             :file-list="reconcileFileList"
@@ -495,7 +528,7 @@
         <el-form-item label="发票图片" prop="invoice_file">
           <el-upload
             class="bill-image-uploader"
-            :action="`${$baseUrl}/api/tools/upfile`"
+            :action="`${$baseUrl}api/tools/upfile`"
             :show-file-list="false"
             :on-success="handleInvoiceImageSuccess"
             :on-change="handleInvoiceImageChange"
@@ -575,10 +608,10 @@
     </el-dialog>
   </div>
 </template>
-
 <script>
 import {
   fetchReconcileOrderList,
+  fetchReconcileDetail,
   uploadBillData,
   uploadInvoiceData,
   submitStatement,
@@ -592,11 +625,43 @@ import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
-
+const tagList = [
+  { id: 0, name: '正式包' },
+  { id: 1, name: '测试包' },
+  { id: 2, name: '外派' },
+  { id: 3, name: '动态团队' }
+]
 export default {
   components: { Pagination, ElImageViewer, TaskDetail },
   directives: { waves, permission },
   filters: {
+    demandTagText(tag) {
+      let text = tag
+      tagList.some((tagItem) => {
+        if (tagItem.id === parseInt(tag)) {
+          text = tagItem.name
+          return true
+        }
+        return false
+      })
+      return text
+    },
+    demandStatusText(status) {
+      const statusMap = {
+        0: '待提报',
+        1: '审核中',
+        2: '审核未通过',
+        3: '待分配供应商',
+        4: '待填写物件',
+        5: '物件审核中',
+        6: '物件审核未通过',
+        7: '待生成订单',
+        8: '订单待审核',
+        9: '订单审核未通过',
+        10: '已生成订单'
+      }
+      return statusMap[status]
+    },
     categoryText(category) {
       if (!category) {
         return '-'
@@ -629,6 +694,7 @@ export default {
       expandRowKeys: [],
       total: 0,
       list: [],
+      multipleSelection: [],
       listLoading: true,
       listQuery: {
         statement_id: '',
@@ -638,8 +704,13 @@ export default {
         tag: '',
         page: 1,
         page_num: 10,
-        all: true
+        keyword: ''
       },
+      detail: {},
+      detailIndex: 0,
+      multipleTaskSelection: [],
+      detailLoading: false,
+      detailLoaded: false,
       textMap: {
         resolve: '通过',
         reject: '驳回',
@@ -711,82 +782,51 @@ export default {
       modifyRules: {}
     }
   },
+  computed: {
+    showHeader: function() {
+      const hiddenPaths = [
+        '/pending/gg/assign/vendor',
+        '/pending/xmz/demand/draft',
+        '/pending/gg/demand/draft'
+      ]
+      return hiddenPaths.indexOf(this.$route.path) < 0
+    },
+    showTaskCheckRow: function() {
+      const hiddenTaskCheckRowPaths = [
+        '/pending/gys/demand/quote',
+        '/pending/xmz/demand/review',
+        '/pending/gg/order/prepare',
+        '/pending/ggfzr/order/approval'
+      ]
+      return hiddenTaskCheckRowPaths.indexOf(this.$route.path) < 0
+    },
+    showTaskActionRow: function() {
+      const hiddenTaskActionRowPaths = [
+        '/pending/xmz/demand/review',
+        '/pending/gg/order/prepare',
+        '/pending/ggfzr/order/approval'
+      ]
+      return hiddenTaskActionRowPaths.indexOf(this.$route.path) < 0
+    }
+  },
   created() {
     this.getList()
   },
+  mounted() {
+    this.$bus.$on('navSearch', (keyword) => {
+      this.listQuery = Object.assign({}, this.listQuery, { keyword })
+      this.getList(false)
+    })
+  },
+  beforeDestroy() {
+    this.$bus.$off('navSearch')
+  },
   methods: {
-    expandChange(row, expandedRows) {
-      this.expandRowKeys = expandedRows.map((row) => {
-        return row.statement_id
-      })
-    },
-    clickRowHandle(row, column, event) {
-      if (this.expandRowKeys.includes(row.statement_id)) {
-        this.expandRowKeys = this.expandRowKeys.filter(
-          (val) => val !== row.statement_id
-        )
-      } else {
-        this.expandRowKeys.push(row.statement_id)
-      }
-    },
-    /**
-     * 全选所有
-     */
-    clickCheckAll(item) {
-      this.list = this.list.map((val) => {
-        val.checked = this.globelCheckedAll
-        val.tasks = val.tasks.map((i) => {
-          i.checked = this.globelCheckedAll
-          return i
-        })
-        return val
-      })
-      this.updateCheckedAllBtnStatus()
-    },
-    /**
-     * 手动更改全选按钮的状态
-     */
-    updateCheckedAllBtnStatus(value) {
-      this.list = JSON.parse(JSON.stringify(this.list))
-    },
-    /**
-     * 每行选择事件
-     */
     handleSelectionChange(val) {
-      val.tasks = val.tasks.map((i) => {
-        i.checked = val.checked
-        return i
-      })
-      if (val.checked) {
-        const globelCheckedAll = this.list.every((v) => v.checked)
-        if (globelCheckedAll) {
-          this.globelCheckedAll = true
-        }
-      } else {
-        this.globelCheckedAll = false
-      }
-      this.updateCheckedAllBtnStatus()
+      this.multipleSelection = val
     },
-    /**
-     * 每个小项选择事件-单选
-     */
-    clickCheckItemFn(row, item) {
-      // 如果是选了勾选
-      if (item.checked) {
-        // 检查是否所有数据都手动勾选了
-        const isAllChecked = row.tasks.every((v) => v.checked)
-        if (isAllChecked) {
-          row.checked = true
-          const globelCheckedAll = this.list.every((v) => v.checked)
-          if (globelCheckedAll) {
-            this.globelCheckedAll = true
-          }
-        }
-      } else {
-        row.checked = false
-        this.globelCheckedAll = false
-      }
-      this.updateCheckedAllBtnStatus()
+    handleTaskSelectionChange(val) {
+      this.multipleTaskSelection = val
     },
     /**
      * 获取需求列表
@@ -800,33 +840,12 @@ export default {
         .then((response) => {
           this.listLoading = false
           this.total = response.data.total
-          let list = response.data.list
-          if (this.$store.getters.pendings['/order/reconcile']) {
-            const pendings =
-              this.$store.getters.pendings['/order/reconcile'].children
-            list = response.data.list.map((listItem) => {
-              listItem.pending = pendings[listItem.statement_id] || 0
-              // 是否已选中
-              const orderIndex = this.list.findIndex(
-                (orderItem) => orderItem.statement_id === listItem.statement_id
-              )
-              if (orderIndex >= 0) {
-                listItem.checked = this.list[orderIndex].checked === true
-                listItem.tasks = listItem.tasks.map((child) => {
-                  const taskIndex = this.list[orderIndex].tasks.findIndex(
-                    (taskItem) => taskItem.task_id === child.task_id
-                  )
-                  if (taskIndex >= 0) {
-                    child.checked =
-                      this.list[orderIndex].tasks[taskIndex].checked === true
-                  }
-                  return child
-                })
-              }
-              return listItem
-            })
-          }
+          const list = response.data.list
           this.list = list
+          this.$nextTick(() => {
+            this.$refs.listTable.setCurrentRow(this.list[this.detailIndex])
+            this.handleDetail()
+          })
         })
         .catch((error) => {
           console.log(error)
@@ -840,57 +859,71 @@ export default {
       this.listQuery.page = 1
       this.getList()
     },
-    /**
-     * 展开
-     */
-    handleExpand(isExpand) {
-      if (isExpand) {
-        this.list.forEach((listItem) => {
-          if (listItem.checked) {
-            if (this.expandRowKeys.indexOf(listItem.statement_id) < 0) {
-              this.expandRowKeys.push(listItem.statement_id)
-            }
-          }
-        })
-      } else {
-        this.list.forEach((listItem) => {
-          if (listItem.checked) {
-            const keyIndex = this.expandRowKeys.indexOf(listItem.statement_id)
-            if (keyIndex >= 0) {
-              this.expandRowKeys.splice(keyIndex, 1)
-            }
-          }
-        })
+    handleCurrentChange(row, column, event) {
+      const index = this.list.findIndex(
+        (item) => item.statement_id === row.statement_id
+      )
+      if (index >= 0) {
+        this.detailIndex = index
+        this.handleDetail()
       }
+    },
+    /**
+     * 需求详情
+     */
+    async handleDetail() {
+      if (!this.list[this.detailIndex]) {
+        this.detailLoading = false
+        this.detailLoaded = true
+        this.detail = {}
+        return false
+      }
+      this.detailLoading = true
+      this.detailLoaded = false
+      const detailData = await fetchReconcileDetail({
+        statement_id: this.list[this.detailIndex].statement_id
+      }).catch((_error) => {})
+
+      this.detailLoading = false
+      this.detailLoaded = true
+      this.detail = Object.assign({}, this.detail, detailData.data)
     },
     /**
      * 通过驳回弹窗
      */
-    handleVerify(pass) {
+    handleVerify(pass, multi = true) {
       const checkeds = []
-      if (
-        !this.list.some((listItem) => {
-          if (listItem.checked) {
-            if ([1].indexOf(listItem.statement_status) < 0) {
-              const errorName =
-                pass === true
-                  ? `[${listItem.statement_id}] 该对账单的状态，无法提交`
-                  : `[${listItem.statement_id}] 该对账单的状态，无法驳回`
-              this.$message.error(errorName)
-              return true
-            }
-            checkeds.push(listItem.statement_id)
-            return false
+
+      if (multi) {
+        if (this.multipleSelection.length <= 0) {
+          this.$message.error('请先选择结算单')
+          return false
+        }
+        const result = this.multipleSelection.some((listItem) => {
+          if ([1].indexOf(listItem.statement_status) < 0) {
+            const errorName =
+              pass === true
+                ? `[${listItem.statement_id}] 该对账单的状态，无法提交`
+                : `[${listItem.statement_id}] 该对账单的状态，无法驳回`
+            this.$message.error(errorName)
+            return true
           }
+          checkeds.push(listItem.statement_id)
           return false
         })
-      ) {
-        if (checkeds.length <= 0) {
-          this.$message.error('请先选择对账单')
+        if (result) {
           return false
         }
       } else {
-        return false
+        if ([1].indexOf(this.detail.statement_status) < 0) {
+          const errorName =
+            pass === true
+              ? `[${this.detail.statement_id}] 该对账单的状态，无法提交`
+              : `[${this.detail.statement_id}] 该对账单的状态，无法驳回`
+          this.$message.error(errorName)
+          return false
+        }
+        checkeds.push(listItem.statement_id)
       }
 
       this.dialogStatus = pass === true ? 'resolve' : 'reject'
@@ -900,23 +933,26 @@ export default {
         if (this.verifyRules.reason) {
           delete this.verifyRules.reason
         }
+        this.$confirm('确定通过?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+          .then(() => {
+            this.doVerify()
+          })
+          .catch(() => {})
       } else {
         this.verifyRules = Object.assign({}, this.verifyRules, {
           reason: [
             { required: true, message: '请输入驳回原因', trigger: 'blur' }
           ]
         })
+        this.dialogVerifyVisible = true
+        this.$nextTick(() => {
+          this.$refs['verifyDataForm'].clearValidate()
+        })
       }
-
-      if (pass === true) {
-        this.doVerify()
-        return true
-      }
-
-      this.dialogVerifyVisible = true
-      this.$nextTick(() => {
-        this.$refs['verifyDataForm'].clearValidate()
-      })
     },
     /**
      * 通过申请弹窗
@@ -933,20 +969,7 @@ export default {
       const func = tempData.status ? submitStatement : rejectStatement
       func({ statement_id: tempData.statement_id, reason: tempData.reason })
         .then(async(response) => {
-          // tempData.statement_id.forEach(checkedStatementId => {
-          //   const listIndex = this.list.findIndex(listItem => listItem.statement_id === checkedStatementId)
-          //   const dataIndex = response.data.findIndex(dataItem => dataItem.statement_id === checkedStatementId)
-          //   if (listIndex >= 0 && dataIndex >= 0) {
-          //     this.$set(this.list[listIndex], 'statement_status', response.data[dataIndex].statement_status)
-          //     this.$set(this.list[listIndex], 'current_operator', response.data[dataIndex].current_operator)
-          //   }
-          // })
-          this.$notify({
-            title: '成功',
-            message: '处理成功',
-            type: 'success',
-            duration: 2000
-          })
+          this.$message.success('处理成功')
           this.dialogVerifyVisible = false
           await this.$store.dispatch('user/getPending')
           this.getList(false)
@@ -967,7 +990,7 @@ export default {
     /**
      * 下载作品
      */
-    handleDownloadWork(task, taskIndex, demandIndex) {
+    handleDownloadWork(task, taskIndex) {
       if (task.finished_product.length > 0) {
         task.finished_product.forEach((product) => {
           downloadFile({ url: product.url })
@@ -981,9 +1004,9 @@ export default {
     /**
      * 上传对账单弹窗
      */
-    handleUploadReconcile(reconcile) {
+    handleUploadReconcile() {
       this.tempReconcile = Object.assign({}, this.tempReconcile, {
-        statement_id: reconcile.statement_id,
+        statement_id: this.detail.statement_id,
         file: ''
       })
       this.dialogStatus = 'reconcile'
@@ -1023,12 +1046,7 @@ export default {
               this.$set(this.list[index], 'bill_file', temp.bill_file_url)
             }
             this.dialogReconcileVisible = false
-            this.$notify({
-              title: '成功',
-              message: '上传成功',
-              type: 'success',
-              duration: 2000
-            })
+            this.$message.success('上传成功')
           })
         }
       })
@@ -1036,9 +1054,38 @@ export default {
     /**
      * 上传发票弹窗
      */
-    handleUploadBill(reconcile) {
+    handleUploadBill(multi = true) {
+      const statement_id = []
+
+      if (multi) {
+        if (this.multipleSelection.length <= 0) {
+          this.$message.error('请先选择结算单')
+          return false
+        }
+
+        const result = this.multipleSelection.some((listItem) => {
+          if ([0].indexOf(listItem.statement_status) < 0) {
+            const errorName = `[${listItem.statement_id}] 该对账单的状态，无法申请`
+            this.$message.error(errorName)
+            return true
+          }
+          statement_id.push(listItem.statement_id)
+          return false
+        })
+        if (result) {
+          return false
+        }
+      } else {
+        if ([0].indexOf(this.detail.statement_status) < 0) {
+          const errorName = `[${this.detail.statement_id}] 该对账单的状态，无法申请`
+          this.$message.error(errorName)
+          return false
+        }
+        statement_id.push(this.detail.statement_id)
+      }
+
       this.tempBill = Object.assign({}, this.tempBill, {
-        statement_id: reconcile.statement_id,
+        statement_id: statement_id,
         invoice_file: '',
         invoice_serial: '',
         invoice_type: '',
@@ -1078,20 +1125,8 @@ export default {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempBill))
           uploadInvoiceData(temp).then(async(response) => {
-            // const index = this.list.findIndex(listItem => listItem.statement_id === temp.statement_id)
-            // if (index >= 0) {
-            //   const { statement_status, current_operator } = response.data
-            //   this.$set(this.list[index], 'statement_status', statement_status)
-            //   this.$set(this.list[index], 'current_operator', current_operator)
-            //   this.$set(this.list[index], 'invoice_file', temp.invoice_file_url)
-            // }
             this.dialogBillVisible = false
-            this.$notify({
-              title: '成功',
-              message: '上传成功',
-              type: 'success',
-              duration: 2000
-            })
+            this.$message.success('上传成功')
             await this.$store.dispatch('user/getPending')
             this.getList(false)
           })
@@ -1118,12 +1153,7 @@ export default {
     confirmModify() {
       this.$refs['modifyDataForm'].validate((valid) => {
         if (valid) {
-          this.$notify({
-            title: '成功',
-            message: '申请成功',
-            type: 'success',
-            duration: 2000
-          })
+          this.$message.success('申请成功')
           this.dialogModifyVisible = false
         }
       })
@@ -1141,33 +1171,30 @@ export default {
     /**
      * 查看发票
      */
-    handleShowBill(row) {
-      // this.$set(this.list[index], 'showViewer', true)
-      // if (!row.invoice_file) {
-      //   this.$message.error('还未上传发票')
-      //   return false
-      // }
-      // previewFile('发票', row.invoice_file)
+    handleShowBill() {
       this.tempBill = Object.assign({}, this.tempBill, {
-        statement_id: row.statement_id,
-        invoice_file_url: row.invoice_file || '',
-        invoice_serial: row.invoice_serial || '',
-        invoice_type: row.invoice_type || 0,
-        invoice_date: row.invoice_date || '',
-        invoice_code: row.invoice_code || '',
-        invoice_number: row.invoice_number || '',
-        invoice_amount: row.invoice_amount || ''
+        statement_id: this.detail.statement_id,
+        invoice_file_url: this.detail.invoice_file || '',
+        invoice_serial: this.detail.invoice_serial || '',
+        invoice_type: this.detail.invoice_type || 0,
+        invoice_date: this.detail.invoice_date || '',
+        invoice_code: this.detail.invoice_code || '',
+        invoice_number: this.detail.invoice_number || '',
+        invoice_amount: this.detail.invoice_amount || ''
       })
       this.dialogStatus = 'bill_show'
       this.dialogBillVisible = true
+    },
+    downLoadContract(fileName, filePath) {
+      downloadFile({ url: filePath })
+        .then((response) => {
+          downloadFileStream(baseName(filePath), response)
+        })
+        .catch((_error) => {})
     }
-    // closeViewer(index) {
-    //   this.$set(this.list[index], 'showViewer', false)
-    // }
   }
 }
 </script>
-
 <style lang="scss" scoped>
 %flex-center {
   display: flex;
@@ -1180,41 +1207,131 @@ export default {
   align-items: center;
 }
 .app-container {
-  .filter-container {
-    margin-bottom: 10px;
-    @extend %flex-space-between;
-    align-items: flex-end;
-    .filter-left {
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      flex-wrap: wrap;
-      .filter-item {
-        width: 15%;
-        margin: 0 10px 10px 0;
+  height: calc(100vh - 50px);
+  .lucien-row {
+    height: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    .lucien-col {
+      height: 100%;
+      &.col-left {
+        min-width: 300px;
+        width: 350px;
+        flex: none;
+        resize: horizontal;
+        overflow: auto;
       }
-      .filter-btn {
-        margin: 0 10px 10px 0;
+      &.col-right {
+        flex: auto;
+        width: 500px;
       }
-    }
-    .filter-right {
-      display: flex;
-      flex-wrap: nowrap;
     }
   }
   .list-container {
-    .pending-box {
+    height: 100%;
+    background: #eef1f6;
+    .item-box {
       display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      .tag {
-        margin-left: 10px;
-        height: 8px;
-        width: 8px;
-        border-radius: 50%;
-        background-color: #f56c6c;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      .item-no,
+      .item-name {
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
+  }
+  .detail-container {
+    height: 100%;
+    overflow-y: scroll;
+    padding: 0 20px;
+    box-sizing: border-box;
+    .title {
+      span {
+        margin-left: 10px;
+      }
+    }
+    .info-content {
+      .description {
+        margin-top: 10px;
+      }
+      .actions {
+        margin-top: 20px;
+      }
+    }
+    .task-content {
+      margin-top: 50px;
+      .task-table {
+        margin-top: 20px;
+      }
+      .actions {
+        margin-top: 20px;
+      }
+    }
+    .download-content {
+      margin-top: 50px;
+      .files {
+        margin: 20px 0;
+        .file-item {
+          width: 50%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          &:not(:last-child) {
+            margin-bottom: 10px;
+          }
+          .file-name {
+            font-size: 14px;
+            color: #606266;
+          }
+        }
+      }
+    }
+  }
+  ::v-deep .list-container .el-table-column--selection .cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  ::v-deep .list-table {
+    background: #eef1f6;
+    .el-table__header th.el-table__cell.is-leaf {
+      height: 60px;
+      border-bottom: 1px solid rgb(221, 221, 221);
+    }
+    .el-table__body .el-table__row {
+      background: #eef1f6;
+      &:hover > td {
+        background-color: #ffffff !important;
+      }
+      &.cuttent-row > td {
+        background-color: #ffffff !important;
+      }
+      td.el-table__cell {
+        border-bottom: 1px solid rgb(221, 221, 221);
+      }
+    }
+    tr.current-row > td.el-table__cell {
+      background-color: #ffffff;
+    }
+  }
+  ::v-deep .detail-container .el-table.table-info th {
+    background: #409eff !important;
+    color: #ffffff;
+  }
+  ::v-deep .el-icon-my-prohibit {
+    background: url("../../assets/icon/prohibit.png") center no-repeat;
+    font-size: 10px;
+    background-size: 10px;
+  }
+  ::v-deep .el-icon-my-prohibit:before {
+    content: "替";
+    font-size: 10px;
+    visibility: hidden;
   }
 }
 .dialog-form {
@@ -1260,24 +1377,6 @@ export default {
       width: 178px;
       height: 178px;
       display: block;
-    }
-  }
-}
-.task-detail-dialog {
-  .task-detail-title {
-    margin-top: 20px;
-  }
-  .plan-box,
-  .file-box {
-    .plan-item,
-    .file-item {
-      width: 50%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      &:not(:last-child) {
-        margin-bottom: 10px;
-      }
     }
   }
 }

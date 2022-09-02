@@ -8,6 +8,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 import ElSelectTree from 'el-select-tree'
 
 import '@/styles/index.scss' // global css
+import './assets/font/iconfont.css'
 
 import App from './App'
 import store from './store'
@@ -43,5 +44,8 @@ new Vue({
   el: '#app',
   router,
   store,
+  beforeCreate() {
+    Vue.prototype.$bus = this
+  },
   render: (h) => h(App)
 })

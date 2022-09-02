@@ -1,161 +1,231 @@
 <template>
   <div class="app-container">
-    <!--筛选-->
-    <div class="filter-container">
-      <div class="filter-left">
-        <el-input
-          v-model="listQuery.order_id"
-          placeholder="输入订单号"
-          style="width: 200px"
-          class="filter-item"
-          size="mini"
-          @keyup.enter.native="handleFilter"
-        />
-        <el-input
-          v-model="listQuery.task_id"
-          placeholder="输入物件单号"
-          style="width: 200px"
-          class="filter-item"
-          size="mini"
-          @keyup.enter.native="handleFilter"
-        />
-        <el-input
-          v-model="listQuery.project_name"
-          placeholder="输入项目名称"
-          style="width: 200px"
-          class="filter-item"
-          size="mini"
-          @keyup.enter.native="handleFilter"
-        />
-        <el-input
-          v-model="listQuery.supplier_name"
-          placeholder="输入供应商名称"
-          style="width: 200px"
-          class="filter-item"
-          size="mini"
-          @keyup.enter.native="handleFilter"
-        />
-
-        <el-button
-          v-waves
-          class="filter-item"
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleFilter"
-        >
-          搜索
-        </el-button>
-      </div>
-      <div class="filter-right">
-        <el-button
-          class="filter-item"
-          style="margin-left: 10px"
-          type="primary"
-          size="mini"
-          @click="handleExpand(true)"
-        >
-          展开
-        </el-button>
-        <el-button
-          class="filter-item"
-          style="margin-left: 10px"
-          type="primary"
-          size="mini"
-          @click="handleExpand(false)"
-        >
-          收起
-        </el-button>
-        <!-- <el-popconfirm
-          v-permission="[0]"
-          title="确定申请变更吗？"
-          @confirm="handleModify"
-        >
-          <el-button
-            slot="reference"
-            class="filter-item"
-            style="margin-left: 10px"
-            type="primary"
-            size="mini"
+    <div class="lucien-row">
+      <div
+        v-loading="listLoading"
+        element-loading-text="拼命加载中"
+        element-loading-spinner="el-icon-loading"
+        element-loading-background="rgba(237, 244, 253, 0.8)"
+        class="lucien-col col-left"
+      >
+        <div class="grid-content list-container">
+          <el-table
+            ref="listTable"
+            :data="list"
+            style="width: 100%"
+            height="100%"
+            class="list-table"
+            highlight-current-row
+            row-key="order_id"
+            :show-header="showHeader"
+            @selection-change="handleSelectionChange"
+            @row-click="handleCurrentChange"
           >
-            申请变更
-          </el-button>
-        </el-popconfirm>
-
-        <el-popconfirm
-          v-permission="[0]"
-          title="确定交付验收吗？"
-          @confirm="handleDeliver"
-        ><el-button
-          slot="reference"
-          class="filter-item"
-          style="margin-left: 10px"
-          type="primary"
-          size="mini"
-        >
-          交付验收
-        </el-button></el-popconfirm> -->
-      </div>
-    </div>
-
-    <!--列表-->
-    <el-table
-      v-loading="listLoading"
-      element-loading-text="拼命加载中"
-      element-loading-spinner="el-icon-loading"
-      element-loading-background="rgba(237, 244, 253, 0.8)"
-      class="list-container"
-      :data="list"
-      fit
-      highlight-current-row
-      row-key="order_id"
-      :expand-row-keys="expandRowKeys"
-      @expand-change="expandChange"
-      @row-click="clickRowHandle"
-    >
-      <el-table-column width="50" align="center">
-        <div slot="header" slot-scope="scope">
-          <el-checkbox
-            v-model="globelCheckedAll"
-            @change="clickCheckAll(scope)"
-          />
+            <el-table-column type="selection" width="50" />
+            <el-table-column>
+              <template slot="header">
+                <el-button
+                  type="primary"
+                  size="mini"
+                  @click="handleDeliver(true)"
+                >
+                  交付验收
+                </el-button>
+              </template>
+              <template slot-scope="scope">
+                <div class="item-box">
+                  <span class="item-no">{{ scope.row.order_id }}</span>
+                  <span v-if="scope.row.supplier" class="item-supplier">{{
+                    scope.row.supplier.name
+                  }}</span>
+                  <span class="item-name">{{ scope.row.demand.name }}</span>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
         </div>
-        <template slot-scope="scope">
-          <el-checkbox
-            v-model="scope.row.checked"
-            @change="handleSelectionChange(scope.row)"
-          />
-        </template>
-      </el-table-column>
-      <el-table-column type="expand" width="20">
-        <template slot-scope="{ row, $index }">
-          <div class="expand-table-box">
-            <el-table class="task-list" border :data="row.tasks" fit stripe>
-              <el-table-column label="" width="50" align="center">
+      </div>
+      <div
+        v-loading="detailLoading"
+        class="lucien-col col-right"
+        element-loading-text="拼命加载中"
+        element-loading-spinner="el-icon-loading"
+        element-loading-background="rgba(237, 244, 253, 0.8)"
+      >
+        <div v-if="detailLoaded" class="grid-content detail-container">
+          <div class="info-content">
+            <div class="title">
+              <i class="el-icon-s-management" />
+              <span>需求状态预览</span>
+            </div>
+            <el-divider />
+            <div v-if="detail.demand" class="description">
+              <el-descriptions
+                class="margin-top"
+                :column="4"
+                :label-style="{
+                  'font-weight': 'bold',
+                  'align-items': 'center',
+                }"
+              >
+                <el-descriptions-item label="项目代码">{{
+                  detail.demand.project
+                    ? detail.demand.project.project_name
+                    : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item label="发起部门">{{
+                  detail.demand.flow ? detail.demand.flow.launch_dep.name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item label="核算部门">{{
+                  detail.demand.flow ? detail.demand.flow.account_dep.name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item label="经费使用">
+                  {{
+                    detail.demand.project
+                      ? detail.demand.project.budget_used
+                      : 0
+                  }}/{{
+                    detail.demand.project
+                      ? detail.demand.project.budget_cost
+                      : 0
+                  }}
+                </el-descriptions-item>
+                <el-descriptions-item label="需求创建人">{{
+                  detail.demand.creator ? detail.demand.creator.name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item label="创建时间" span="3">{{
+                  detail.demand.created_at
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求名称" span="3">
+                  <span>{{ detail.demand.name }}</span>
+                  <el-tag size="mini" style="margin-left: 10px">{{
+                    detail.demand.tag | tagText
+                  }}</el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item label="需求单号">{{
+                  detail.demand.demand_id
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求状态" span="4">{{
+                  detail.demand.status | statusText
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求说明" span="4">{{
+                  detail.demand.introduce
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求品类" span="4">{{
+                  detail.demand.category | categoryText
+                }}</el-descriptions-item>
+                <!-- <el-descriptions-item label="需求附件" span="6">
+                  <div class="file-box" style="width: 50%">
+                    <div
+                      v-for="(file, fileIndex) in detail.files"
+                      :key="fileIndex"
+                      class="file-item"
+                    >
+                      <div class="file-name">{{ file.name }}</div>
+                      <el-button
+                        type="primary"
+                        size="mini"
+                        plain
+                        @click="downLoadContract(file.name, file.url)"
+                      >下载</el-button>
+                    </div>
+                  </div>
+                </el-descriptions-item> -->
+                <el-descriptions-item label="意向供应商" span="4">{{
+                  detail.demand.supplier ? detail.demand.supplier.name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item label="备注说明" span="4">{{
+                  detail.demand.remark
+                }}</el-descriptions-item>
+              </el-descriptions>
+            </div>
+            <el-table :data="[detail]" class="table-info" width="100%" border>
+              <el-table-column label="订单号" align="center">
                 <template slot-scope="scope">
-                  <el-checkbox
-                    v-model="scope.row.checked"
-                    :disabled="[0, 4].indexOf(scope.row.task_status) < 0"
-                    @change="clickCheckItemFn(row, scope.row)"
-                  />
+                  {{ scope.row.order_id }}
+                </template>
+              </el-table-column>
+              <el-table-column label="项目名称" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.demand.project.project_name }}
                 </template>
               </el-table-column>
               <el-table-column
+                label="需求名称"
+                align="center"
+                show-overflow-tooltip
+              >
+                <template slot-scope="scope">
+                  {{ scope.row.demand.name }}
+                </template>
+              </el-table-column>
+              <el-table-column
+                label="供应商"
+                align="center"
+                show-overflow-tooltip
+              >
+                <template slot-scope="scope">
+                  {{ scope.row.demand.supplier.name }}
+                </template>
+              </el-table-column>
+              <el-table-column label="供管" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.supplier_management }}
+                </template>
+              </el-table-column>
+              <el-table-column label="物件数量" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.nums }}
+                </template>
+              </el-table-column>
+              <el-table-column label="工作总量" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.work_num }}
+                </template>
+              </el-table-column>
+              <el-table-column label="总金额" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.work_amount }}
+                </template>
+              </el-table-column>
+            </el-table>
+            <div class="actions" />
+          </div>
+          <el-divider />
+          <div
+            v-if="
+              (detail.tasks && detail.tasks.length > 0) || detail.status >= 4
+            "
+            class="task-content"
+          >
+            <div class="title">
+              <i class="el-icon-s-management" />
+              <span>物件明细</span>
+            </div>
+            <el-table
+              :data="detail.tasks"
+              class="task-table"
+              width="100%"
+              border
+              row-key="task_id"
+              @selection-change="handleTaskSelectionChange"
+            >
+              <el-table-column
+                v-if="showTaskCheckRow"
+                type="selection"
+                width="50"
+              />
+              <el-table-column
                 prop="task_id"
                 label="物件单号"
-                min-width="150"
+                width="150"
                 align="center"
               >
                 <template slot-scope="scope">
                   <task-detail :task-id="scope.row.task_id" />
                 </template>
               </el-table-column>
-              <el-table-column
-                prop="task_image"
-                label="缩略图"
-                align="center"
-                min-width="80"
-              >
+              <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
                     style="width: 50px; height: 50px"
@@ -174,92 +244,41 @@
                 prop="task_name"
                 label="物件名称"
                 align="center"
-                min-width="100"
-                show-overflow-tooltip
+                :show-overflow-tooltip="true"
               />
-              <el-table-column
-                label="物件品类"
-                align="center"
-                min-width="150"
-                show-overflow-tooltip
-              >
-                <template slot-scope="scope">
-                  {{ scope.row.category | categoryText }}
-                </template>
-              </el-table-column>
               <el-table-column
                 prop="deliver_date"
                 label="交付日期"
-                min-width="180"
+                width="100"
                 align="center"
               />
+              <el-table-column prop="nums" label="数量" align="center" />
+              <el-table-column prop="unit" label="单位" align="center" />
+              <el-table-column prop="price" label="单价" align="center" />
+              <el-table-column prop="amount" label="总价" align="center" />
               <el-table-column
-                prop="unit"
-                label="工作单位"
-                min-width="80"
-                align="center"
-              />
-              <el-table-column
-                prop="nums"
-                label="数量"
-                min-width="80"
-                align="center"
-              />
-              <el-table-column
-                prop="price"
-                label="单价"
-                min-width="80"
-                align="center"
-              />
-              <el-table-column
-                prop="amount"
-                label="总价"
-                min-width="80"
-                align="center"
-              />
-              <el-table-column
+                prop="stay_time"
                 label="停留时间"
                 align="center"
+              />
+              <el-table-column
+                prop="dealing"
+                label="当前处理"
+                align="center"
                 show-overflow-tooltip
-              >
+              />
+              <el-table-column label="物件状态" align="center" min-width="100">
                 <template slot-scope="scope">
-                  {{ scope.row.stay_time }}小时
+                  <span>
+                    {{ scope.row.task_status | taskStatusText }}
+                  </span>
                 </template>
               </el-table-column>
               <el-table-column
-                label="当前处理人"
-                align="center"
-                min-width="120"
-                show-overflow-tooltip
-              >
-                <template slot-scope="scope">
-                  {{ scope.row.dealing }}
-                </template>
-              </el-table-column>
-              <el-table-column
-                prop="task_status"
-                label="物件状态"
-                min-width="100"
-                align="center"
-              >
-                <template slot-scope="scope">
-                  {{ scope.row.task_status | statusText }}
-                </template>
-              </el-table-column>
-              <!-- <el-table-column label="作品" align="center" width="80">
-                <el-button
-                  type="primary"
-                  size="mini"
-                  plain
-                  @click="handleDownloadWork(scope.row, scope.$index, $index)"
-                >
-                  下载
-                </el-button>
-              </el-table-column> -->
-              <!-- <el-table-column
+                v-if="showTaskActionRow"
                 label="操作"
                 align="center"
-                min-width="300"
+                min-width="310"
                 class-name="small-padding fixed-width need-flex"
               >
                 <template slot-scope="scope">
@@ -267,7 +286,7 @@
                     v-if="[0, 4].indexOf(scope.row.task_status) >= 0"
                     v-permission="[0]"
                     class="upload-box"
-                    :action="`${$baseUrl}/api/tools/upfile`"
+                    :action="`${$baseUrl}api/tools/upfile`"
                     :show-file-list="false"
                     multiple
                     :file-list="scope.row.finished_product"
@@ -277,7 +296,6 @@
                           response,
                           file,
                           fileList,
-                          $index,
                           scope.$index,
                           'finished_product'
                         )
@@ -296,7 +314,7 @@
                     size="mini"
                     style="margin-left: 10px"
                     plain
-                    @click="handleDownloadWork(scope.row, scope.$index, $index)"
+                    @click="handleDownloadWork(scope.row, scope.$index)"
                   >
                     下载作品
                   </el-button>
@@ -304,7 +322,7 @@
                     v-if="[0, 4].indexOf(scope.row.task_status) >= 0"
                     v-permission="[0]"
                     class="upload-box"
-                    :action="`/api/tools/upfile`"
+                    :action="`${$baseUrl}api/tools/upfile`"
                     :show-file-list="false"
                     style="margin-left: 10px"
                     :file-list="scope.row.display_area"
@@ -314,7 +332,6 @@
                           response,
                           file,
                           fileList,
-                          $index,
                           scope.$index,
                           'display_area'
                         )
@@ -350,123 +367,66 @@
                     终止原因
                   </el-button>
                 </template>
-              </el-table-column> -->
+              </el-table-column>
             </el-table>
+            <div class="actions">
+              <el-button
+                v-permission="[0]"
+                type="primary"
+                icon="el-icon-document-add"
+                size="mini"
+                plain
+                @click.stop="handleCreateTask()"
+              >
+                新增物件
+              </el-button>
+              <el-button
+                type="primary"
+                icon="el-icon-editor2b"
+                size="mini"
+                plain
+                @click="handleModify"
+              >
+                申请变更
+              </el-button>
+              <el-button
+                icon="el-icon-xiangmujiaofuziliucheng__xianxing__-01-01"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleDeliver(false)"
+              >
+                交付验收
+              </el-button>
+            </div>
           </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="订单号" align="left" min-width="200">
-        <template slot-scope="{ row }">
-          <div class="pending-box">
-            <span class="txt">{{ row.order_id }}</span>
-            <span v-if="row.pending > 0" class="tag">{{ row.pending }}</span>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="项目名称"
-        align="center"
-        min-width="150"
-        show-overflow-tooltip
-      >
-        <template slot-scope="{ row }">
-          {{ row.project.project_name }}
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="需求名称"
-        align="center"
-        min-width="150"
-        show-overflow-tooltip
-      >
-        <template slot-scope="{ row }">
-          {{ row.demand_name }}
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="供应商"
-        align="center"
-        min-width="200"
-        show-overflow-tooltip
-      >
-        <template slot-scope="{ row }">
-          {{ row.supplier.name }}
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="供管"
-        align="center"
-        min-width="150"
-        show-overflow-tooltip
-      >
-        <template slot-scope="{ row }">
-          {{ row.supplier_management }}
-        </template>
-      </el-table-column>
-      <el-table-column label="物件数量" align="center" min-width="80">
-        <template slot-scope="{ row }">
-          {{ row.nums }}
-        </template>
-      </el-table-column>
-      <el-table-column label="工作总量" align="center" min-width="80">
-        <template slot-scope="{ row }">
-          {{ row.work_num }}
-        </template>
-      </el-table-column>
-      <el-table-column label="总金额" align="center" min-width="80">
-        <template slot-scope="{ row }">
-          {{ row.work_amount }}
-        </template>
-      </el-table-column>
-      <!-- <el-table-column label="停留时间" align="center" width="80">
-        <template slot-scope="{ row }">
-          {{ row.stay_time | stayTimeHours }}小时
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="当前处理人"
-        align="center"
-        width="150"
-        show-overflow-tooltip
-      >
-        <template slot-scope="{ row }">
-          {{ row.dealing || "-" }}
-        </template>
-      </el-table-column> -->
-      <!-- <el-table-column label="单据状态" align="center" width="100">
-        <template slot-scope="{ row }">
-          {{ row.order_status | statusText }}
-        </template>
-      </el-table-column> -->
-      <!-- <el-table-column
-        label="操作"
-        align="center"
-        min-width="150"
-        class-name="small-padding fixed-width"
-      >
-        <template slot-scope="{ row, $index }">
-          <el-button
-            v-permission="[0]"
-            type="primary"
-            size="mini"
-            plain
-            @click.stop="handleCreateTask(row)"
+          <div
+            v-if="detail.demand && detail.demand.supplier_files.length > 0"
+            class="download-content"
           >
-            新增物件
-          </el-button>
-        </template>
-      </el-table-column> -->
-    </el-table>
-
-    <!--分页-->
-    <pagination
-      v-show="total > 0"
-      :total="total"
-      :page.sync="listQuery.page"
-      :limit.sync="listQuery.page_num"
-      @pagination="getList(true)"
-    />
-
+            <div class="title">
+              <i class="el-icon-s-management" />
+              <span>下载附件</span>
+            </div>
+            <div class="files">
+              <div
+                v-for="(file, fileIndex) in detail.demand.supplier_files"
+                :key="fileIndex"
+                class="file-item"
+              >
+                <div class="file-name">{{ file.name }}</div>
+                <el-button
+                  type="primary"
+                  size="mini"
+                  plain
+                  @click="downLoadContract(file.name, file.url)"
+                >下载</el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!--新增物件-->
     <el-dialog
       :title="textMap[dialogStatus]"
@@ -499,7 +459,7 @@
               <span>{{ tempTaskCategory.category_name }}</span>
             </el-form-item>
 
-            <el-form-item label="工作单位:" prop="work_unit">
+            <el-form-item label="单位:" prop="work_unit">
               <el-select
                 v-model="tempTask.work_unit"
                 class="dialog-form-item"
@@ -520,10 +480,10 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item label="预估数量:" prop="work_num">
+            <el-form-item label="单位数量:" prop="work_num">
               <el-input
                 v-model.number="tempTask.work_num"
-                placeholder="请输入预估数量"
+                placeholder="请输入单位数量"
                 class="dialog-form-item"
               />
             </el-form-item>
@@ -600,7 +560,7 @@
             <el-form-item prop="task_image" label-width="0">
               <el-upload
                 class="task-image-uploader"
-                :action="`${$baseUrl}/api/tools/upfile`"
+                :action="`${$baseUrl}api/tools/upfile`"
                 :show-file-list="false"
                 :on-success="handleTaskImageSuccess"
                 :on-change="handleTaskImageChange"
@@ -669,7 +629,7 @@
         <el-form-item label="数量:" prop="nums">
           <el-input
             v-model="tempModify.nums"
-            placeholder="请输入变更数量"
+            placeholder="请输入变更后的数量"
             class="dialog-form-item"
           />
         </el-form-item>
@@ -749,6 +709,7 @@
 <script>
 import {
   fetchOrderList,
+  fetchOrderDetail,
   modifyOrder,
   addTask,
   toCheckOrder,
@@ -762,11 +723,39 @@ import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
-
+const tagList = [
+  { id: 0, name: '正式包' },
+  { id: 1, name: '测试包' },
+  { id: 2, name: '外派' },
+  { id: 3, name: '动态团队' }
+]
 export default {
   components: { Pagination, TaskDetail },
   directives: { waves, permission },
   filters: {
+    tagText(tag) {
+      let text = tag
+      tagList.some((tagItem) => {
+        if (tagItem.id === parseInt(tag)) {
+          text = tagItem.name
+          return true
+        }
+        return false
+      })
+      return text
+    },
+    taskStatusText(status) {
+      const statusMap = {
+        0: '待交付验收',
+        1: '变更中',
+        2: '资源审核中',
+        3: '资源已验收',
+        4: '验收未通过',
+        5: '物件已终止',
+        6: '验收通过'
+      }
+      return statusMap[status]
+    },
     categoryText(category) {
       if (!category) {
         return '-'
@@ -785,13 +774,17 @@ export default {
     },
     statusText(status) {
       const statusMap = {
-        0: '待交付验收',
-        1: '变更中',
-        2: '资源审核中',
-        3: '资源已验收',
-        4: '验收未通过',
-        5: '物件已终止',
-        6: '验收通过'
+        0: '待提报',
+        1: '审核中',
+        2: '审核未通过',
+        3: '待分配供应商',
+        4: '待填写物件',
+        5: '物件审核中',
+        6: '物件审核未通过',
+        7: '待生成订单',
+        8: '订单待审核',
+        9: '订单审核未通过',
+        10: '已生成订单'
       }
       return statusMap[status]
     },
@@ -810,6 +803,7 @@ export default {
       expandRowKeys: [],
       total: 0,
       list: [],
+      multipleSelection: [],
       listLoading: true,
       listQuery: {
         order_id: '',
@@ -819,8 +813,13 @@ export default {
         tag: '',
         page: 1,
         page_num: 10,
-        all: true
+        keyword: ''
       },
+      detail: {},
+      detailIndex: 0,
+      multipleTaskSelection: [],
+      detailLoading: false,
+      detailLoaded: false,
       textMap: {
         modify: '申请变更',
         create_task: '新增物件'
@@ -854,13 +853,13 @@ export default {
           { required: true, message: '请添加缩略图', trigger: 'blur' }
         ],
         work_unit: [
-          { required: true, message: '请选择工作单位', trigger: 'change' }
+          { required: true, message: '请选择单位', trigger: 'change' }
         ],
         work_num: [
           {
             required: true,
             type: 'integer',
-            message: '请输入预估数量',
+            message: '请输入单位数量',
             trigger: 'blur'
           }
         ],
@@ -889,85 +888,54 @@ export default {
       posting: false
     }
   },
+  computed: {
+    showHeader: function() {
+      const hiddenPaths = [
+        '/pending/gg/assign/vendor',
+        '/pending/xmz/demand/draft',
+        '/pending/gg/demand/draft'
+      ]
+      return hiddenPaths.indexOf(this.$route.path) < 0
+    },
+    showTaskCheckRow: function() {
+      const hiddenTaskCheckRowPaths = [
+        '/pending/gys/demand/quote',
+        '/pending/xmz/demand/review',
+        '/pending/gg/order/prepare',
+        '/pending/ggfzr/order/approval'
+      ]
+      return hiddenTaskCheckRowPaths.indexOf(this.$route.path) < 0
+    },
+    showTaskActionRow: function() {
+      const hiddenTaskActionRowPaths = [
+        '/pending/xmz/demand/review',
+        '/pending/gg/order/prepare',
+        '/pending/ggfzr/order/approval'
+      ]
+      return hiddenTaskActionRowPaths.indexOf(this.$route.path) < 0
+    }
+  },
   created() {
     this.getList(true)
   },
+  mounted() {
+    this.$bus.$on('navSearch', (keyword) => {
+      this.listQuery = Object.assign({}, this.listQuery, { keyword })
+      this.getList(false)
+    })
+  },
+  beforeDestroy() {
+    this.$bus.$off('navSearch')
+  },
   methods: {
-    expandChange(row, expandedRows) {
-      this.expandRowKeys = expandedRows.map((row) => {
-        return row.order_id
-      })
-    },
-    clickRowHandle(row, column, event) {
-      if (this.expandRowKeys.includes(row.order_id)) {
-        this.expandRowKeys = this.expandRowKeys.filter(
-          (val) => val !== row.order_id
-        )
-      } else {
-        this.expandRowKeys.push(row.order_id)
-      }
-    },
-    /**
-     * 全选所有
-     */
-    clickCheckAll(item) {
-      this.list = this.list.map((val) => {
-        val.checked = this.globelCheckedAll
-        val.tasks = val.tasks.map((i) => {
-          i.checked = this.globelCheckedAll
-          return i
-        })
-        return val
-      })
-      this.updateCheckedAllBtnStatus()
-    },
-    /**
-     * 手动更改全选按钮的状态
-     */
-    updateCheckedAllBtnStatus(value) {
-      this.list = JSON.parse(JSON.stringify(this.list))
-    },
-    /**
-     * 每行选择事件
-     */
     handleSelectionChange(val) {
-      val.tasks = val.tasks.map((i) => {
-        i.checked = val.checked
-        return i
-      })
-      if (val.checked) {
-        const globelCheckedAll = this.list.every((v) => v.checked)
-        if (globelCheckedAll) {
-          this.globelCheckedAll = true
-        }
-      } else {
-        this.globelCheckedAll = false
-      }
-      this.updateCheckedAllBtnStatus()
+      this.multipleSelection = val
+    },
+    handleTaskSelectionChange(val) {
+      this.multipleTaskSelection = val
     },
     /**
-     * 每个小项选择事件-单选
-     */
-    clickCheckItemFn(row, item) {
-      // 如果是选了勾选
-      if (item.checked) {
-        // 检查是否所有数据都手动勾选了
-        const isAllChecked = row.tasks.every((v) => v.checked)
-        if (isAllChecked) {
-          row.checked = true
-          const globelCheckedAll = this.list.every((v) => v.checked)
-          if (globelCheckedAll) {
-            this.globelCheckedAll = true
-          }
-        }
-      } else {
-        row.checked = false
-        this.globelCheckedAll = false
-      }
-      this.updateCheckedAllBtnStatus()
-    },
-    /**
-     * 获取需求列表
+     * 获取订单列表
      */
     getList(needLoading = true) {
       if (needLoading) {
@@ -978,33 +946,12 @@ export default {
         .then((response) => {
           this.listLoading = false
           this.total = response.data.total
-          let list = response.data.list
-          if (this.$store.getters.pendings['/order/index']) {
-            const pendings =
-              this.$store.getters.pendings['/order/index'].children
-            list = response.data.list.map((listItem) => {
-              listItem.pending = pendings[listItem.order_id] || 0
-              // 是否已选中
-              const orderIndex = this.list.findIndex(
-                (orderItem) => orderItem.order_id === listItem.order_id
-              )
-              if (orderIndex >= 0) {
-                listItem.checked = this.list[orderIndex].checked === true
-                listItem.tasks = listItem.tasks.map((child) => {
-                  const taskIndex = this.list[orderIndex].tasks.findIndex(
-                    (taskItem) => taskItem.task_id === child.task_id
-                  )
-                  if (taskIndex >= 0) {
-                    child.checked =
-                      this.list[orderIndex].tasks[taskIndex].checked === true
-                  }
-                  return child
-                })
-              }
-              return listItem
-            })
-          }
+          const list = response.data.list
           this.list = list
+          this.$nextTick(() => {
+            this.$refs.listTable.setCurrentRow(list[this.detailIndex])
+            this.handleDetail()
+          })
         })
         .catch((error) => {
           console.log(error)
@@ -1018,74 +965,66 @@ export default {
       this.listQuery.page = 1
       this.getList(true)
     },
-    /**
-     * 展开
-     */
-    handleExpand(isExpand) {
-      if (isExpand) {
-        this.list.forEach((listItem) => {
-          if (listItem.checked) {
-            if (this.expandRowKeys.indexOf(listItem.order_id) < 0) {
-              this.expandRowKeys.push(listItem.order_id)
-            }
-          }
-        })
-      } else {
-        this.list.forEach((listItem) => {
-          if (listItem.checked) {
-            const keyIndex = this.expandRowKeys.indexOf(listItem.order_id)
-            if (keyIndex >= 0) {
-              this.expandRowKeys.splice(keyIndex, 1)
-            }
-          }
-        })
+    handleCurrentChange(row, column, event) {
+      const index = this.list.findIndex(
+        (item) => item.order_id === row.order_id
+      )
+      if (index >= 0) {
+        this.detailIndex = index
+        this.handleDetail()
       }
+    },
+    /**
+     * 需求详情
+     */
+    async handleDetail() {
+      if (!this.list[this.detailIndex]) {
+        this.detailLoading = false
+        this.detailLoaded = true
+        this.detail = {}
+        return false
+      }
+      this.detailLoading = true
+      this.detailLoaded = false
+      const detailData = await fetchOrderDetail({
+        order_id: this.list[this.detailIndex].order_id
+      }).catch((_error) => {})
+
+      this.detailLoading = false
+      this.detailLoaded = true
+      this.detail = Object.assign({}, this.detail, detailData.data)
     },
     /**
      * 申请变更
      */
     handleModify() {
-      const orderCheckeds = []
+      if (this.multipleTaskSelection.length <= 0) {
+        this.$message.error('请先选择物件')
+        return false
+      }
+
       const taskCheckeds = []
 
       let price, amount
 
-      if (
-        !this.list.some((orderItem, orderIndex) => {
-          return orderItem.tasks.some((taskItem, taskIndex) => {
-            if (taskItem.checked) {
-              if ([0].indexOf(taskItem.task_status) < 0) {
-                const errorName = `[${taskItem.task_id}]: 该物件状态无法申请变更`
-                this.$message.error(errorName)
-                return true
-              }
-              if (orderCheckeds.indexOf(taskItem.order_id) < 0) {
-                orderCheckeds.push(taskItem.order_id)
-              }
-              if (orderCheckeds.length > 1) {
-                const errorName = `只能选择单个订单下的物件`
-                this.$message.error(errorName)
-                return true
-              }
-              taskCheckeds.push(taskItem.task_id)
-              price = taskItem.price
-              amount = taskItem.amount
-              return false
-            }
-            return false
-          })
-        })
-      ) {
-        if (taskCheckeds.length <= 0) {
-          this.$message.error('请先选择物件')
-          return false
+      this.multipleTaskSelection.some((taskItem, taskIndex) => {
+        if ([0].indexOf(taskItem.task_status) < 0) {
+          const errorName = `[${taskItem.task_id}]: 该物件状态无法申请变更`
+          this.$message.error(errorName)
+          return true
         }
-      } else {
+        taskCheckeds.push(taskItem.task_id)
+        price = taskItem.price
+        amount = taskItem.amount
+        return false
+      })
+
+      if (taskCheckeds.length <= 0) {
         return false
       }
 
       this.tempModify = Object.assign({}, this.tempModify, {
-        order_id: orderCheckeds[0],
+        order_id: this.detail.order_id,
         task_id: taskCheckeds,
         work_price: price,
         work_amount: amount
@@ -1110,29 +1049,7 @@ export default {
           modifyOrder(tempData)
             .then(async(response) => {
               this.posting = false
-              // const orderIndex = this.list.findIndex(
-              //   (listItem) => listItem.order_id === tempData.order_id
-              // )
-              // if (orderIndex >= 0) {
-              //   tempData.task_id.forEach((task_id) => {
-              //     const taskIndex = this.list[orderIndex].tasks.findIndex(
-              //       (taskItem) => taskItem.task_id === task_id
-              //     )
-              //     if (taskIndex >= 0) {
-              //       this.$set(
-              //         this.list[orderIndex].tasks[taskIndex],
-              //         'task_status',
-              //         1
-              //       )
-              //     }
-              //   })
-              // }
-              this.$notify({
-                title: '成功',
-                message: '申请成功',
-                type: 'success',
-                duration: 2000
-              })
+              this.$message.success('申请成功')
               this.dialogModifyVisible = false
               await this.$store.dispatch('user/getPending')
               this.getList(false)
@@ -1147,83 +1064,93 @@ export default {
     /**
      * 交付验收
      */
-    handleDeliver() {
+    handleDeliver(multi = true) {
       const taskCheckeds = []
-      if (
-        !this.list.some((orderItem, orderIndex) => {
-          return orderItem.tasks.some((taskItem, taskIndex) => {
-            if (taskItem.checked) {
-              if ([0, 4].indexOf(taskItem.task_status) < 0) {
-                const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
-                this.$message.error(errorName)
-                return true
-              }
-              if (taskItem.finished_product.length <= 0) {
-                const errorName = `[${taskItem.task_id}]: 请上传该物件的作品`
-                this.$message.error(errorName)
-                return true
-              }
-              taskCheckeds.push({
-                task_id: taskItem.task_id,
-                file: taskItem.finished_product
-                  .map((product) => {
-                    return product.file_id
-                  })
-                  .join(',')
-              })
-              return false
+
+      if (multi) {
+        if (this.multipleSelection.length <= 0) {
+          this.$message.error('请先选择订单')
+          return false
+        }
+        if (this.multipleSelection.length > 1) {
+          this.$message.error('只能选择单个交付验收')
+          return false
+        }
+        this.multipleSelection.some((orderItem) => {
+          return orderItem.tasks.some((taskItem) => {
+            if ([0, 4].indexOf(taskItem.task_status) < 0) {
+              const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
+              this.$message.error(errorName)
+              return true
             }
+            if (taskItem.finished_product.length <= 0) {
+              const errorName = `[${taskItem.task_id}]: 请上传该物件的作品`
+              this.$message.error(errorName)
+              return true
+            }
+            taskCheckeds.push({
+              task_id: taskItem.task_id,
+              file: taskItem.finished_product
+                .map((product) => {
+                  return product.file_id
+                })
+                .join(',')
+            })
             return false
           })
         })
-      ) {
-        if (taskCheckeds.length <= 0) {
+      } else {
+        if (this.multipleTaskSelection.length <= 0) {
           this.$message.error('请先选择物件')
           return false
         }
-      } else {
+        this.multipleTaskSelection.some((taskItem) => {
+          if ([0, 4].indexOf(taskItem.task_status) < 0) {
+            const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
+            this.$message.error(errorName)
+            return true
+          }
+          if (taskItem.finished_product.length <= 0) {
+            const errorName = `[${taskItem.task_id}]: 请上传该物件的作品`
+            this.$message.error(errorName)
+            return true
+          }
+          taskCheckeds.push({
+            task_id: taskItem.task_id,
+            file: taskItem.finished_product
+              .map((product) => {
+                return product.file_id
+              })
+              .join(',')
+          })
+        })
+      }
+
+      if (taskCheckeds.length <= 0) {
         return false
       }
 
-      toCheckOrder({ tasks: taskCheckeds })
-        .then(async(response) => {
-          // taskCheckeds.forEach((checkedTaskItem) => {
-          //   let checkedOrderIndex, checkedTaskIndex
-          //   this.list.some((orderItem, orderIndex) => {
-          //     return orderItem.tasks.some((taskItem, taskIndex) => {
-          //       if (taskItem.task_id === checkedTaskItem.task_id) {
-          //         checkedOrderIndex = orderIndex
-          //         checkedTaskIndex = taskIndex
-          //         return true
-          //       }
-          //       return false
-          //     })
-          //   })
-          //   this.$set(
-          //     this.list[checkedOrderIndex].tasks[checkedTaskIndex],
-          //     'task_status',
-          //     2
-          //   )
-          // })
-
-          this.$message.success('交付验收成功')
-          await this.$store.dispatch('user/getPending')
-          this.getList(false)
+      this.$confirm('确定交付验收?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          toCheckOrder({ tasks: taskCheckeds })
+            .then(async(response) => {
+              this.$message.success('交付验收成功')
+              await this.$store.dispatch('user/getPending')
+              this.getList(false)
+            })
+            .catch((_error) => {})
         })
-        .catch((error) => {})
+        .catch(() => {})
     },
     /**
      * 上传作品
      */
     handleUploadWork(task, taskIndex, demandIndex) {},
-    handleUploadWorkSuccess(
-      response,
-      file,
-      fileList,
-      orderIndex,
-      taskIndex,
-      keyName
-    ) {
+    handleUploadWorkSuccess(response, file, fileList, taskIndex, keyName) {
       const fileArr = fileList.map((fileItem) => {
         return {
           name: fileItem.name,
@@ -1241,7 +1168,7 @@ export default {
         })
         .join(',')
 
-      const task = this.list[orderIndex].tasks[taskIndex]
+      const task = this.detail.tasks[taskIndex]
       const upType = keyName === 'display_area' ? 1 : 0
 
       uploadWorkImage({
@@ -1250,10 +1177,10 @@ export default {
         file_id: fileStr
       })
         .then((response) => {
-          this.$set(this.list[orderIndex].tasks[taskIndex], keyName, fileArr)
+          this.$set(this.detail.tasks[taskIndex], keyName, fileArr)
           this.$message.success('上传成功')
         })
-        .catch((error) => {})
+        .catch((_error) => {})
     },
     handleUploadWorkError(err, file, fileList) {
       console.log('上传失败', err, file, fileList)
@@ -1262,14 +1189,14 @@ export default {
     /**
      * 下载作品
      */
-    handleDownloadWork(task, taskIndex, demandIndex) {
+    handleDownloadWork(task, taskIndex) {
       if (task.finished_product.length > 0) {
         task.finished_product.forEach((product) => {
           downloadFile({ url: product.url })
             .then((response) => {
               downloadFileStream(baseName(product.url), response)
             })
-            .catch((error) => {})
+            .catch((_error) => {})
         })
       }
     },
@@ -1334,13 +1261,13 @@ export default {
     /**
      * 新增物件弹窗
      */
-    handleCreateTask(order) {
-      this.tempTaskCategory = order.category
+    handleCreateTask() {
+      this.tempTaskCategory = this.detail.demand.category
       this.resetTaskTemp()
       this.tempTask = Object.assign({}, this.tempTask, {
-        order_id: order.order_id,
-        demand_id: order.demand_id,
-        extend: order.category.property_array.map((property) => {
+        order_id: this.detail.order_id,
+        demand_id: this.detail.demand_id,
+        extend: this.detail.demand.category.property_array.map((property) => {
           return {
             name: property.extend_name,
             value: '',
@@ -1363,43 +1290,8 @@ export default {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempTask))
           addTask(temp).then(async(response) => {
-            // const task = response.data
-            // let orderIndex = -1
-            // this.list.some((listItem, listIndex) => {
-            //   if (listItem.order_id === task.order_id) {
-            //     orderIndex = listIndex
-            //     return true
-            //   }
-            //   return false
-            // })
-
-            // if (orderIndex >= 0) {
-            //   this.$set(this.list[orderIndex], 'order_status', 1)
-            //   this.$set(
-            //     this.list[orderIndex],
-            //     'nums',
-            //     parseInt(this.list[orderIndex].nums) + 1
-            //   )
-            //   this.$set(
-            //     this.list[orderIndex],
-            //     'work_num',
-            //     parseInt(this.list[orderIndex].work_num) + parseInt(task.nums)
-            //   )
-            //   this.$set(
-            //     this.list[orderIndex],
-            //     'work_amount',
-            //     parseFloat(this.list[orderIndex].work_amount) +
-            //       parseFloat(task.amount)
-            //   )
-            //   this.list[orderIndex].tasks.unshift(task)
-            // }
             this.dialogTaskVisible = false
-            this.$notify({
-              title: '成功',
-              message: '新增物件成功',
-              type: 'success',
-              duration: 2000
-            })
+            this.$message.success('新增物件成功')
             await this.$store.dispatch('user/getPending')
             this.getList(false)
           })
@@ -1428,7 +1320,7 @@ export default {
         .then((response) => {
           downloadFileStream(fileName, response)
         })
-        .catch((error) => {})
+        .catch((_error) => {})
     }
   }
 }
@@ -1446,43 +1338,151 @@ export default {
   align-items: center;
 }
 .app-container {
-  .filter-container {
-    margin-bottom: 20px;
-    @extend %flex-space-between;
-    .filter-left {
-      .filter-item {
-        &:not(:first-child) {
-          margin-left: 10px;
-        }
+  height: calc(100vh - 50px);
+  .lucien-row {
+    height: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    .lucien-col {
+      height: 100%;
+      &.col-left {
+        min-width: 300px;
+        width: 350px;
+        flex: none;
+        resize: horizontal;
+        overflow: auto;
+      }
+      &.col-right {
+        flex: auto;
+        width: 500px;
       }
     }
   }
   .list-container {
-    .expand {
-      width: calc(100vw - 100px);
-      padding: 20px;
-      background: #fff; //盖住fixed产生的阴影
-    }
-    .upload-box {
-      display: inline-block;
-    }
-    .pending-box {
+    height: 100%;
+    background: #eef1f6;
+    .item-box {
       display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      .tag {
-        margin-left: 10px;
-        font-size: 10px;
-        height: 16px;
-        line-height: 16px;
-        padding: 0 5px;
-        box-sizing: border-box;
-        border-radius: 6px;
-        background-color: #f56c6c;
-        border-color: #f56c6c;
-        color: #fff;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      .item-no,
+      .item-name {
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
+  }
+  .detail-container {
+    height: 100%;
+    overflow-y: scroll;
+    padding: 0 20px;
+    box-sizing: border-box;
+    .title {
+      span {
+        margin-left: 10px;
+      }
+    }
+    .info-content {
+      .description {
+        margin-top: 10px;
+      }
+      .actions {
+        margin-top: 20px;
+      }
+    }
+    .task-content {
+      margin-top: 50px;
+      .task-table {
+        margin-top: 20px;
+        .upload-box {
+          display: inline-block;
+        }
+        .pending-box {
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
+          .tag {
+            margin-left: 10px;
+            font-size: 10px;
+            height: 16px;
+            line-height: 16px;
+            padding: 0 5px;
+            box-sizing: border-box;
+            border-radius: 6px;
+            background-color: #f56c6c;
+            border-color: #f56c6c;
+            color: #fff;
+          }
+        }
+      }
+      .actions {
+        margin-top: 20px;
+      }
+    }
+    .download-content {
+      margin-top: 50px;
+      .files {
+        margin: 20px 0;
+        .file-item {
+          width: 50%;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          &:not(:last-child) {
+            margin-bottom: 10px;
+          }
+          .file-name {
+            font-size: 14px;
+            color: #606266;
+          }
+        }
+      }
+    }
+  }
+  ::v-deep .list-container .el-table-column--selection .cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  ::v-deep .list-table {
+    background: #eef1f6;
+    .el-table__header th.el-table__cell.is-leaf {
+      height: 60px;
+      border-bottom: 1px solid rgb(221, 221, 221);
+    }
+    .el-table__body .el-table__row {
+      background: #eef1f6;
+      &:hover > td {
+        background-color: #ffffff !important;
+      }
+      &.cuttent-row > td {
+        background-color: #ffffff !important;
+      }
+      td.el-table__cell {
+        border-bottom: 1px solid rgb(221, 221, 221);
+      }
+    }
+    tr.current-row > td.el-table__cell {
+      background-color: #ffffff;
+    }
+  }
+  ::v-deep .detail-container .el-table.table-info th {
+    background: #409eff !important;
+    color: #ffffff;
+  }
+  ::v-deep .el-icon-my-prohibit {
+    background: url("../../assets/icon/prohibit.png") center no-repeat;
+    font-size: 10px;
+    background-size: 10px;
+  }
+  ::v-deep .el-icon-my-prohibit:before {
+    content: "替";
+    font-size: 10px;
+    visibility: hidden;
   }
 }
 .dialog-form {
@@ -1534,36 +1534,6 @@ export default {
       height: 178px;
       display: block;
     }
-  }
-}
-.task-detail-dialog {
-  .task-detail-title {
-    margin-top: 20px;
-  }
-  .plan-box,
-  .file-box {
-    .plan-item,
-    .file-item {
-      width: 50%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      &:not(:last-child) {
-        margin-bottom: 10px;
-      }
-    }
-  }
-}
-.reason-box {
-  .content {
-    font-size: 16px;
-    text-align: left;
-  }
-  .user-info {
-    margin-top: 50px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
   }
 }
 </style>

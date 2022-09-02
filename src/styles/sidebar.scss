@@ -25,6 +25,12 @@
       transition: 0s width ease-in-out, 0s padding-left ease-in-out, 0s padding-right ease-in-out;
     }
 
+    .new-demand-box {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
     .scrollbar-wrapper {
       overflow-x: hidden !important;
     }
@@ -93,7 +99,11 @@
       }
       &.is-active {
         color: #ffffff !important;
-        background-color: #409eff !important;
+        // background-color: #409eff !important;
+        background-color: rgb(49, 77, 118) !important;
+        .pending-tag {
+          color: #ffffff;
+        }
       }
     }
   }

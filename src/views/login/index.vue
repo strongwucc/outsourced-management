@@ -208,8 +208,8 @@ export default {
           this.$store
             .dispatch('user/login', this.loginForm)
             .then(async() => {
-              // await this.$store.dispatch('user/getInfo')
-              // const accessRoutes = await this.$store.dispatch('permission/generateRoutes')
+              // const { roles } = await this.$store.dispatch('user/getInfo')
+              // const accessRoutes = await this.$store.dispatch('permission/generateRoutes', roles)
               // this.$router.addRoutes(accessRoutes)
               this.loading = false
               // this.$router.push({ path: this.redirect || '/' })

@@ -49,20 +49,21 @@ export default {
   height: 1em;
 }
 .has-pending {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
+  // display: flex;
+  // justify-content: flex-start;
+  // align-items: center;
   .pending-tag {
     margin-left: 10px;
     font-size: 10px;
+    font-weight: bold;
     height: 16px;
     line-height: 16px;
     padding: 0 5px;
     box-sizing: border-box;
-    border-radius: 6px;
-    background-color: #f56c6c;
-    border-color: #f56c6c;
-    color: #fff;
+    // border-radius: 6px;
+    // background-color: #f56c6c;
+    // border-color: #f56c6c;
+    color: rgb(77, 154, 255);
   }
 }
 </style>
