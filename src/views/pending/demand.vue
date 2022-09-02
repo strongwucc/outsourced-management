@@ -121,14 +121,17 @@
         element-loading-spinner="el-icon-loading"
         element-loading-background="rgba(237, 244, 253, 0.8)"
       >
-        <div v-if="detailLoaded" class="grid-content detail-container">
+        <div
+          v-if="detailLoaded && detail.demand_id"
+          class="grid-content detail-container"
+        >
           <div class="info-content">
             <div class="title">
               <i class="el-icon-s-management" />
               <span>需求状态预览</span>
             </div>
             <el-divider />
-            <div v-if="detail.demand_id" class="description">
+            <div class="description">
               <el-descriptions
                 class="margin-top"
                 :column="4"
