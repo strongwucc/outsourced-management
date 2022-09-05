@@ -512,6 +512,7 @@
                 icon="el-icon-check"
                 type="primary"
                 size="mini"
+                plain
                 @click="handleResolveTask(true, false)"
               >通过</el-button>
               <el-button
@@ -520,6 +521,7 @@
                 icon="el-icon-jinzhi"
                 type="primary"
                 size="mini"
+                plain
                 @click="handleResolveTask(false, false)"
               >驳回</el-button>
               <el-button
@@ -547,7 +549,7 @@
                 v-if="[0, 4].indexOf(detail.status) >= 0"
                 v-permission="[0]"
                 class="upload-box"
-                :action="`${$baseUrl}api/tools/upfile`"
+                :action="`${$baseUrl}/api/tools/upfile`"
                 :show-file-list="false"
                 multiple
                 :on-success="
@@ -570,6 +572,7 @@
                 icon="el-icon-jinzhi"
                 type="primary"
                 size="mini"
+                plain
                 @click="handleGongGuanResolveTask(false)"
               >
                 驳回
@@ -580,6 +583,7 @@
                 icon="el-icon-box"
                 size="mini"
                 type="primary"
+                plain
                 @click="handleCreateOrder(false)"
               >
                 生成订单
@@ -590,6 +594,7 @@
                 icon="el-icon-remove"
                 type="primary"
                 size="mini"
+                plain
                 @click="handleFinish(false)"
               >
                 终止
@@ -600,6 +605,7 @@
                 icon="el-icon-check"
                 type="primary"
                 size="mini"
+                plain
                 @click="handleResolveOrder(true, false)"
               >
                 通过
@@ -610,6 +616,7 @@
                 type="primary"
                 icon="el-icon-jinzhi"
                 size="mini"
+                plain
                 @click="handleResolveOrder(false, false)"
               >
                 驳回
@@ -1155,7 +1162,7 @@
             <el-form-item prop="task_image" label-width="0">
               <el-upload
                 class="task-image-uploader"
-                :action="`${$baseUrl}api/tools/upfile`"
+                :action="`${$baseUrl}/api/tools/upfile`"
                 :show-file-list="false"
                 :on-success="handleTaskImageSuccess"
                 :on-change="handleTaskImageChange"
@@ -1216,7 +1223,7 @@
         <el-form-item label="上传附件" prop="file">
           <el-upload
             class="upload-demo"
-            :action="`${$baseUrl}api/tools/upfile`"
+            :action="`${$baseUrl}/api/tools/upfile`"
             :on-success="handleAddStopFileSucc"
             :on-remove="handleStopFileChange"
             :file-list="stopFileList"
@@ -1780,7 +1787,7 @@ export default {
           temp.status = status
           this.posting = true
           createDemand(postTemp)
-            .then((response) => {
+            .then(async(response) => {
               this.posting = false
               const checkedNodes =
                 this.$refs.categoryCascader.getCheckedNodes()
@@ -1798,6 +1805,7 @@ export default {
                 temp.current_operator = response.data.current_operator
                 temp.is_creator = 1
                 // this.list.unshift(temp)
+                await this.$store.dispatch('user/getPending')
                 this.getList(false)
                 this.dialogFormVisible = false
                 this.$message({
@@ -1956,6 +1964,16 @@ export default {
         this.$message.error('复制失败')
       }
       this.detail = Object.assign({}, this.detail, { copyLoading: false })
+      let supplier = ''
+      if (this.detail.supplier) {
+        const supplierIndex = this.providers.findIndex(
+          (provider) => provider.id === this.detail.supplier.id
+        )
+        if (supplierIndex >= 0) {
+          supplier = this.providers[supplierIndex].id
+        }
+      }
+
       this.temp = Object.assign(
         {},
         {
@@ -1968,7 +1986,7 @@ export default {
           files: this.detail.files || [],
           remark: this.detail.remark || '',
           tag: parseInt(this.detail.tag) || '',
-          supplier: parseInt(this.detail.supplier) || ''
+          supplier: parseInt(supplier) || ''
         }
       )
       this.demandFileList = this.temp.files.map((file) => {

@@ -120,3 +120,11 @@ export function uploadDemandPaperclip(data) {
     data
   })
 }
+
+export function applySeal(data) {
+  return request({
+    url: '/api/needs/applySeal',
+    method: 'post',
+    data
+  })
+}

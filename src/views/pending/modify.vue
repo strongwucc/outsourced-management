@@ -290,6 +290,7 @@
                 icon="el-icon-check"
                 type="primary"
                 size="mini"
+                plain
                 @click="handleVerify(true, false)"
               >
                 通过
@@ -300,6 +301,7 @@
                 type="primary"
                 icon="el-icon-jinzhi"
                 size="mini"
+                plain
                 @click="handleVerify(false, false)"
               >
                 驳回

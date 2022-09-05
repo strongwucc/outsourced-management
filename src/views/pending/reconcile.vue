@@ -301,11 +301,13 @@
             </el-table>
             <div class="actions">
               <el-button
+                v-if="detail.demand.apply_seal === 0"
                 v-permission="[3]"
                 type="primary"
                 icon="el-icon-zhihuan"
                 size="mini"
                 plain
+                @click.stop="handleApplySeal()"
               >
                 申请用印
               </el-button>
@@ -495,7 +497,7 @@
       >
         <el-form-item label="对账单" prop="bill_file">
           <el-upload
-            :action="`${$baseUrl}api/tools/upfile`"
+            :action="`${$baseUrl}/api/tools/upfile`"
             :on-success="handleAddReconcileFileSucc"
             :on-remove="handleReconcileFileChange"
             :file-list="reconcileFileList"
@@ -531,7 +533,7 @@
         <el-form-item label="发票图片" prop="invoice_file">
           <el-upload
             class="bill-image-uploader"
-            :action="`${$baseUrl}api/tools/upfile`"
+            :action="`${$baseUrl}/api/tools/upfile`"
             :show-file-list="false"
             :on-success="handleInvoiceImageSuccess"
             :on-change="handleInvoiceImageChange"
@@ -620,6 +622,7 @@ import {
   submitStatement,
   rejectStatement
 } from '@/api/order/index'
+import { applySeal } from '@/api/demand/index'
 import { downloadFile } from '@/api/system/file'
 import { previewFile, downloadFileStream, baseName } from '@/utils/index'
 import ElImageViewer from 'element-ui/packages/image/src/image-viewer'
@@ -1192,6 +1195,17 @@ export default {
       downloadFile({ url: filePath })
         .then((response) => {
           downloadFileStream(baseName(filePath), response)
+        })
+        .catch((_error) => {})
+    },
+    /**
+     * 申请用印
+     */
+    handleApplySeal() {
+      applySeal({ demand_id: this.detail.demand.demand_id })
+        .then(() => {
+          this.$set(this.detail.demand, 'apply_seal', 1)
+          this.$message.success('申请成功')
         })
         .catch((_error) => {})
     }

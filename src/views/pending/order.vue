@@ -289,7 +289,7 @@
                     v-if="[0, 4].indexOf(scope.row.task_status) >= 0"
                     v-permission="[0]"
                     class="upload-box"
-                    :action="`${$baseUrl}api/tools/upfile`"
+                    :action="`${$baseUrl}/api/tools/upfile`"
                     :show-file-list="false"
                     multiple
                     :file-list="scope.row.finished_product"
@@ -325,7 +325,7 @@
                     v-if="[0, 4].indexOf(scope.row.task_status) >= 0"
                     v-permission="[0]"
                     class="upload-box"
-                    :action="`${$baseUrl}api/tools/upfile`"
+                    :action="`${$baseUrl}/api/tools/upfile`"
                     :show-file-list="false"
                     style="margin-left: 10px"
                     :file-list="scope.row.display_area"
@@ -563,7 +563,7 @@
             <el-form-item prop="task_image" label-width="0">
               <el-upload
                 class="task-image-uploader"
-                :action="`${$baseUrl}api/tools/upfile`"
+                :action="`${$baseUrl}/api/tools/upfile`"
                 :show-file-list="false"
                 :on-success="handleTaskImageSuccess"
                 :on-change="handleTaskImageChange"
