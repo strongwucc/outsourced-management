@@ -597,7 +597,7 @@ import {
   submitStatement,
   rejectStatement
 } from '@/api/order/index'
-import { applySeal } from '@/api/demand/index'
+import { applySeal } from '@/api/order/index'
 import { downloadFile } from '@/api/system/file'
 import { previewFile, downloadFileStream, baseName } from '@/utils/index'
 import ElImageViewer from 'element-ui/packages/image/src/image-viewer'

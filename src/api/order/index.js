@@ -159,3 +159,11 @@ export function uploadWorkImage(data) {
     data
   })
 }
+
+export function applySeal(data) {
+  return request({
+    url: '/api/statement/applySeal',
+    method: 'post',
+    data
+  })
+}
