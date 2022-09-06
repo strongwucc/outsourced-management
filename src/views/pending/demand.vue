@@ -1549,6 +1549,7 @@ export default {
     filterStatus: function() {
       const statusMap = {
         '/pending/xmz/demand/draft': 0,
+        '/pending/gg/demand/draft': 0,
         '/pending/gg/assign/vendor': 3,
         '/pending/gys/demand/quote': 4,
         '/pending/xmz/demand/review': 5,
@@ -1562,6 +1563,9 @@ export default {
     }
   },
   created() {
+    if (this.$route.query.hasOwnProperty('createDemand')) {
+      this.handleCreate()
+    }
     this.getList(true)
   },
   mounted() {
@@ -2098,7 +2102,7 @@ export default {
         })
           .then(() => {
             this.dialogVerifyVisible = true
-            this.confirmVerify()
+            this.baseConfirmVerify()
           })
           .catch(() => {})
       } else {
@@ -3007,6 +3011,9 @@ export default {
       }
       .actions {
         margin-top: 20px;
+        .upload-box {
+          display: inline-block;
+        }
       }
     }
     .download-content {

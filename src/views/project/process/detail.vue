@@ -572,7 +572,7 @@
                 "
               >
                 <el-option
-                  v-for="member in filterOrderCreate"
+                  v-for="member in filterOrderCreate.concat(filterOrderVerify)"
                   :key="member.id"
                   :label="member.name"
                   :value="member.id"

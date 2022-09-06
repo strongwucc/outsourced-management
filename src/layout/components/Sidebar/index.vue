@@ -1,8 +1,13 @@
 <template>
-  <div :class="{'has-logo':showLogo}">
+  <div :class="{ 'has-logo': showLogo }">
     <logo v-if="showLogo" :collapse="isCollapse" />
     <div class="new-demand-box">
-      <el-button v-permission="[1, 3]" type="primary" icon="el-icon-plus" @click="handleCreateDemand">发布需求</el-button>
+      <el-button
+        v-permission="[1, 3]"
+        type="primary"
+        icon="el-icon-plus"
+        @click="handleCreateDemand"
+      >发布需求</el-button>
     </div>
     <el-scrollbar wrap-class="scrollbar-wrapper">
       <el-menu
@@ -16,7 +21,12 @@
         :collapse-transition="false"
         mode="vertical"
       >
-        <sidebar-item v-for="route in routes" :key="route.path" :item="route" :base-path="route.path" />
+        <sidebar-item
+          v-for="route in routes"
+          :key="route.path"
+          :item="route"
+          :base-path="route.path"
+        />
       </el-menu>
     </el-scrollbar>
   </div>
@@ -34,13 +44,12 @@ export default {
   directives: { permission },
   data() {
     return {
-      openeds: ['/project', '/demand', '/order', '/provider', '/system']
+      openeds: ['/project', '/demand', '/order', '/provider', '/system'],
+      emitPath: ['/pending/xmz/demand/draft', '/pending/gg/demand/draft']
     }
   },
   computed: {
-    ...mapGetters([
-      'sidebar'
-    ]),
+    ...mapGetters(['sidebar']),
     routes() {
       // return this.$router.options.routes
       return this.$store.getters.permission_routes
@@ -69,7 +78,15 @@ export default {
      * 触发创建需求
      */
     handleCreateDemand() {
-      this.$bus.$emit('createDemandEvent')
+      if (this.emitPath.indexOf(this.$route.path) >= 0) {
+        this.$bus.$emit('createDemandEvent')
+      } else {
+        if (this.$store.getters.roles.indexOf(1) >= 0) {
+          this.$router.push(`/pending/xmz/demand/draft?createDemand=true`)
+        } else if (this.$store.getters.roles.indexOf(3) >= 0) {
+          this.$router.push(`/pending/gg/demand/draft?createDemand=true`)
+        }
+      }
     }
   }
 }

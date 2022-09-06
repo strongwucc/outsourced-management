@@ -334,7 +334,7 @@
                 上传对账单
               </el-button>
               <el-button
-                v-if="[0].indexOf(detail.statement_status) >= 0"
+                v-if="[0, 3].indexOf(detail.statement_status) >= 0"
                 v-permission="[0]"
                 type="primary"
                 icon="el-icon-document"
@@ -1070,7 +1070,7 @@ export default {
         }
 
         const result = this.multipleSelection.some((listItem) => {
-          if ([0].indexOf(listItem.statement_status) < 0) {
+          if ([0, 3].indexOf(listItem.statement_status) < 0) {
             const errorName = `[${listItem.statement_id}] 该对账单的状态，无法申请`
             this.$message.error(errorName)
             return true
@@ -1082,7 +1082,7 @@ export default {
           return false
         }
       } else {
-        if ([0].indexOf(this.detail.statement_status) < 0) {
+        if ([0, 3].indexOf(this.detail.statement_status) < 0) {
           const errorName = `[${this.detail.statement_id}] 该对账单的状态，无法申请`
           this.$message.error(errorName)
           return false

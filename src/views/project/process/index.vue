@@ -201,6 +201,7 @@
       :visible.sync="dialogFormVisible"
       width="70vw"
       top="20px"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="dataForm"
@@ -410,9 +411,7 @@
                     filterable
                     remote
                     placeholder="请输入关键词"
-                    :remote-method="
-                      (query) => fetchMemberList(query, '1,3')
-                    "
+                    :remote-method="(query) => fetchMemberList(query, '1,3')"
                     :loading="memberLoading"
                     @focus="fetchMemberList('', '1,3')"
                   >
@@ -448,7 +447,10 @@
         </el-form-item>
         <el-divider class="form-divider" content-position="left" />
         <div class="form-title">审核信息配置</div>
-        <el-form-item label="需求卡审批（项目组负责人）:" prop="needs_verify_json">
+        <el-form-item
+          label="需求卡审批（项目组负责人）:"
+          prop="needs_verify_json"
+        >
           <div class="needs-verify-box json-normal-box">
             <div
               v-for="(item, itemIndex) in temp.needs_verify_json"
@@ -463,7 +465,9 @@
                   clearable
                   filterable
                   remote
-                  :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                  "
                   :remote-method="(query) => fetchMemberList(query, 2)"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', 2)"
@@ -586,7 +590,9 @@
                   clearable
                   filterable
                   remote
-                  :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                  "
                   :remote-method="(query) => fetchMemberList(query, 4)"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', 4)"
@@ -656,7 +662,9 @@
                   clearable
                   filterable
                   remote
-                  :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                  "
                   :remote-method="(query) => fetchMemberList(query, 2)"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', 2)"
@@ -691,7 +699,9 @@
                   clearable
                   filterable
                   remote
-                  :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                  "
                   :remote-method="(query) => fetchMemberList(query, 3)"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', 3)"
@@ -728,7 +738,9 @@
                   clearable
                   filterable
                   remote
-                  :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                  "
                   :remote-method="(query) => fetchMemberList(query, 4)"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', 4)"
@@ -776,7 +788,10 @@
         </el-form-item>
         <el-divider class="form-divider" content-position="left" />
         <div class="form-title">供应商变更审核配置</div>
-        <el-form-item label="变更审批（项目组/项目组负责人）:" prop="change_verify_json">
+        <el-form-item
+          label="变更审批（项目组/项目组负责人）:"
+          prop="change_verify_json"
+        >
           <div class="change-verify-box json-normal-box">
             <div
               v-for="(item, itemIndex) in temp.change_verify_json"
@@ -811,7 +826,10 @@
             </div>
           </div>
         </el-form-item>
-        <el-form-item label="变更复审（供管/供管负责人）:" prop="change_review_json">
+        <el-form-item
+          label="变更复审（供管/供管负责人）:"
+          prop="change_review_json"
+        >
           <div class="change-review-box json-normal-box">
             <div
               v-for="(item, itemIndex) in temp.change_review_json"
@@ -824,7 +842,9 @@
                   clearable
                   filterable
                   remote
-                  :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                  "
                   :remote-method="(query) => fetchMemberList(query, '3,4')"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', '3,4')"
@@ -845,7 +865,10 @@
         </el-form-item>
         <el-divider class="form-divider" content-position="left" />
         <div class="form-title">验收变更审核配置</div>
-        <el-form-item label="验收变更（项目组负责人）:" prop="change_check_json">
+        <el-form-item
+          label="验收变更（项目组负责人）:"
+          prop="change_check_json"
+        >
           <div class="change-check-box json-normal-box">
             <div
               v-for="(item, itemIndex) in temp.change_check_json"
@@ -858,7 +881,9 @@
                   clearable
                   filterable
                   remote
-                  :placeholder="itemIndex === 0 ? '一级审批' : '二级审批（非必选）'"
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                  "
                   :remote-method="(query) => fetchMemberList(query, 2)"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', 2)"
@@ -1005,7 +1030,10 @@ export default {
         if (
           value.some((valueItem) => {
             const group_type = this.getMemberGroupType(valueItem.user_id)
-            if ([1, 3].indexOf(group_type) < 0 && valueItem.cat_id.length === 0) {
+            if (
+              [1, 3].indexOf(group_type) < 0 &&
+              valueItem.cat_id.length === 0
+            ) {
               return true
             }
             return false
@@ -1297,7 +1325,8 @@ export default {
       let group_type = ''
       this.allMembers.some((member) => {
         if (member.id === member_id) {
-          group_type = member.group && member.group.type >= 0 ? member.group.type : ''
+          group_type =
+            member.group && member.group.type >= 0 ? member.group.type : ''
           return true
         }
         return false
@@ -1305,49 +1334,57 @@ export default {
       return group_type
     },
     getCategory() {
-      fetchAllCategory().then((response) => {
-        this.categorys = response.data.list.map((first) => {
-          const seconds = first.children.map((second) => {
-            const thirds = second.children.map((third) => {
+      fetchAllCategory()
+        .then((response) => {
+          this.categorys = response.data.list.map((first) => {
+            const seconds = first.children.map((second) => {
+              const thirds = second.children.map((third) => {
+                return {
+                  label: third.category_name,
+                  value: third.cat_id
+                }
+              })
               return {
-                label: third.category_name,
-                value: third.cat_id
+                label: second.category_name,
+                value: second.cat_id,
+                children: thirds
               }
             })
             return {
-              label: second.category_name,
-              value: second.cat_id,
-              children: thirds
+              label: first.category_name,
+              value: first.cat_id,
+              children: seconds
             }
           })
-          return {
-            label: first.category_name,
-            value: first.cat_id,
-            children: seconds
-          }
         })
-      }).catch(error => {})
+        .catch((error) => {})
     },
     getAllDepart() {
-      fetchAllDepartment().then((response) => {
-        this.allDeparts = response.data.list
-      }).catch(error => {})
+      fetchAllDepartment()
+        .then((response) => {
+          this.allDeparts = response.data.list
+        })
+        .catch((error) => {})
     },
     getAllMember() {
-      fetchAllMember().then((response) => {
-        this.allMembers = response.data.list
-      }).catch(error => {})
+      fetchAllMember()
+        .then((response) => {
+          this.allMembers = response.data.list
+        })
+        .catch((error) => {})
     },
     getList() {
       this.listLoading = true
-      fetchList(this.listQuery).then((response) => {
-        this.listLoading = false
-        this.list = response.data.list
-        this.total = response.data.total
-      }).catch(error => {
-        console.log(error)
-        this.listLoading = false
-      })
+      fetchList(this.listQuery)
+        .then((response) => {
+          this.listLoading = false
+          this.list = response.data.list
+          this.total = response.data.total
+        })
+        .catch((error) => {
+          console.log(error)
+          this.listLoading = false
+        })
     },
     handleFilter() {
       this.listQuery.page = 1
@@ -1406,9 +1443,7 @@ export default {
           // temp.id = parseInt(Math.random() * 100) + 1024
 
           const postTemp = JSON.parse(JSON.stringify(temp))
-          postTemp.project_producer = JSON.stringify(
-            temp.project_producer
-          )
+          postTemp.project_producer = JSON.stringify(temp.project_producer)
           postTemp.needs_create_json = JSON.stringify(temp.needs_create_json)
           postTemp.needs_verify_json = JSON.stringify(
             temp.needs_verify_json.map((item) => {
@@ -1471,49 +1506,51 @@ export default {
           //   })
           // )
 
-          createProcess(postTemp).then((response) => {
-            temp.process_id = response.data.id
-            // 获取关联字段名称
-            this.allProjects.some((project) => {
-              if (project.project_id === temp.project_id) {
-                temp.project = project
-                return true
-              }
-              return false
-            })
+          createProcess(postTemp)
+            .then((response) => {
+              temp.process_id = response.data.id
+              // 获取关联字段名称
+              this.allProjects.some((project) => {
+                if (project.project_id === temp.project_id) {
+                  temp.project = project
+                  return true
+                }
+                return false
+              })
 
-            this.allDeparts.forEach((dep) => {
-              if (dep.id === temp.budget_dep_id) {
-                temp.budget_dep = dep
-              }
-              if (dep.id === temp.launch_dep_id) {
-                temp.launch_dep = dep
-              }
-              if (dep.id === temp.account_dep_id) {
-                temp.account_dep = dep
-              }
-            })
+              this.allDeparts.forEach((dep) => {
+                if (dep.id === temp.budget_dep_id) {
+                  temp.budget_dep = dep
+                }
+                if (dep.id === temp.launch_dep_id) {
+                  temp.launch_dep = dep
+                }
+                if (dep.id === temp.account_dep_id) {
+                  temp.account_dep = dep
+                }
+              })
 
-            this.allSubs.some((sub) => {
-              if (sub.id === temp.sub_id) {
-                temp.sub = sub
-                return true
-              }
-              return false
-            })
+              this.allSubs.some((sub) => {
+                if (sub.id === temp.sub_id) {
+                  temp.sub = sub
+                  return true
+                }
+                return false
+              })
 
-            temp.created_at = parseTime(new Date())
-            temp.deletable = true
+              temp.created_at = parseTime(new Date())
+              temp.deletable = true
 
-            this.list.unshift(temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
+              this.list.unshift(temp)
+              this.dialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '创建成功',
+                type: 'success',
+                duration: 2000
+              })
             })
-          }).catch(error => {})
+            .catch((error) => {})
         }
       })
     },
@@ -1522,46 +1559,56 @@ export default {
     },
     fetchProjectList(query) {
       this.projectLoading = true
-      fetchAllProject({ project_name: query }).then((response) => {
-        this.projectLoading = false
-        this.projects = response.data.list
-        if (query === '' && this.allProjects.length === 0) {
-          this.allProjects = response.data.list
-        }
-      }).catch(error => {})
+      fetchAllProject({ project_name: query })
+        .then((response) => {
+          this.projectLoading = false
+          this.projects = response.data.list
+          if (query === '' && this.allProjects.length === 0) {
+            this.allProjects = response.data.list
+          }
+        })
+        .catch((error) => {})
     },
     fetchDepartList(query, tag = 0) {
       this.departLoading = true
-      fetchAllDepartment({ name: query, tag }).then((response) => {
-        this.departLoading = false
-        this.departs = response.data.list
-      }).catch(error => {})
+      fetchAllDepartment({ name: query, tag })
+        .then((response) => {
+          this.departLoading = false
+          this.departs = response.data.list
+        })
+        .catch((error) => {})
     },
     fetchSubList(query) {
       this.subLoading = true
-      fetchAllSub({ name: query }).then((response) => {
-        this.subLoading = false
-        this.subs = response.data.list
-        if (query === '' && this.allSubs.length === 0) {
-          this.allSubs = response.data.list
-        }
-      }).catch(error => {})
+      fetchAllSub({ name: query })
+        .then((response) => {
+          this.subLoading = false
+          this.subs = response.data.list
+          if (query === '' && this.allSubs.length === 0) {
+            this.allSubs = response.data.list
+          }
+        })
+        .catch((error) => {})
     },
     fetchMemberList(query, group_id = 0) {
       this.memberLoading = true
-      fetchAllMember({ keyword: query, group_id }).then((response) => {
-        this.memberLoading = false
-        this.members = response.data.list.filter(member => {
-          if (member.group) {
-            return true
-          }
-          return false
-        }).map(member => {
-          const newMember = JSON.parse(JSON.stringify(member))
-          newMember.group_name = member.group.group_name
-          return newMember
+      fetchAllMember({ keyword: query, group_id })
+        .then((response) => {
+          this.memberLoading = false
+          this.members = response.data.list
+            .filter((member) => {
+              if (member.group) {
+                return true
+              }
+              return false
+            })
+            .map((member) => {
+              const newMember = JSON.parse(JSON.stringify(member))
+              newMember.group_name = member.group.group_name
+              return newMember
+            })
         })
-      }).catch(error => {})
+        .catch((error) => {})
     },
     addNeedsCreateItem() {
       const newItem = { user_id: '', cat_id: [] }
