@@ -695,7 +695,11 @@
     </div>
 
     <!--新增修改-->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogFormVisible"
+      :close-on-click-modal="false"
+    >
       <el-form
         ref="dataForm"
         class="dialog-form"
@@ -913,7 +917,11 @@
     </el-dialog>
 
     <!--审批驳回-->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="verifyVisible">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="verifyVisible"
+      :close-on-click-modal="false"
+    >
       <el-form
         ref="verifyDataForm"
         class="dialog-form"
@@ -961,6 +969,7 @@
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogProviderVisible"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="providerDataForm"
@@ -1033,6 +1042,7 @@
       :title="textMap[dialogStatus]"
       :visible.sync="dialogTaskVisible"
       width="70%"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="taskDataForm"
@@ -1201,6 +1211,7 @@
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogFinishVisible"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="finishDataForm"

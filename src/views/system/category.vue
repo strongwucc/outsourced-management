@@ -123,6 +123,7 @@
       :title="textMap[dialogStatus]"
       :visible.sync="dialogFormVisible"
       width="60vw"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="dataForm"
@@ -233,6 +234,7 @@
       :title="propTextMap[propDialogStatus]"
       :visible.sync="propDialogFormVisible"
       width="60vw"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="propDataForm"
@@ -533,63 +535,67 @@ export default {
       return cat_path
     },
     getParents() {
-      fetchAllCategory().then((response) => {
-        this.parents = response.data.list.map((parent) => {
-          const children = parent.children.map((child) => {
+      fetchAllCategory()
+        .then((response) => {
+          this.parents = response.data.list.map((parent) => {
+            const children = parent.children.map((child) => {
+              return {
+                label: child.category_name,
+                value: child.cat_id,
+                cat_path: child.cat_path
+              }
+            })
             return {
-              label: child.category_name,
-              value: child.cat_id,
-              cat_path: child.cat_path
+              label: parent.category_name,
+              value: parent.cat_id,
+              children: children,
+              cat_path: parent.cat_path
             }
           })
-          return {
-            label: parent.category_name,
-            value: parent.cat_id,
-            children: children,
-            cat_path: parent.cat_path
-          }
+          this.parents.unshift({
+            label: '无',
+            value: 0,
+            children: [],
+            cat_path: 0
+          })
         })
-        this.parents.unshift({
-          label: '无',
-          value: 0,
-          children: [],
-          cat_path: 0
-        })
-      }).catch(error => {})
+        .catch((error) => {})
     },
     getList() {
       this.listLoading = true
-      fetchList(this.listQuery).then((response) => {
-        this.listLoading = false
-        this.list = response.data.list.map((firstItem) => {
-          firstItem.children = firstItem.children.map((secondItem) => {
-            secondItem.children = secondItem.children.map((thirdItem) => {
-              thirdItem.property_json = JSON.stringify(
-                thirdItem.property_array.map((property) => {
+      fetchList(this.listQuery)
+        .then((response) => {
+          this.listLoading = false
+          this.list = response.data.list.map((firstItem) => {
+            firstItem.children = firstItem.children.map((secondItem) => {
+              secondItem.children = secondItem.children.map((thirdItem) => {
+                thirdItem.property_json = JSON.stringify(
+                  thirdItem.property_array.map((property) => {
+                    return property.property_id
+                  })
+                )
+                return thirdItem
+              })
+              secondItem.property_json = JSON.stringify(
+                secondItem.property_array.map((property) => {
                   return property.property_id
                 })
               )
-              return thirdItem
+              return secondItem
             })
-            secondItem.property_json = JSON.stringify(
-              secondItem.property_array.map((property) => {
+            firstItem.property_json = JSON.stringify(
+              firstItem.property_array.map((property) => {
                 return property.property_id
               })
             )
-            return secondItem
+            return firstItem
           })
-          firstItem.property_json = JSON.stringify(
-            firstItem.property_array.map((property) => {
-              return property.property_id
-            })
-          )
-          return firstItem
+          this.total = response.data.total
         })
-        this.total = response.data.total
-      }).catch(error => {
-        console.log(error)
-        this.listLoading = false
-      })
+        .catch((error) => {
+          console.log(error)
+          this.listLoading = false
+        })
     },
     handleFilter() {
       this.listQuery.page = 1
@@ -628,21 +634,23 @@ export default {
           }
           const postTemp = JSON.parse(JSON.stringify(this.temp))
           delete postTemp.property_array
-          createCategory(postTemp).then((response) => {
-            temp.cat_id = response.data.cat_id
-            temp.children = []
-            this.updateListData(temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
+          createCategory(postTemp)
+            .then((response) => {
+              temp.cat_id = response.data.cat_id
+              temp.children = []
+              this.updateListData(temp)
+              this.dialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '创建成功',
+                type: 'success',
+                duration: 2000
+              })
+              if (temp.cat_path < 3) {
+                this.getParents()
+              }
             })
-            if (temp.cat_path < 3) {
-              this.getParents()
-            }
-          }).catch(error => {})
+            .catch((error) => {})
         }
       })
     },
@@ -661,16 +669,18 @@ export default {
           delete tempData.children
           delete tempData.created_at
           delete tempData.updated_at
-          updateCategory(tempData).then(() => {
-            this.updateListData(this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '修改成功',
-              type: 'success',
-              duration: 2000
+          updateCategory(tempData)
+            .then(() => {
+              this.updateListData(this.temp)
+              this.dialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '修改成功',
+                type: 'success',
+                duration: 2000
+              })
             })
-          }).catch(error => {})
+            .catch((error) => {})
           if (this.temp.cat_path < 3) {
             this.getParents()
           }
@@ -678,81 +688,83 @@ export default {
       })
     },
     handleDelete(row, index) {
-      deleteCategory({ cat_id: row.cat_id }).then((response) => {
-        this.$notify({
-          title: '成功',
-          message: '删除成功',
-          type: 'success',
-          duration: 2000
-        })
-        if (row.cat_path === 1) {
-          this.list.splice(index, 1)
-          return true
-        }
-        if (row.cat_path === 2) {
-          let updateFirstIndex = -1
-          let updateSecondIndex = -1
-          this.list.some((first, firstIndex) => {
-            if (first.cat_id === row.parent_id) {
-              updateFirstIndex = firstIndex
-              first.children.some((second, secondIndex) => {
-                if (second.cat_id === row.cat_id) {
-                  updateSecondIndex = secondIndex
-                  return true
-                }
+      deleteCategory({ cat_id: row.cat_id })
+        .then((response) => {
+          this.$notify({
+            title: '成功',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          })
+          if (row.cat_path === 1) {
+            this.list.splice(index, 1)
+            return true
+          }
+          if (row.cat_path === 2) {
+            let updateFirstIndex = -1
+            let updateSecondIndex = -1
+            this.list.some((first, firstIndex) => {
+              if (first.cat_id === row.parent_id) {
+                updateFirstIndex = firstIndex
+                first.children.some((second, secondIndex) => {
+                  if (second.cat_id === row.cat_id) {
+                    updateSecondIndex = secondIndex
+                    return true
+                  }
+                  return false
+                })
+                return true
+              } else {
                 return false
-              })
-              return true
-            } else {
+              }
+            })
+            if (updateFirstIndex < 0) {
               return false
             }
-          })
-          if (updateFirstIndex < 0) {
-            return false
+            this.list[updateFirstIndex].children.splice(updateSecondIndex, 1)
+            return true
           }
-          this.list[updateFirstIndex].children.splice(updateSecondIndex, 1)
-          return true
-        }
-        if (row.cat_path === 3) {
-          let updateFirstIndex = -1
-          let updateSecondIndex = -1
-          let updateThirdIndex = -1
-          this.list.some((first, firstIndex) => {
-            if (
-              first.children.some((second, secondIndex) => {
-                if (second.cat_id === row.parent_id) {
-                  updateSecondIndex = secondIndex
-                  second.children.some((third, thirdIndex) => {
-                    if (third.cat_id === row.cat_id) {
-                      updateThirdIndex = thirdIndex
-                      return true
-                    }
+          if (row.cat_path === 3) {
+            let updateFirstIndex = -1
+            let updateSecondIndex = -1
+            let updateThirdIndex = -1
+            this.list.some((first, firstIndex) => {
+              if (
+                first.children.some((second, secondIndex) => {
+                  if (second.cat_id === row.parent_id) {
+                    updateSecondIndex = secondIndex
+                    second.children.some((third, thirdIndex) => {
+                      if (third.cat_id === row.cat_id) {
+                        updateThirdIndex = thirdIndex
+                        return true
+                      }
+                      return false
+                    })
+                    return true
+                  } else {
                     return false
-                  })
-                  return true
-                } else {
-                  return false
-                }
-              })
-            ) {
-              updateFirstIndex = firstIndex
-              return true
-            }
-            return false
-          })
+                  }
+                })
+              ) {
+                updateFirstIndex = firstIndex
+                return true
+              }
+              return false
+            })
 
-          if (updateFirstIndex < 0 || updateSecondIndex < 0) {
-            return false
+            if (updateFirstIndex < 0 || updateSecondIndex < 0) {
+              return false
+            }
+            this.list[updateFirstIndex].children[
+              updateSecondIndex
+            ].children.splice(updateThirdIndex, 1)
+            return true
           }
-          this.list[updateFirstIndex].children[
-            updateSecondIndex
-          ].children.splice(updateThirdIndex, 1)
-          return true
-        }
-        if (row.cat_path < 3) {
-          this.getParents()
-        }
-      }).catch(error => {})
+          if (row.cat_path < 3) {
+            this.getParents()
+          }
+        })
+        .catch((error) => {})
     },
     resetPropTemp() {
       this.propTemp = {
@@ -783,25 +795,28 @@ export default {
             })
             .join(',')
           delete propTemp.extend_options
-          createCategoryProp(propTemp).then((response) => {
-            propTemp.id = response.data.id
-            const property_json_arr = JSON.parse(this.temp.property_json) || []
-            property_json_arr.push(propTemp.id)
-            const property_json = JSON.stringify(property_json_arr)
-            const property_array = this.temp.property_array
-            property_array.push(propTemp)
-            this.temp = Object.assign({}, this.temp, {
-              property_json,
-              property_array
+          createCategoryProp(propTemp)
+            .then((response) => {
+              propTemp.id = response.data.id
+              const property_json_arr =
+                JSON.parse(this.temp.property_json) || []
+              property_json_arr.push(propTemp.id)
+              const property_json = JSON.stringify(property_json_arr)
+              const property_array = this.temp.property_array
+              property_array.push(propTemp)
+              this.temp = Object.assign({}, this.temp, {
+                property_json,
+                property_array
+              })
+              this.propDialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '创建成功',
+                type: 'success',
+                duration: 2000
+              })
             })
-            this.propDialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
-            })
-          }).catch(error => {})
+            .catch((error) => {})
         }
       })
     },
@@ -832,30 +847,32 @@ export default {
           delete updateData.extend_options
           // 更新修改属性参数中的 extend_value
           tempData.extend_value = updateData.extend_value
-          updateCategoryProp(updateData).then(() => {
-            this.propTemp = Object.assign({}, this.propTemp, tempData)
-            const index = this.temp.property_array.findIndex(
-              (v) => v.id === this.propTemp.id
-            )
-            const property_array = this.temp.property_array
-            property_array.splice(index, 1, this.propTemp)
-            const property_json = JSON.stringify(
-              property_array.map((property_item) => {
-                return property_item.id
+          updateCategoryProp(updateData)
+            .then(() => {
+              this.propTemp = Object.assign({}, this.propTemp, tempData)
+              const index = this.temp.property_array.findIndex(
+                (v) => v.id === this.propTemp.id
+              )
+              const property_array = this.temp.property_array
+              property_array.splice(index, 1, this.propTemp)
+              const property_json = JSON.stringify(
+                property_array.map((property_item) => {
+                  return property_item.id
+                })
+              )
+              this.temp = Object.assign({}, this.temp, {
+                property_array,
+                property_json
               })
-            )
-            this.temp = Object.assign({}, this.temp, {
-              property_array,
-              property_json
+              this.propDialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '修改成功',
+                type: 'success',
+                duration: 2000
+              })
             })
-            this.propDialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '修改成功',
-              type: 'success',
-              duration: 2000
-            })
-          }).catch(error => {})
+            .catch((error) => {})
         }
       })
     },

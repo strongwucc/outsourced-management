@@ -281,7 +281,7 @@
                 v-if="showTaskActionRow"
                 label="操作"
                 align="center"
-                min-width="310"
+                :min-width="taskActionColumnWidth"
                 class-name="small-padding fixed-width need-flex"
               >
                 <template slot-scope="scope">
@@ -435,6 +435,7 @@
       :title="textMap[dialogStatus]"
       :visible.sync="dialogTaskVisible"
       width="70%"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="taskDataForm"
@@ -609,6 +610,7 @@
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogModifyVisible"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="modifyDataForm"
@@ -916,6 +918,18 @@ export default {
         '/pending/ggfzr/order/approval'
       ]
       return hiddenTaskActionRowPaths.indexOf(this.$route.path) < 0
+    },
+    taskActionColumnWidth: function() {
+      let width = 100
+      const status = this.detail.tasks.map((task) => task.task_status)
+      if (status.indexOf(4) >= 0) {
+        width = 400
+      } else if (status.indexOf(0) >= 0) {
+        width = 310
+      } else if (status.indexOf(5) >= 0) {
+        width = 200
+      }
+      return width
     }
   },
   created() {

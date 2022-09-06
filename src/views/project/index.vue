@@ -127,7 +127,11 @@
       @pagination="getList"
     />
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogFormVisible"
+      :close-on-click-modal="false"
+    >
       <el-form
         ref="dataForm"
         :rules="rules"
@@ -174,7 +178,11 @@
       </div>
     </el-dialog>
 
-    <el-dialog title="调整预算" :visible.sync="dialogCostVisible">
+    <el-dialog
+      title="调整预算"
+      :visible.sync="dialogCostVisible"
+      :close-on-click-modal="false"
+    >
       <el-form
         ref="costDataForm"
         :rules="rules"

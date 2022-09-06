@@ -335,7 +335,7 @@
                 @click="handleVerify(false, false)"
               >驳回</el-button>
               <el-button
-                v-permission="[1, 2, 3, 4]"
+                v-permission="[3]"
                 type="primary"
                 icon="el-icon-remove"
                 size="mini"
@@ -397,6 +397,7 @@
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogModifyVisible"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="modifyDataForm"
@@ -454,6 +455,7 @@
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogVerifyVisible"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="verifyDataForm"
@@ -506,6 +508,7 @@
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogFinishVisible"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="finishDataForm"
@@ -554,9 +557,9 @@ import {
   fetchCheckDetail,
   modifyCheckOrder,
   verifyCheckOrder,
-  finishCheckOrderTask,
   generateStatement
 } from '@/api/order/index'
+import { finishTask } from '@/api/demand/task'
 import { downloadFile } from '@/api/system/file'
 import { downloadFileStream, baseName } from '@/utils/index'
 
@@ -1110,7 +1113,7 @@ export default {
         if (valid) {
           const temp = Object.assign({}, this.tempFinish)
 
-          finishCheckOrderTask(temp)
+          finishTask(temp)
             .then(async(response) => {
               this.$message.success('终止成功')
               this.dialogFinishVisible = false

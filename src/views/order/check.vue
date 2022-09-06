@@ -498,9 +498,9 @@ import {
   fetchCheckOrderList,
   modifyCheckOrder,
   verifyCheckOrder,
-  finishCheckOrderTask,
   generateStatement
 } from '@/api/order/index'
+import { finishTask } from '@/api/demand/task'
 import { downloadFile } from '@/api/system/file'
 import { downloadFileStream, baseName } from '@/utils/index'
 
@@ -1086,7 +1086,7 @@ export default {
         if (valid) {
           const temp = Object.assign({}, this.tempFinish)
 
-          finishCheckOrderTask(temp)
+          finishTask(temp)
             .then(async(response) => {
               // temp.task_id.forEach((checkedTaskId) => {
               //   this.list.some((listItem, listIndex) => {

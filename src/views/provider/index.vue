@@ -24,7 +24,7 @@
       </div>
       <div class="filter-right">
         <el-button
-          v-permission="[3,4]"
+          v-permission="[3, 4]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -90,7 +90,7 @@
             查看
           </el-button>
           <el-button
-            v-permission="[3,4]"
+            v-permission="[3, 4]"
             type="primary"
             size="mini"
             plain
@@ -99,7 +99,7 @@
             编辑
           </el-button>
           <el-popconfirm
-            v-permission="[3,4]"
+            v-permission="[3, 4]"
             style="margin-left: 10px"
             title="确定删除吗？"
             @confirm="handleDelete(row, $index)"
@@ -126,6 +126,7 @@
       :title="textMap[dialogStatus]"
       :visible.sync="dialogFormVisible"
       width="70vw"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="dataForm"
@@ -388,6 +389,7 @@
       :visible.sync="dialogDetailVisible"
       width="65%"
       class="detail-dialog"
+      :close-on-click-modal="false"
     >
       <el-descriptions
         title="基本信息"
@@ -541,7 +543,9 @@ export default {
           { required: true, message: '请选择需求品类', trigger: 'change' }
         ],
         price: [{ required: true, message: '请输入单价', trigger: 'blur' }],
-        contact_name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
+        contact_name: [
+          { required: true, message: '请输入姓名', trigger: 'blur' }
+        ],
         contact_mobile: [
           {
             validator: validateMobile,
@@ -660,9 +664,7 @@ export default {
           const temp = JSON.parse(JSON.stringify(this.temp))
           updateProvider(temp)
             .then(() => {
-              const index = this.list.findIndex(
-                (v) => v.id === temp.id
-              )
+              const index = this.list.findIndex((v) => v.id === temp.id)
               this.list.splice(index, 1, temp)
               this.dialogFormVisible = false
               this.$notify({

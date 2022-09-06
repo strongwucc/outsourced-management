@@ -64,13 +64,13 @@
         element-loading-background="rgba(237, 244, 253, 0.8)"
       >
         <div
-          v-if="detailLoaded && detail.demand"
+          v-if="detailLoaded && detail.project"
           class="grid-content detail-container"
         >
           <div class="info-content">
             <div class="title">
               <i class="el-icon-s-management" />
-              <span>需求状态预览</span>
+              <span>对账单状态预览</span>
             </div>
             <el-divider />
             <div class="description">
@@ -82,66 +82,34 @@
                   'align-items': 'center',
                 }"
               >
-                <el-descriptions-item label="项目代码">{{
+                <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="发起部门">{{
-                  detail.demand.flow ? detail.demand.flow.launch_dep.name : ""
-                }}</el-descriptions-item>
-                <el-descriptions-item label="核算部门">{{
-                  detail.demand.flow ? detail.demand.flow.account_dep.name : ""
+                <el-descriptions-item label="项目代码">{{
+                  detail.project ? detail.project.bn : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item label="经费使用">
                   {{ detail.project ? detail.project.budget_used : 0 }}/{{
                     detail.project ? detail.project.budget_cost : 0
                   }}
                 </el-descriptions-item>
-                <el-descriptions-item label="需求创建人">{{
-                  detail.demand.creator ? detail.demand.creator.name : ""
+                <el-descriptions-item label="项目创建时间">{{
+                  detail.project ? detail.project.created_at : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="创建时间" span="3">{{
-                  detail.demand.created_at
+                <el-descriptions-item label="流程名称">{{
+                  detail.process ? detail.process.flow_name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="需求名称" span="3">
-                  <span>{{ detail.demand.name }}</span>
-                  <el-tag size="mini" style="margin-left: 10px">{{
-                    detail.demand.tag | demandTagText
-                  }}</el-tag>
-                </el-descriptions-item>
-                <el-descriptions-item label="需求单号">{{
-                  detail.demand.demand_id
+                <el-descriptions-item label="流程代码">{{
+                  detail.process ? detail.process.bn : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="需求状态" span="4">{{
-                  detail.demand.status | demandStatusText
+                <el-descriptions-item label="流程代码">{{
+                  detail.process ? detail.process.bn : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="需求说明" span="4">{{
-                  detail.demand.introduce
+                <el-descriptions-item label="需求方">{{
+                  detail.process ? detail.process.demand : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="需求品类" span="4">{{
-                  detail.demand.category | categoryText
-                }}</el-descriptions-item>
-                <!-- <el-descriptions-item label="需求附件" span="6">
-                  <div class="file-box" style="width: 50%">
-                    <div
-                      v-for="(file, fileIndex) in detail.files"
-                      :key="fileIndex"
-                      class="file-item"
-                    >
-                      <div class="file-name">{{ file.name }}</div>
-                      <el-button
-                        type="primary"
-                        size="mini"
-                        plain
-                        @click="downLoadContract(file.name, file.url)"
-                      >下载</el-button>
-                    </div>
-                  </div>
-                </el-descriptions-item> -->
-                <el-descriptions-item label="意向供应商" span="4">{{
+                <el-descriptions-item label="供应商">{{
                   detail.supplier ? detail.supplier.name : ""
-                }}</el-descriptions-item>
-                <el-descriptions-item label="备注说明" span="4">{{
-                  detail.remark
                 }}</el-descriptions-item>
               </el-descriptions>
             </div>
@@ -301,7 +269,7 @@
             </el-table>
             <div class="actions">
               <el-button
-                v-if="detail.demand.apply_seal === 0"
+                v-if="detail.apply_seal === 0"
                 v-permission="[3]"
                 type="primary"
                 icon="el-icon-zhihuan"
@@ -346,7 +314,7 @@
             </div>
           </div>
           <div
-            v-if="detail.demand && detail.demand.supplier_files.length > 0"
+            v-if="detail.supplier_files && detail.supplier_files.length > 0"
             class="download-content"
           >
             <div class="title">
@@ -355,7 +323,7 @@
             </div>
             <div class="files">
               <div
-                v-for="(file, fileIndex) in detail.demand.supplier_files"
+                v-for="(file, fileIndex) in detail.supplier_files"
                 :key="fileIndex"
                 class="file-item"
               >
@@ -376,6 +344,7 @@
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogModifyVisible"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="modifyDataForm"
@@ -433,6 +402,7 @@
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogVerifyVisible"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="verifyDataForm"
@@ -485,6 +455,7 @@
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogReconcileVisible"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="reconcileDataForm"
@@ -519,7 +490,11 @@
     </el-dialog>
 
     <!--上传发票-->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogBillVisible">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogBillVisible"
+      :close-on-click-modal="false"
+    >
       <el-form
         ref="billDataForm"
         class="dialog-form"
@@ -1202,9 +1177,9 @@ export default {
      * 申请用印
      */
     handleApplySeal() {
-      applySeal({ demand_id: this.detail.demand.demand_id })
+      applySeal({ statement_id: this.detail.statement_id })
         .then(() => {
-          this.$set(this.detail.demand, 'apply_seal', 1)
+          this.$set(this.detail, 'apply_seal', 1)
           this.$message.success('申请成功')
         })
         .catch((_error) => {})

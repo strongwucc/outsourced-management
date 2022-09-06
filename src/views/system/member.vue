@@ -133,7 +133,11 @@
       @pagination="getList"
     />
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogFormVisible"
+      :close-on-click-modal="false"
+    >
       <el-form
         ref="dataForm"
         class="dialog-form"
@@ -147,7 +151,11 @@
           <el-input v-model="temp.name" class="dialog-form-item" />
         </el-form-item>
 
-        <el-form-item v-if="dialogStatus === 'update'" label="用户分组:" prop="group_id">
+        <el-form-item
+          v-if="dialogStatus === 'update'"
+          label="用户分组:"
+          prop="group_id"
+        >
           <el-select
             v-model="temp.group_id"
             :disabled="true"
@@ -169,7 +177,7 @@
             placeholder="请选择"
           >
             <el-option
-              v-for="item in roles.filter(role=>role.type !== 0)"
+              v-for="item in roles.filter((role) => role.type !== 0)"
               :key="item.id"
               :label="item.group_name"
               :value="item.id"
@@ -237,7 +245,12 @@
 </template>
 
 <script>
-import { fetchList, createMember, updateMember, deleteMember } from '@/api/system/member'
+import {
+  fetchList,
+  createMember,
+  updateMember,
+  deleteMember
+} from '@/api/system/member'
 import { fetchAllDepartment } from '@/api/system/department'
 import { fetchAllRole } from '@/api/system/role'
 import waves from '@/directive/waves'
@@ -266,9 +279,11 @@ export default {
       if (depArray.length === 0) {
         return '-'
       }
-      return depArray.map(depItem => {
-        return depItem.name
-      }).join(',')
+      return depArray
+        .map((depItem) => {
+          return depItem.name
+        })
+        .join(',')
     },
     groupText(group) {
       if (!group) {
@@ -349,34 +364,36 @@ export default {
         this.roles = roleData.data.list
         this.roles.push({ id: 0, type: '', nums: 0, group_name: '系统管理员' })
       }
-      fetchList(this.listQuery).then((response) => {
-        this.listLoading = false
-        this.list = response.data.list.map((item) => {
-          const newItem = Object.assign({}, item, {
-            group_name: '',
-            dep_name: ''
+      fetchList(this.listQuery)
+        .then((response) => {
+          this.listLoading = false
+          this.list = response.data.list.map((item) => {
+            const newItem = Object.assign({}, item, {
+              group_name: '',
+              dep_name: ''
+            })
+
+            newItem.dep_json = newItem.dep_array.map((depItem) => {
+              return depItem.id
+            })
+
+            this.roles.some((roleItem) => {
+              if (roleItem.id === item.group_id) {
+                newItem.group_name = roleItem.name
+                return true
+              }
+              return false
+            })
+
+            return newItem
           })
 
-          newItem.dep_json = newItem.dep_array.map(depItem => {
-            return depItem.id
-          })
-
-          this.roles.some((roleItem) => {
-            if (roleItem.id === item.group_id) {
-              newItem.group_name = roleItem.name
-              return true
-            }
-            return false
-          })
-
-          return newItem
+          this.total = response.data.total
         })
-
-        this.total = response.data.total
-      }).catch(error => {
-        console.log(error)
-        this.listLoading = false
-      })
+        .catch((error) => {
+          console.log(error)
+          this.listLoading = false
+        })
     },
     handleFilter() {
       this.listQuery.page = 1
@@ -409,31 +426,33 @@ export default {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.temp))
           // temp.id = parseInt(Math.random() * 100) + 1024
-          createMember(temp).then((response) => {
-            temp.id = response.data.id
-            this.roles.some((roleItem) => {
-              if (roleItem.id === temp.group_id) {
-                temp.group = roleItem
-                return true
-              }
-              return false
-            })
-            temp.dep_array = temp.dep_json.map((dep_item_id) => {
-              const depIndex = this.departments.findIndex(
-                (dep) => dep.id === dep_item_id
-              )
-              return this.departments[depIndex] || null
-            })
+          createMember(temp)
+            .then((response) => {
+              temp.id = response.data.id
+              this.roles.some((roleItem) => {
+                if (roleItem.id === temp.group_id) {
+                  temp.group = roleItem
+                  return true
+                }
+                return false
+              })
+              temp.dep_array = temp.dep_json.map((dep_item_id) => {
+                const depIndex = this.departments.findIndex(
+                  (dep) => dep.id === dep_item_id
+                )
+                return this.departments[depIndex] || null
+              })
 
-            this.list.unshift(temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
+              this.list.unshift(temp)
+              this.dialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '创建成功',
+                type: 'success',
+                duration: 2000
+              })
             })
-          }).catch(error => {})
+            .catch((error) => {})
         }
       })
     },
@@ -449,43 +468,47 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.temp))
-          updateMember(temp).then(() => {
-            this.roles.some((roleItem) => {
-              if (roleItem.id === temp.group_id) {
-                temp.group_name = roleItem.name
-                return true
-              }
-              return false
+          updateMember(temp)
+            .then(() => {
+              this.roles.some((roleItem) => {
+                if (roleItem.id === temp.group_id) {
+                  temp.group_name = roleItem.name
+                  return true
+                }
+                return false
+              })
+              temp.dep_array = temp.dep_json.map((dep_item_id) => {
+                const depIndex = this.departments.findIndex(
+                  (dep) => dep.id === dep_item_id
+                )
+                return this.departments[depIndex] || null
+              })
+              const index = this.list.findIndex((v) => v.id === temp.id)
+              this.list.splice(index, 1, temp)
+              this.dialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '修改成功',
+                type: 'success',
+                duration: 2000
+              })
             })
-            temp.dep_array = temp.dep_json.map((dep_item_id) => {
-              const depIndex = this.departments.findIndex(
-                (dep) => dep.id === dep_item_id
-              )
-              return this.departments[depIndex] || null
-            })
-            const index = this.list.findIndex((v) => v.id === temp.id)
-            this.list.splice(index, 1, temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '修改成功',
-              type: 'success',
-              duration: 2000
-            })
-          }).catch(error => {})
+            .catch((error) => {})
         }
       })
     },
     handleDelete(row, index) {
-      deleteMember({ id: row.id }).then(() => {
-        this.$notify({
-          title: '成功',
-          message: '删除成功',
-          type: 'success',
-          duration: 2000
+      deleteMember({ id: row.id })
+        .then(() => {
+          this.$notify({
+            title: '成功',
+            message: '删除成功',
+            type: 'success',
+            duration: 2000
+          })
+          this.list.splice(index, 1)
         })
-        this.list.splice(index, 1)
-      }).catch(error => {})
+        .catch((error) => {})
     }
   }
 }

@@ -70,7 +70,7 @@
       </div>
       <div class="filter-right">
         <el-button
-          v-permission="[3,4]"
+          v-permission="[3, 4]"
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
@@ -150,7 +150,7 @@
             查看
           </el-button>
           <el-button
-            v-permission="[3,4]"
+            v-permission="[3, 4]"
             type="primary"
             size="mini"
             plain
@@ -161,7 +161,7 @@
           </el-button>
           <el-popconfirm
             v-if="row.status === 2"
-            v-permission="[3,4]"
+            v-permission="[3, 4]"
             style="margin-left: 10px"
             confirm-button-text="好的"
             cancel-button-text="不用了"
@@ -177,7 +177,7 @@
 
           <el-popconfirm
             v-else-if="row.status === 1"
-            v-permission="[3,4]"
+            v-permission="[3, 4]"
             style="margin-left: 10px"
             confirm-button-text="好的"
             cancel-button-text="不用了"
@@ -204,7 +204,11 @@
     />
 
     <!--新增合同弹窗-->
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogFormVisible"
+      :close-on-click-modal="false"
+    >
       <el-form
         ref="dataForm"
         :rules="rules"
@@ -303,6 +307,7 @@
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogDetailVisible"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="dataDetail"
@@ -602,9 +607,9 @@ export default {
     async handleUpdate(row, index) {
       this.temp = JSON.parse(JSON.stringify(row))
       this.$set(this.list[index], 'editLoading', true)
-      const providerData = await fetchAllProvider().catch(error => {})
+      const providerData = await fetchAllProvider().catch((error) => {})
       this.providers = providerData.data.list
-      const subData = await fetchSubject().catch(error => {})
+      const subData = await fetchSubject().catch((error) => {})
       this.subjects = subData.data.list
 
       this.fileList = this.temp.files.map((file) => {

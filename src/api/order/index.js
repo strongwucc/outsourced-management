@@ -112,14 +112,6 @@ export function verifyCheckOrder(data) {
   })
 }
 
-export function finishCheckOrderTask(data) {
-  return request({
-    url: '/api/order/receiveVerify',
-    method: 'post',
-    data
-  })
-}
-
 export function generateStatement(data) {
   return request({
     url: '/api/order/produceStatement',

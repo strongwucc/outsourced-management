@@ -339,6 +339,7 @@
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogVerifyVisible"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="verifyDataForm"
