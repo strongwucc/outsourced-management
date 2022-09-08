@@ -140,7 +140,7 @@
                   'align-items': 'center',
                 }"
               >
-                <el-descriptions-item label="项目代码">{{
+                <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item label="发起部门">{{
@@ -545,11 +545,23 @@
               >
                 提交审核
               </el-button>
+              <el-button
+                v-if="[6].indexOf(detail.status) >= 0"
+                v-permission="[0]"
+                type="primary"
+                icon="el-icon-warning-outline"
+                size="mini"
+                plain
+                @click.stop="handleRejectReason()"
+              >
+                驳回原因
+              </el-button>
               <el-upload
-                v-if="[0, 4].indexOf(detail.status) >= 0"
+                v-if="[4, 6].indexOf(detail.status) >= 0"
                 v-permission="[0]"
                 class="upload-box"
                 :action="`${$baseUrl}/api/tools/upfile`"
+                :file-list="detail.supplier_files"
                 :show-file-list="false"
                 multiple
                 :on-success="
@@ -669,15 +681,31 @@
               </el-button> -->
             </div>
           </div>
-          <div v-if="detail.supplier_files.length > 0" class="download-content">
+          <div
+            v-if="detail.files.length > 0 || detail.supplier_files.length"
+            class="download-content"
+          >
             <div class="title">
               <i class="el-icon-s-management" />
               <span>下载附件</span>
             </div>
             <div class="files">
               <div
-                v-for="(file, fileIndex) in detail.supplier_files"
-                :key="fileIndex"
+                v-for="(file, _fileIndex) in detail.files"
+                :key="file.file_id"
+                class="file-item"
+              >
+                <div class="file-name">{{ file.name }}</div>
+                <el-button
+                  type="primary"
+                  size="mini"
+                  plain
+                  @click="downLoadContract(file.name, file.url)"
+                >下载</el-button>
+              </div>
+              <div
+                v-for="(file, _fileIndex) in detail.supplier_files"
+                :key="file.file_id"
                 class="file-item"
               >
                 <div class="file-name">{{ file.name }}</div>
@@ -1252,6 +1280,21 @@
         </el-button>
       </div>
     </el-dialog>
+
+    <!--驳回原因-->
+    <el-dialog
+      title="驳回原因"
+      :visible.sync="dialogRejectReasonVisible"
+      width="600px"
+    >
+      <div v-if="detail.reject" class="reason-box">
+        <div class="content">{{ detail.reject.reason || "" }}</div>
+        <div class="user-info">
+          <div>驳回人：{{ detail.reject.user }}</div>
+          <div>驳回时间：{{ detail.reject.created_at }}</div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -1508,7 +1551,8 @@ export default {
         reason: '',
         file: ''
       },
-      stopFileList: []
+      stopFileList: [],
+      dialogRejectReasonVisible: false
     }
   },
   computed: {
@@ -1552,8 +1596,10 @@ export default {
     showTaskActionRow: function() {
       const hiddenTaskActionRowPaths = [
         '/pending/xmz/demand/review',
+        '/pending/xmzfzr/demand/review',
         '/pending/gg/order/prepare',
-        '/pending/ggfzr/order/approval'
+        '/pending/ggfzr/order/approval',
+        '/pending/xmzfzr/demand/draft'
       ]
       return hiddenTaskActionRowPaths.indexOf(this.$route.path) < 0
     },
@@ -1561,9 +1607,11 @@ export default {
       const statusMap = {
         '/pending/xmz/demand/draft': 0,
         '/pending/gg/demand/draft': 0,
+        '/pending/xmzfzr/demand/check': 1,
         '/pending/gg/assign/vendor': 3,
         '/pending/gys/demand/quote': 4,
         '/pending/xmz/demand/review': 5,
+        '/pending/xmzfzr/demand/review': 5,
         '/pending/gg/order/prepare': 7,
         '/pending/ggfzr/order/approval': 8
       }
@@ -1910,7 +1958,7 @@ export default {
       this.detail = Object.assign({}, this.detail, { editLoading: false })
       this.temp = Object.assign({}, this.detail, {
         tag: parseInt(this.detail.tag),
-        supplier: parseInt(this.detail.supplier.id)
+        supplier: this.detail.supplier ? parseInt(this.detail.supplier.id) : ''
       })
       this.demandFileList = this.temp.files.map((file) => {
         return {
@@ -2614,15 +2662,18 @@ export default {
      */
     handleToVerifyTask(multi = true) {
       const checkeds = []
-      let hasError = false
 
       // 列表选择
       if (multi) {
-        this.multipleSelection.some((listItem) => {
+        if (this.multipleSelection.length < 0) {
+          this.$message.error('请先选择需求')
+          return false
+        }
+
+        const result = this.multipleSelection.some((listItem) => {
           if ([4, 6].indexOf(listItem.status) < 0) {
             const errorName = `[${listItem.name}]: 该需求状态无法提交审核物件`
             this.$message.error(errorName)
-            hasError = true
             return true
           }
 
@@ -2630,36 +2681,39 @@ export default {
             if (taskItem.task_status !== 0) {
               const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法提交审核`
               this.$message.error(errorName)
-              hasError = true
               return true
             }
             checkeds.push(taskItem.task_id)
             return false
           })
         })
+        if (result) {
+          return false
+        }
       } else {
         if ([4, 6].indexOf(this.detail.status) < 0) {
           const errorName = `[${this.detail.name}]: 该需求状态无法提交审核物件`
           this.$message.error(errorName)
-          hasError = true
           return true
         }
 
-        this.detail.tasks.some((taskItem) => {
+        if (this.detail.tasks.length < 0) {
+          this.$message.error('请先新增物件')
+          return false
+        }
+
+        const result = this.detail.tasks.some((taskItem) => {
           if (taskItem.task_status !== 0) {
             const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法提交审核`
             this.$message.error(errorName)
-            hasError = true
             return true
           }
           checkeds.push(taskItem.task_id)
           return false
         })
-      }
-
-      if (checkeds.length <= 0 || hasError === true) {
-        this.$message.error('请先选择需求')
-        return false
+        if (result) {
+          return false
+        }
       }
 
       toVerifyTask({
@@ -2934,7 +2988,7 @@ export default {
         file_id: fileStr
       })
         .then((response) => {
-          this.$set(this.detail.tasks[taskIndex], keyName, fileArr)
+          this.$set(this.detail, 'supplier_files', fileArr)
           this.$message.success('上传成功')
         })
         .catch((_error) => {})
@@ -2942,6 +2996,18 @@ export default {
     handleUploadWorkError(err, file, fileList) {
       console.log('上传失败', err, file, fileList)
       this.$message.error('上传失败')
+    },
+    /**
+     * 驳回原因
+     */
+    handleRejectReason() {
+      if (!this.detail.reject) {
+        this.$message.error('对不起，没有驳回原因')
+        return false
+      }
+      this.$nextTick(() => {
+        this.dialogRejectReasonVisible = true
+      })
     }
   }
 }
@@ -3138,6 +3204,18 @@ export default {
       height: 178px;
       display: block;
     }
+  }
+}
+.reason-box {
+  .content {
+    font-size: 16px;
+    text-align: left;
+  }
+  .user-info {
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 }
 </style>

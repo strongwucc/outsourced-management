@@ -69,7 +69,7 @@
                   'align-items': 'center',
                 }"
               >
-                <el-descriptions-item label="项目代码">{{
+                <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item label="发起部门">{{
@@ -216,7 +216,7 @@
               <el-table-column
                 prop="task_id"
                 label="物件单号"
-                width="200"
+                width="150"
                 align="center"
                 show-overflow-tooltip
               >
@@ -309,7 +309,11 @@
             </div>
           </div>
           <div
-            v-if="detail.demand && detail.demand.supplier_files.length > 0"
+            v-if="
+              detail.demand &&
+                (detail.demand.files.length > 0 ||
+                  detail.demand.supplier_files.length)
+            "
             class="download-content"
           >
             <div class="title">
@@ -318,8 +322,21 @@
             </div>
             <div class="files">
               <div
-                v-for="(file, fileIndex) in detail.demand.supplier_files"
-                :key="fileIndex"
+                v-for="(file, _fileIndex) in detail.demand.files"
+                :key="file.file_id"
+                class="file-item"
+              >
+                <div class="file-name">{{ file.name }}</div>
+                <el-button
+                  type="primary"
+                  size="mini"
+                  plain
+                  @click="downLoadContract(file.name, file.url)"
+                >下载</el-button>
+              </div>
+              <div
+                v-for="(file, _fileIndex) in detail.demand.supplier_files"
+                :key="file.file_id"
                 class="file-item"
               >
                 <div class="file-name">{{ file.name }}</div>
@@ -656,7 +673,7 @@ export default {
     },
     handleCurrentChange(row, column, event) {
       const index = this.list.findIndex(
-        (item) => item.order_id === row.order_id
+        (item) => item.change_id === row.change_id
       )
       if (index >= 0) {
         this.detailIndex = index

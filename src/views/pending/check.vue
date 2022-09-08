@@ -19,20 +19,12 @@
             <el-table-column>
               <template slot="header">
                 <el-button
-                  v-permission="[1, 2]"
+                  v-permission="[1, 2, 3, 4]"
                   type="primary"
                   size="mini"
                   @click="handleVerify(true, true)"
                 >
-                  交付验收
-                </el-button>
-                <el-button
-                  v-permission="[3, 4]"
-                  type="primary"
-                  size="mini"
-                  @click="handleVerify(true, true)"
-                >
-                  确认验收
+                  验收通过
                 </el-button>
                 <el-button
                   v-permission="[1, 2, 3, 4]"
@@ -90,7 +82,7 @@
                   'align-items': 'center',
                 }"
               >
-                <el-descriptions-item label="项目代码">{{
+                <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item label="发起部门">{{
@@ -222,7 +214,7 @@
               <el-table-column
                 prop="task_id"
                 label="物件单号"
-                width="200"
+                width="150"
                 align="center"
               >
                 <template slot-scope="scope">
@@ -302,7 +294,7 @@
               <el-table-column
                 label="操作"
                 align="center"
-                min-width="100"
+                min-width="200"
                 class-name="small-padding fixed-width"
               >
                 <template slot-scope="scope">
@@ -310,9 +302,31 @@
                     type="primary"
                     size="mini"
                     plain
+                    :loading="scope.row.downloading"
                     @click="handleDownloadWork(scope.row, scope.$index)"
                   >
                     下载
+                  </el-button>
+                  <el-button
+                    v-if="[3].indexOf(scope.row.task_status) >= 0"
+                    type="primary"
+                    size="mini"
+                    style="margin-left: 10px"
+                    plain
+                    @click="handleRejectTaskReason(scope.row, scope.$index)"
+                  >
+                    驳回原因
+                  </el-button>
+                  <el-button
+                    v-if="scope.row.reject"
+                    v-permission="[1, 3]"
+                    type="primary"
+                    size="mini"
+                    style="margin-left: 10px"
+                    plain
+                    @click="handleRejectTaskReason(scope.row, scope.$index)"
+                  >
+                    驳回原因
                   </el-button>
                 </template>
               </el-table-column>
@@ -367,7 +381,11 @@
             </div>
           </div>
           <div
-            v-if="detail.demand && detail.demand.supplier_files.length > 0"
+            v-if="
+              detail.demand &&
+                (detail.demand.files.length > 0 ||
+                  detail.demand.supplier_files.length)
+            "
             class="download-content"
           >
             <div class="title">
@@ -376,8 +394,21 @@
             </div>
             <div class="files">
               <div
-                v-for="(file, fileIndex) in detail.demand.supplier_files"
-                :key="fileIndex"
+                v-for="(file, _fileIndex) in detail.demand.files"
+                :key="file.file_id"
+                class="file-item"
+              >
+                <div class="file-name">{{ file.name }}</div>
+                <el-button
+                  type="primary"
+                  size="mini"
+                  plain
+                  @click="downLoadContract(file.name, file.url)"
+                >下载</el-button>
+              </div>
+              <div
+                v-for="(file, _fileIndex) in detail.demand.supplier_files"
+                :key="file.file_id"
                 class="file-item"
               >
                 <div class="file-name">{{ file.name }}</div>
@@ -549,6 +580,21 @@
         </el-button>
       </div>
     </el-dialog>
+
+    <!--驳回原因-->
+    <el-dialog
+      title="驳回原因"
+      :visible.sync="dialogRejectReasonVisible"
+      width="600px"
+    >
+      <div v-if="tempTask.reject" class="reason-box">
+        <div class="content">{{ tempTask.reject.reason || "" }}</div>
+        <div class="user-info">
+          <div>驳回人：{{ tempTask.reject.user }}</div>
+          <div>驳回时间：{{ tempTask.reject.created_at }}</div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -714,7 +760,13 @@ export default {
         status: '',
         reason: ''
       },
-      verifyRules: {}
+      verifyRules: {},
+      tempTask: {
+        receipt_id: '',
+        task_id: '',
+        task_name: ''
+      },
+      dialogRejectReasonVisible: false
     }
   },
   computed: {
@@ -796,7 +848,7 @@ export default {
     },
     handleCurrentChange(row, column, event) {
       const index = this.list.findIndex(
-        (item) => item.order_id === row.order_id
+        (item) => item.receipt_id === row.receipt_id
       )
       if (index >= 0) {
         this.detailIndex = index
@@ -854,7 +906,10 @@ export default {
         receipt_id: this.detail.receipt_id,
         task_id: taskCheckeds,
         work_price: price,
-        work_amount: amount
+        work_amount: amount,
+        work_num: '',
+        deliver_date: '',
+        reason: ''
       })
       this.dialogStatus = 'modify'
       this.dialogModifyVisible = true
@@ -871,7 +926,7 @@ export default {
           const tempData = JSON.parse(JSON.stringify(this.tempModify))
           modifyCheckOrder(tempData)
             .then(async(response) => {
-              this.$message.error('申请成功')
+              this.$message.success('申请成功')
               this.dialogModifyVisible = false
               await this.$store.dispatch('user/getPending')
               this.getList(false)
@@ -1140,13 +1195,32 @@ export default {
      */
     handleDownloadWork(task, taskIndex) {
       if (task.finished_product.length > 0) {
-        task.finished_product.forEach((product) => {
-          downloadFile({ url: product.url })
-            .then((response) => {
-              downloadFileStream(baseName(product.url), response)
-            })
-            .catch((_error) => {})
+        this.$set(this.detail.items[taskIndex], 'downloading', true)
+        const actions = task.finished_product.map((product) => {
+          return downloadFile({ url: product.url })
         })
+        const results = Promise.all(actions)
+        results
+          .then((data) => {
+            data.forEach((file, fileIndex) => {
+              downloadFileStream(
+                baseName(task.finished_product[fileIndex].url),
+                file
+              )
+            })
+            this.$set(this.detail.items[taskIndex], 'downloading', false)
+          })
+          .catch((error) => {
+            this.$set(this.detail.items[taskIndex], 'downloading', false)
+            this.$message.error(error || '哎呀，下载失败啦')
+          })
+        // task.finished_product.forEach((product) => {
+        //   downloadFile({ url: product.url })
+        //     .then((response) => {
+        //       downloadFileStream(baseName(product.url), response);
+        //     })
+        //     .catch((_error) => {});
+        // });
       }
     },
     downLoadContract(fileName, filePath) {
@@ -1155,6 +1229,19 @@ export default {
           downloadFileStream(baseName(filePath), response)
         })
         .catch((_error) => {})
+    },
+    /**
+     * 驳回原因
+     */
+    handleRejectTaskReason(task, taskIndex) {
+      if (!task.reject) {
+        this.$message.error('对不起，没有驳回原因')
+        return false
+      }
+      this.tempTask = JSON.parse(JSON.stringify(task))
+      this.$nextTick(() => {
+        this.dialogRejectReasonVisible = true
+      })
     }
   }
 }
@@ -1347,6 +1434,18 @@ export default {
       height: 178px;
       display: block;
     }
+  }
+}
+.reason-box {
+  .content {
+    font-size: 16px;
+    text-align: left;
+  }
+  .user-info {
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 }
 </style>

@@ -18,14 +18,14 @@
             <el-table-column type="selection" width="50" />
             <el-table-column>
               <template slot="header">
-                <el-button
+                <!-- <el-button
                   v-permission="[0]"
                   type="primary"
                   size="mini"
                   @click.stop="handleUploadBill(true)"
                 >
                   申请结算
-                </el-button>
+                </el-button> -->
                 <el-button
                   v-permission="[3]"
                   type="primary"
@@ -196,13 +196,19 @@
               <el-table-column
                 prop="task_id"
                 label="物件单号"
-                width="200"
+                width="150"
                 align="center"
               >
                 <template slot-scope="scope">
                   <task-detail :task-id="scope.row.task_id" />
                 </template>
               </el-table-column>
+              <el-table-column
+                prop="receipt_id"
+                label="验收单号"
+                align="center"
+                show-overflow-tooltip
+              />
               <el-table-column
                 prop="order_id"
                 label="订单号"
@@ -260,6 +266,7 @@
                     type="primary"
                     size="mini"
                     plain
+                    :loading="scope.row.downloading"
                     @click="handleDownloadWork(scope.row, scope.$index)"
                   >
                     下载
@@ -314,7 +321,7 @@
             </div>
           </div>
           <div
-            v-if="detail.supplier_files && detail.supplier_files.length > 0"
+            v-if="detail.files.length > 0 || detail.supplier_files.length"
             class="download-content"
           >
             <div class="title">
@@ -323,8 +330,21 @@
             </div>
             <div class="files">
               <div
-                v-for="(file, fileIndex) in detail.supplier_files"
-                :key="fileIndex"
+                v-for="(file, _fileIndex) in detail.files"
+                :key="file.file_id"
+                class="file-item"
+              >
+                <div class="file-name">{{ file.name }}</div>
+                <el-button
+                  type="primary"
+                  size="mini"
+                  plain
+                  @click="downLoadContract(file.name, file.url)"
+                >下载</el-button>
+              </div>
+              <div
+                v-for="(file, _fileIndex) in detail.supplier_files"
+                :key="file.file_id"
                 class="file-item"
               >
                 <div class="file-name">{{ file.name }}</div>
@@ -768,7 +788,8 @@ export default {
       const hiddenPaths = [
         '/pending/gg/assign/vendor',
         '/pending/xmz/demand/draft',
-        '/pending/gg/demand/draft'
+        '/pending/gg/demand/draft',
+        '/pending/gys/order/reconcile'
       ]
       return hiddenPaths.indexOf(this.$route.path) < 0
     },
@@ -973,13 +994,32 @@ export default {
      */
     handleDownloadWork(task, taskIndex) {
       if (task.finished_product.length > 0) {
-        task.finished_product.forEach((product) => {
-          downloadFile({ url: product.url })
-            .then((response) => {
-              downloadFileStream(baseName(product.url), response)
-            })
-            .catch((error) => {})
+        this.$set(this.detail.tasks[taskIndex], 'downloading', true)
+        const actions = task.finished_product.map((product) => {
+          return downloadFile({ url: product.url })
         })
+        const results = Promise.all(actions)
+        results
+          .then((data) => {
+            data.forEach((file, fileIndex) => {
+              downloadFileStream(
+                baseName(task.finished_product[fileIndex].url),
+                file
+              )
+            })
+            this.$set(this.detail.tasks[taskIndex], 'downloading', false)
+          })
+          .catch((error) => {
+            this.$set(this.detail.tasks[taskIndex], 'downloading', false)
+            this.$message.error(error || '哎呀，下载失败啦')
+          })
+        // task.finished_product.forEach((product) => {
+        //   downloadFile({ url: product.url })
+        //     .then((response) => {
+        //       downloadFileStream(baseName(product.url), response);
+        //     })
+        //     .catch((_error) => {});
+        // });
       }
     },
     /**
@@ -1120,7 +1160,10 @@ export default {
     handleModify() {
       this.tempModify = Object.assign({}, this.tempModify, {
         work_price: 10,
-        work_amount: 10000
+        work_amount: 10000,
+        work_num: '',
+        deliver_date: '',
+        reason: ''
       })
       this.dialogStatus = 'modify'
       this.dialogModifyVisible = true

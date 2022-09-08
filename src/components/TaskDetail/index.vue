@@ -15,7 +15,7 @@
           <el-form
             ref="taskDetailForm"
             class="dialog-form"
-            :disabled="!taskDetailEditable"
+            :disabled="!taskDetailEditable && !fileEditable"
             :model="tempTaskDetail"
             label-position="left"
             label-width="100px"
@@ -45,24 +45,44 @@
               <el-descriptions-item label="发起部门">{{
                 tempTaskDetail.process.launch_dep.name
               }}</el-descriptions-item>
-              <el-descriptions-item label="核算部门" span="3">{{
+              <el-descriptions-item label="核算部门">{{
                 tempTaskDetail.process.account_dep.name
+              }}</el-descriptions-item>
+              <el-descriptions-item label="需求品类" span="3">{{
+                tempTaskDetail.category | categoryText
               }}</el-descriptions-item>
               <el-descriptions-item label="需求说明" span="6">{{
                 tempTaskDetail.demand.introduce
               }}</el-descriptions-item>
-              <el-descriptions-item label="需求品类">{{
-                tempTaskDetail.category | categoryText
-              }}</el-descriptions-item>
-              <el-descriptions-item
-                label="需求附件"
-                span="4"
-                :label-style="{ 'align-items': 'center' }"
-              >
+              <el-descriptions-item label="需求附件" span="4">
                 <div class="file-box" style="width: 100%">
                   <div
                     v-for="(file, fileIndex) in tempTaskDetail.demand.files"
-                    :key="fileIndex"
+                    :key="file.file_id"
+                    class="file-item"
+                    style="
+                      width: 50%;
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                      &:not(:last-child) {
+                        margin-bottom: 10px;
+                      }
+                    "
+                  >
+                    <div class="file-name">{{ file.name }}</div>
+                    <el-button
+                      type="primary"
+                      :disabled="false"
+                      size="mini"
+                      plain
+                      @click="downLoadContract(file.name, file.url)"
+                    >下载</el-button>
+                  </div>
+                  <div
+                    v-for="(file, fileIndex) in tempTaskDetail.demand
+                      .supplier_files"
+                    :key="file.file_id"
                     class="file-item"
                     style="
                       width: 50%;
@@ -295,7 +315,7 @@
                     <i class="el-icon-download" />
                   </span>
                   <span
-                    v-if="taskDetailEditable"
+                    v-if="taskDetailEditable || fileEditable"
                     class="btn-item"
                     @click="deleteTaskDisplayArea(imageIndex)"
                   >
@@ -345,7 +365,7 @@
                     @click="downLoadContract(file.name, file.url)"
                   >下载</el-button>
                   <el-button
-                    v-if="taskDetailEditable"
+                    v-if="taskDetailEditable || fileEditable"
                     type="danger"
                     size="mini"
                     plain
@@ -410,8 +430,10 @@
 
 <script>
 import { fetchTaskDetail, updateTask } from '@/api/demand/task'
+import { uploadWorkImage } from '@/api/order/index'
 import { downloadFile } from '@/api/system/file'
 import { downloadFileStream, baseName } from '@/utils/index'
+import { boolean } from 'yargs'
 const tagList = [
   { id: 0, name: '正式包' },
   { id: 1, name: '测试包' },
@@ -453,6 +475,10 @@ export default {
     taskId: {
       required: true,
       type: String
+    },
+    fileEditable: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -597,19 +623,63 @@ export default {
             duration: 2000
           })
         })
-        .catch((error) => {})
+        .catch((_error) => {})
     },
     /**
      * 删除物件展示图
      */
     deleteTaskDisplayArea(fileIndex) {
-      this.tempTaskDetail.display_area.splice(fileIndex, 1)
+      const displayArea = JSON.parse(
+        JSON.stringify(this.tempTaskDetail.display_area)
+      )
+      displayArea.splice(fileIndex, 1)
+      if (!this.taskDetailEditable) {
+        uploadWorkImage({
+          task_id: this.tempTaskDetail.task_id,
+          up_type: 1,
+          file_id: displayArea.map((file) => file.file_id).join(',')
+        })
+          .then((response) => {
+            this.$set(this.tempTaskDetail, 'display_area', displayArea)
+            this.$message.success('删除成功')
+            this.$emit('updateFile', {
+              index: fileIndex,
+              key: 'display_area',
+              value: displayArea
+            })
+          })
+          .catch((_error) => {})
+      } else {
+        this.$set(this.tempTaskDetail, 'display_area', displayArea)
+      }
     },
     /**
      * 删除物件作品
      */
     deleteTaskFinishedProduct(fileIndex) {
-      this.tempTaskDetail.finished_product.splice(fileIndex, 1)
+      const finishedProduct = JSON.parse(
+        JSON.stringify(this.tempTaskDetail.finished_product)
+      )
+      finishedProduct.splice(fileIndex, 1)
+      if (!this.taskDetailEditable) {
+        uploadWorkImage({
+          task_id: this.tempTaskDetail.task_id,
+          up_type: 0,
+          file_id: finishedProduct.map((file) => file.file_id).join(',')
+        })
+          .then((response) => {
+            this.$set(this.tempTaskDetail, 'finished_product', finishedProduct)
+            this.$message.success('删除成功')
+            this.$emit('updateFile', {
+              index: fileIndex,
+              key: 'finished_product',
+              value: finishedProduct
+            })
+          })
+          .catch((_error) => {})
+      } else {
+        this.$set(this.tempTaskDetail, 'finished_product', finishedProduct)
+      }
     },
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url

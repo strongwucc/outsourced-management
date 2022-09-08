@@ -71,7 +71,7 @@
                   'align-items': 'center',
                 }"
               >
-                <el-descriptions-item label="项目代码">{{
+                <el-descriptions-item label="项目名称">{{
                   detail.demand.project
                     ? detail.demand.project.project_name
                     : ""
@@ -225,7 +225,14 @@
                 align="center"
               >
                 <template slot-scope="scope">
-                  <task-detail :task-id="scope.row.task_id" />
+                  <task-detail
+                    :task-id="scope.row.task_id"
+                    :file-editable="
+                      [0, 4].indexOf(scope.row.task_status) >= 0 &&
+                        $store.getters.roles.indexOf(0) >= 0
+                    "
+                    @updateFile="updateTaskFile"
+                  />
                 </template>
               </el-table-column>
               <el-table-column prop="task_image" label="缩略图" align="center">
@@ -317,6 +324,7 @@
                     size="mini"
                     style="margin-left: 10px"
                     plain
+                    :loading="scope.row.downloading"
                     @click="handleDownloadWork(scope.row, scope.$index)"
                   >
                     下载作品
@@ -352,9 +360,7 @@
                     size="mini"
                     style="margin-left: 10px"
                     plain
-                    @click="
-                      handleRejectTaskReason(scope.row, scope.$index, $index)
-                    "
+                    @click="handleRejectTaskReason(scope.row, scope.$index)"
                   >
                     驳回原因
                   </el-button>
@@ -363,9 +369,7 @@
                     type="primary"
                     size="mini"
                     plain
-                    @click="
-                      handleStopTaskReason(scope.row, scope.$index, $index)
-                    "
+                    @click="handleStopTaskReason(scope.row, scope.$index)"
                   >
                     终止原因
                   </el-button>
@@ -404,7 +408,11 @@
             </div>
           </div>
           <div
-            v-if="detail.demand && detail.demand.supplier_files.length > 0"
+            v-if="
+              detail.demand &&
+                (detail.demand.files.length > 0 ||
+                  detail.demand.supplier_files.length)
+            "
             class="download-content"
           >
             <div class="title">
@@ -413,8 +421,21 @@
             </div>
             <div class="files">
               <div
-                v-for="(file, fileIndex) in detail.demand.supplier_files"
-                :key="fileIndex"
+                v-for="(file, _fileIndex) in detail.demand.files"
+                :key="file.file_id"
+                class="file-item"
+              >
+                <div class="file-name">{{ file.name }}</div>
+                <el-button
+                  type="primary"
+                  size="mini"
+                  plain
+                  @click="downLoadContract(file.name, file.url)"
+                >下载</el-button>
+              </div>
+              <div
+                v-for="(file, _fileIndex) in detail.demand.supplier_files"
+                :key="file.file_id"
                 class="file-item"
               >
                 <div class="file-name">{{ file.name }}</div>
@@ -923,11 +944,11 @@ export default {
       let width = 100
       const status = this.detail.tasks.map((task) => task.task_status)
       if (status.indexOf(4) >= 0) {
-        width = 400
+        width = 420
       } else if (status.indexOf(0) >= 0) {
-        width = 310
+        width = 320
       } else if (status.indexOf(5) >= 0) {
-        width = 200
+        width = 220
       }
       return width
     }
@@ -1044,7 +1065,10 @@ export default {
         order_id: this.detail.order_id,
         task_id: taskCheckeds,
         work_price: price,
-        work_amount: amount
+        work_amount: amount,
+        nums: '',
+        deliver_date: '',
+        reason: ''
       })
       this.dialogStatus = 'modify'
       this.dialogModifyVisible = true
@@ -1093,7 +1117,7 @@ export default {
           this.$message.error('只能选择单个交付验收')
           return false
         }
-        this.multipleSelection.some((orderItem) => {
+        const result = this.multipleSelection.some((orderItem) => {
           return orderItem.tasks.some((taskItem) => {
             if ([0, 4].indexOf(taskItem.task_status) < 0) {
               const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
@@ -1116,12 +1140,15 @@ export default {
             return false
           })
         })
+        if (result) {
+          return false
+        }
       } else {
         if (this.multipleTaskSelection.length <= 0) {
           this.$message.error('请先选择物件')
           return false
         }
-        this.multipleTaskSelection.some((taskItem) => {
+        const result = this.multipleTaskSelection.some((taskItem) => {
           if ([0, 4].indexOf(taskItem.task_status) < 0) {
             const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
             this.$message.error(errorName)
@@ -1141,6 +1168,9 @@ export default {
               .join(',')
           })
         })
+        if (result) {
+          return false
+        }
       }
 
       if (taskCheckeds.length <= 0) {
@@ -1168,6 +1198,10 @@ export default {
      */
     handleUploadWork(task, taskIndex, demandIndex) {},
     handleUploadWorkSuccess(response, file, fileList, taskIndex, keyName) {
+      if (!response.data) {
+        this.$message.error(response.message || '哎呀，出错啦')
+        return false
+      }
       const fileArr = fileList.map((fileItem) => {
         return {
           name: fileItem.name,
@@ -1208,13 +1242,32 @@ export default {
      */
     handleDownloadWork(task, taskIndex) {
       if (task.finished_product.length > 0) {
-        task.finished_product.forEach((product) => {
-          downloadFile({ url: product.url })
-            .then((response) => {
-              downloadFileStream(baseName(product.url), response)
-            })
-            .catch((_error) => {})
+        this.$set(this.detail.tasks[taskIndex], 'downloading', true)
+        const actions = task.finished_product.map((product) => {
+          return downloadFile({ url: product.url })
         })
+        const results = Promise.all(actions)
+        results
+          .then((data) => {
+            data.forEach((file, fileIndex) => {
+              downloadFileStream(
+                baseName(task.finished_product[fileIndex].url),
+                file
+              )
+            })
+            this.$set(this.detail.tasks[taskIndex], 'downloading', false)
+          })
+          .catch((error) => {
+            this.$set(this.detail.tasks[taskIndex], 'downloading', false)
+            this.$message.error(error || '哎呀，下载失败啦')
+          })
+        // task.finished_product.forEach((product) => {
+        //   downloadFile({ url: product.url })
+        //     .then((response) => {
+        //       downloadFileStream(baseName(product.url), response);
+        //     })
+        //     .catch((_error) => {});
+        // });
       }
     },
     /**
@@ -1242,7 +1295,7 @@ export default {
     /**
      * 驳回原因
      */
-    handleRejectTaskReason(task, taskIndex, demandIndex) {
+    handleRejectTaskReason(task, taskIndex) {
       if (!task.reject) {
         this.$message.error('对不起，没有驳回原因')
         return false
@@ -1255,7 +1308,7 @@ export default {
     /**
      * 终止原因
      */
-    handleStopTaskReason(task, taskIndex, demandIndex) {
+    handleStopTaskReason(task, taskIndex) {
       this.tempTask = JSON.parse(JSON.stringify(task))
       this.dialogStopReasonVisible = true
     },
@@ -1338,6 +1391,9 @@ export default {
           downloadFileStream(fileName, response)
         })
         .catch((_error) => {})
+    },
+    updateTaskFile(data) {
+      this.$set(this.detail.tasks[data.index], data.key, data.value)
     }
   }
 }
@@ -1551,6 +1607,18 @@ export default {
       height: 178px;
       display: block;
     }
+  }
+}
+.reason-box {
+  .content {
+    font-size: 16px;
+    text-align: left;
+  }
+  .user-info {
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 }
 </style>
