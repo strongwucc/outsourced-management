@@ -296,7 +296,7 @@
                     v-if="[0, 4].indexOf(scope.row.task_status) >= 0"
                     v-permission="[0]"
                     class="upload-box"
-                    :action="`${$baseUrl}/api/tools/upfile`"
+                    :action="`${$baseUrl}api/tools/upfile`"
                     :show-file-list="false"
                     multiple
                     :file-list="scope.row.finished_product"
@@ -313,6 +313,14 @@
                     :on-error="handleUploadWorkError"
                   >
                     <el-button
+                      v-if="scope.row.finished_product.length > 0"
+                      size="mini"
+                      type="primary"
+                      style="margin-left: 10px"
+                      plain
+                    >已上传作品</el-button>
+                    <el-button
+                      v-else
                       size="mini"
                       type="primary"
                       style="margin-left: 10px"
@@ -349,7 +357,20 @@
                     "
                     :on-error="handleUploadWorkError"
                   >
-                    <el-button type="primary" size="mini" plain>
+                    <el-button
+                      v-if="scope.row.display_area.length > 0"
+                      type="primary"
+                      size="mini"
+                      plain
+                    >
+                      已上传展示图
+                    </el-button>
+                    <el-button
+                      v-else
+                      type="primary"
+                      size="mini"
+                      plain
+                    >
                       上传展示图
                     </el-button>
                   </el-upload>
@@ -944,11 +965,11 @@ export default {
       let width = 100
       const status = this.detail.tasks.map((task) => task.task_status)
       if (status.indexOf(4) >= 0) {
-        width = 420
+        width = 440
       } else if (status.indexOf(0) >= 0) {
-        width = 320
+        width = 340
       } else if (status.indexOf(5) >= 0) {
-        width = 220
+        width = 240
       }
       return width
     }

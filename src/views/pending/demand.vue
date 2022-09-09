@@ -535,6 +535,16 @@
                 新增物件
               </el-button>
               <el-button
+                v-if="detail.can_add_task === 1"
+                icon="el-icon-download"
+                type="primary"
+                size="mini"
+                plain
+                @click.stop="handleImportTask()"
+              >
+                导入物件
+              </el-button>
+              <el-button
                 v-if="[4, 6].indexOf(detail.status) >= 0"
                 v-permission="[0]"
                 icon="el-icon-circle-check"
@@ -1235,6 +1245,50 @@
       </div>
     </el-dialog>
 
+    <!--导入物件-->
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogImportTaskVisible"
+      width="600px"
+    >
+      <el-form
+        ref="importTaskDataForm"
+        class="dialog-form"
+        :rules="importTaskRules"
+        :model="tempImportTask"
+        label-position="left"
+        label-width="150px"
+        style="margin: 0 50px"
+      >
+        <el-form-item label="物件模板">
+          <el-button size="mini" @click="downloadTaskTpl">下载</el-button>
+        </el-form-item>
+
+        <el-form-item label="导入物件">
+          <el-upload
+            class="upload-demo"
+            :action="`${$baseUrl}api/needs/importTaskTpl`"
+            :headers="{ Authorization: $store.getters.token }"
+            :on-success="handleAddTaskTplSucc"
+            :show-file-list="false"
+          >
+            <el-button size="mini" type="primary">导入</el-button>
+            <span class="file-name" style="margin-left: 10px">{{
+              tempImportTaskFileName
+            }}</span>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogImportTaskVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="confirmImportTask">
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
+
     <!--终止-->
     <el-dialog
       :title="textMap[dialogStatus]"
@@ -1552,7 +1606,14 @@ export default {
         file: ''
       },
       stopFileList: [],
-      dialogRejectReasonVisible: false
+      dialogRejectReasonVisible: false,
+      dialogImportTaskVisible: false,
+      tempImportTask: {
+        demand_id: '',
+        tasks: []
+      },
+      importTaskRules: {},
+      tempImportTaskFileName: ''
     }
   },
   computed: {
@@ -2427,6 +2488,62 @@ export default {
       })
     },
     /**
+     * 导入物件弹窗
+     */
+    handleImportTask() {
+      this.tempImportTask = Object.assign({}, this.tempImportTask, {
+        demand_id: this.detail.demand_id,
+        tasks: []
+      })
+      this.dialogStatus = 'import_task'
+      this.dialogImportTaskVisible = true
+      this.tempImportTaskFileName = ''
+      this.$nextTick(() => {
+        this.$refs['importTaskDataForm'].clearValidate()
+      })
+    },
+    /**
+     * 导出物件模板
+     */
+    downloadTaskTpl() {
+      if (this.tempImportTask.demand_id) {
+        exportTaskTpl(this.tempImportTask.demand_id)
+          .then((response) => {
+            downloadFileStream('物件模板.xlsx', response)
+          })
+          .catch((error) => {
+            console.log(error)
+          })
+      }
+    },
+    /**
+     * 导入模板成功
+     */
+    handleAddTaskTplSucc(response, file, fileList) {
+      this.tempImportTaskFileName = file.name
+      this.tempImportTask = Object.assign({}, this.tempImportTask, {
+        tasks: response
+      })
+    },
+    /**
+     * 确认导入物件
+     */
+    confirmImportTask() {
+      this.$refs['importTaskDataForm'].validate((valid) => {
+        if (valid) {
+          const temp = JSON.parse(JSON.stringify(this.tempImportTask))
+          batchAddTasks(temp)
+            .then(async(response) => {
+              this.dialogImportTaskVisible = false
+              this.$message.success('导入成功')
+              await this.$store.dispatch('user/getPending')
+              this.getList(false)
+            })
+            .catch((_error) => {})
+        }
+      })
+    },
+    /**
      * 修改物件
      */
     updateTaskData() {
@@ -2697,7 +2814,7 @@ export default {
           return true
         }
 
-        if (this.detail.tasks.length < 0) {
+        if (this.detail.tasks.length <= 0) {
           this.$message.error('请先新增物件')
           return false
         }
