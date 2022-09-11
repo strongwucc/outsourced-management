@@ -18,7 +18,7 @@
             <el-table-column type="selection" width="50" />
             <el-table-column>
               <template slot="header">
-                <!-- <el-button
+                <el-button
                   v-permission="[1, 2, 3, 4, 0]"
                   type="primary"
                   size="mini"
@@ -29,7 +29,7 @@
                   type="primary"
                   size="mini"
                   @click="handleVerify(false, true)"
-                >驳回</el-button> -->
+                >驳回</el-button>
               </template>
               <template slot-scope="scope">
                 <div class="item-box">
