@@ -296,7 +296,7 @@
                     v-if="[0, 4].indexOf(scope.row.task_status) >= 0"
                     v-permission="[0]"
                     class="upload-box"
-                    :action="`${$baseUrl}api/tools/upfile`"
+                    :action="`${$baseUrl}/api/tools/upfile`"
                     :show-file-list="false"
                     multiple
                     :file-list="scope.row.finished_product"

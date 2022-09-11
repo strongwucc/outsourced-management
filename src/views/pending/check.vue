@@ -1036,6 +1036,7 @@ export default {
       this.dialogStatus = pass === true ? 'resolve' : 'reject'
       this.tempVerify.status = pass ? 1 : 0
       this.tempVerify.task_id = checkeds
+      this.tempVerify.reason = ''
       if (pass) {
         if (this.verifyRules.reason) {
           delete this.verifyRules.reason

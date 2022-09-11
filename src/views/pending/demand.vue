@@ -76,14 +76,14 @@
                 >
                   生成订单
                 </el-button>
-                <el-button
+                <!-- <el-button
                   v-permission="[3]"
                   type="primary"
                   size="mini"
                   @click="handleFinish(true)"
                 >
                   终止
-                </el-button>
+                </el-button> -->
                 <el-button
                   v-permission="[4]"
                   type="primary"
@@ -331,6 +331,17 @@
               <!-- <el-button type="primary" icon="el-icon-jinzhi" size="mini" plain>
                 驳回
               </el-button> -->
+              <el-button
+                v-if="[9].indexOf(detail.status) >= 0"
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-warning-outline"
+                size="mini"
+                plain
+                @click.stop="handleRejectReason()"
+              >
+                驳回原因
+              </el-button>
             </div>
           </div>
           <el-divider />
@@ -1267,7 +1278,7 @@
         <el-form-item label="导入物件">
           <el-upload
             class="upload-demo"
-            :action="`${$baseUrl}api/needs/importTaskTpl`"
+            :action="`${$baseUrl}/api/needs/importTaskTpl`"
             :headers="{ Authorization: $store.getters.token }"
             :on-success="handleAddTaskTplSucc"
             :show-file-list="false"
@@ -1649,7 +1660,7 @@ export default {
       const hiddenTaskCheckRowPaths = [
         '/pending/gys/demand/quote',
         '/pending/xmz/demand/review',
-        '/pending/gg/order/prepare',
+        // '/pending/gg/order/prepare',
         '/pending/ggfzr/order/approval'
       ]
       return hiddenTaskCheckRowPaths.indexOf(this.$route.path) < 0
@@ -2226,6 +2237,7 @@ export default {
           })
           .catch(() => {})
       } else {
+        this.tempVerify.reason = ''
         this.verifyRules = Object.assign({}, this.verifyRules, {
           reason: [
             { required: true, message: '请输入驳回原因', trigger: 'blur' }
@@ -2263,6 +2275,7 @@ export default {
           })
           .catch(() => {})
       } else {
+        this.tempVerify.reason = ''
         this.verifyRules = Object.assign({}, this.verifyRules, {
           reason: [
             { required: true, message: '请输入驳回原因', trigger: 'blur' }
@@ -2323,6 +2336,7 @@ export default {
           })
           .catch(() => {})
       } else {
+        this.tempVerify.reason = ''
         this.verifyRules = Object.assign({}, this.verifyRules, {
           reason: [
             { required: true, message: '请输入驳回原因', trigger: 'blur' }
@@ -2872,7 +2886,7 @@ export default {
         this.$message.error('请先选择需求')
         return false
       }
-
+      this.tempVerify.reason = ''
       this.verifyRules = Object.assign({}, this.verifyRules, {
         reason: [
           { required: true, message: '请输入驳回原因', trigger: 'blur' }
@@ -2929,7 +2943,11 @@ export default {
       const checkeds = []
 
       if (multi) {
-        this.multipleSelection.some((listItem) => {
+        if (this.multipleSelection.length <= 0) {
+          this.$message.error('请先选择需求')
+          return false
+        }
+        const result = this.multipleSelection.some((listItem) => {
           if (listItem.status !== 7) {
             const errorName = `[${listItem.name}] 该需求并不是待生成订单状态，无法终止`
             this.$message.error(errorName)
@@ -2948,13 +2966,20 @@ export default {
             return false
           })
         })
+        if (result) {
+          return false
+        }
       } else {
         if (this.detail.status !== 7) {
           const errorName = `[${this.detail.name}] 该需求并不是待生成订单状态，无法终止`
           this.$message.error(errorName)
           return false
         }
-        this.multipleTaskSelection.some((taskItem) => {
+        if (this.multipleTaskSelection.length <= 0) {
+          this.$message.error('请先选择终止物件')
+          return false
+        }
+        const result = this.multipleTaskSelection.some((taskItem) => {
           if (taskItem.task_status !== 0) {
             const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法终止`
             this.$message.error(errorName)
@@ -2963,11 +2988,9 @@ export default {
           checkeds.push(taskItem.task_id)
           return false
         })
-      }
-
-      if (checkeds.length <= 0) {
-        // this.$message.error('请先选择物件')
-        return false
+        if (result) {
+          return false
+        }
       }
 
       this.tempFinish = Object.assign({}, this.tempFinish, {
@@ -3071,6 +3094,7 @@ export default {
           })
           .catch(() => {})
       } else {
+        this.tempVerify.reason = ''
         this.verifyRules = Object.assign({}, this.verifyRules, {
           reason: [
             { required: true, message: '请输入驳回原因', trigger: 'blur' }
