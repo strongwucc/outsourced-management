@@ -889,6 +889,7 @@ export default {
       this.detailLoading = false
       this.detailLoaded = true
       this.detail = Object.assign({}, this.detail, detailData.data)
+      this.multipleTaskSelection = []
     },
     /**
      * 通过驳回弹窗

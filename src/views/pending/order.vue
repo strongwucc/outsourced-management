@@ -1052,6 +1052,7 @@ export default {
       this.detailLoading = false
       this.detailLoaded = true
       this.detail = Object.assign({}, this.detail, detailData.data)
+      this.multipleTaskSelection = []
     },
     /**
      * 申请变更
@@ -1250,6 +1251,7 @@ export default {
       })
         .then((response) => {
           this.$set(this.detail.tasks[taskIndex], keyName, fileArr)
+          this.$set(this.list[this.detailIndex].tasks[taskIndex], keyName, fileArr)
           this.$message.success('上传成功')
         })
         .catch((_error) => {})
