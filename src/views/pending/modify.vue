@@ -656,8 +656,13 @@ export default {
           this.total = response.data.total
           this.list = response.data.list
           this.$nextTick(() => {
-            this.$refs.listTable.setCurrentRow(this.list[this.detailIndex])
-            this.handleDetail()
+            if (this.list.length > 0) {
+              if (!this.list[this.detailIndex]) {
+                this.detailIndex = 0
+              }
+              this.$refs.listTable.setCurrentRow(this.list[this.detailIndex])
+              this.handleDetail()
+            }
           })
         })
         .catch((error) => {

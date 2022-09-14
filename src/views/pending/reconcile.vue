@@ -848,8 +848,13 @@ export default {
           const list = response.data.list
           this.list = list
           this.$nextTick(() => {
-            this.$refs.listTable.setCurrentRow(this.list[this.detailIndex])
-            this.handleDetail()
+            if (list.length > 0) {
+              if (!list[this.detailIndex]) {
+                this.detailIndex = 0
+              }
+              this.$refs.listTable.setCurrentRow(list[this.detailIndex])
+              this.handleDetail()
+            }
           })
         })
         .catch((error) => {
