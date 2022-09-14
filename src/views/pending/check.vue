@@ -1261,6 +1261,7 @@ export default {
 }
 .app-container {
   height: calc(100vh - 50px);
+  padding: 0 ;
   .lucien-row {
     height: 100%;
     display: flex;
@@ -1283,12 +1284,15 @@ export default {
   }
   .list-container {
     height: 100%;
-    background: #eef1f6;
+    background: #f7f7f7;
+    margin-top: 5px;
     .item-box {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: flex-start;
+      font-size: 12px;
+      color: #848484;
       .item-no,
       .item-name {
         width: 100%;
@@ -1301,7 +1305,7 @@ export default {
   .detail-container {
     height: 100%;
     overflow-y: scroll;
-    padding: 0 20px;
+    padding: 20px;
     box-sizing: border-box;
     .title {
       span {
@@ -1311,6 +1315,9 @@ export default {
     .info-content {
       .description {
         margin-top: 10px;
+        .el-descriptions {
+          font-size: 12px;
+        }
       }
       .actions {
         margin-top: 20px;
@@ -1351,30 +1358,37 @@ export default {
     align-items: center;
   }
   ::v-deep .list-table {
-    background: #eef1f6;
+    background: #f7f7f7;
+    .el-table__header th {
+      background: #f7f7f7 !important;
+    }
     .el-table__header th.el-table__cell.is-leaf {
       height: 60px;
-      border-bottom: 1px solid rgb(221, 221, 221);
+      border-bottom: 1px solid #e5e5e5;
     }
     .el-table__body .el-table__row {
-      background: #eef1f6;
+      background: #f7f7f7;
       &:hover > td {
-        background-color: #ffffff !important;
+        background-color: #fcfcfc !important;
       }
       &.cuttent-row > td {
-        background-color: #ffffff !important;
+        background-color: #fcfcfc !important;
       }
       td.el-table__cell {
-        border-bottom: 1px solid rgb(221, 221, 221);
+        border-bottom: 1px solid #e5e5e5;
       }
     }
     tr.current-row > td.el-table__cell {
-      background-color: #ffffff;
+      background-color: #fcfcfc;
     }
+  }
+  ::v-deep .detail-container .el-table {
+    font-size: 12px !important;
   }
   ::v-deep .detail-container .el-table.table-info th {
     background: #409eff !important;
     color: #ffffff;
+    border-right: 0 !important;
   }
   ::v-deep .el-icon-my-prohibit {
     background: url("../../assets/icon/prohibit.png") center no-repeat;

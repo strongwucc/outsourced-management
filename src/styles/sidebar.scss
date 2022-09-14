@@ -26,6 +26,7 @@
     }
 
     .new-demand-box {
+      margin: 26px 0 46px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -72,20 +73,31 @@
       border: none;
       height: 100%;
       width: 100% !important;
+      margin-bottom: 82px;
     }
 
     // menu hover
     .submenu-title-noDropdown,
     .el-submenu__title {
+      margin-bottom: 24px;
       height: 46px;
       line-height: 46px;
       &:hover {
         background-color: $menuHover !important;
       }
+      span {
+        font-size: 16px;
+        color: #b8b8b8;
+      }
     }
 
     .is-active>.el-submenu__title {
       color: $subMenuActiveText !important;
+    }
+
+    & .nest-menu {
+      padding: 0 20px;
+      box-sizing: border-box;
     }
 
     & .nest-menu .el-submenu>.el-submenu__title,
@@ -94,13 +106,18 @@
       background-color: $subMenuBg !important;
       height: 46px;
       line-height: 46px;
+      color: #ffffff !important;
+      border-radius: 10px;
       &:hover {
-        background-color: $subMenuHover !important;
+        background-color: rgba($color: #3e6286, $alpha: 0.5) !important;
       }
+      width: 100%;
+      min-width: 0 !important;
+      padding: 0 0 0 30px !important;
+      box-sizing: border-box;
+      display: flex;
       &.is-active {
-        color: #ffffff !important;
-        // background-color: #409eff !important;
-        background-color: rgb(49, 77, 118) !important;
+        background-color: #3e6286 !important;
         .pending-tag {
           color: #ffffff;
         }

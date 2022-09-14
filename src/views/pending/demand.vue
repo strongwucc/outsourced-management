@@ -29,13 +29,15 @@
                   type="primary"
                   size="mini"
                   @click="handleResolveTask(true, true)"
-                >通过</el-button>
+                  >通过</el-button
+                >
                 <el-button
                   v-permission="[1]"
                   type="primary"
                   size="mini"
                   @click="handleResolveTask(false, true)"
-                >驳回</el-button>
+                  >驳回</el-button
+                >
                 <el-button
                   v-permission="[2]"
                   type="primary"
@@ -261,7 +263,8 @@
                 plain
                 :loading="detail.copyLoading"
                 @click.stop="handleCopy()"
-              >复制</el-button>
+                >复制</el-button
+              >
               <el-button
                 v-if="
                   detail.is_creator === 1 && [0, 2].indexOf(detail.status) >= 0
@@ -272,11 +275,12 @@
                 plain
                 :loading="detail.editLoading"
                 @click.stop="handleUpdate()"
-              >编辑</el-button>
+                >编辑</el-button
+              >
               <el-button
                 v-if="
                   detail.is_creator === 1 &&
-                    [0, 1, 2].indexOf(detail.status) >= 0
+                  [0, 1, 2].indexOf(detail.status) >= 0
                 "
                 icon="el-icon-delete"
                 size="mini"
@@ -297,7 +301,8 @@
                 plain
                 :loading="detail.verifyLoading"
                 @click.stop="handleToVerify()"
-              >提交</el-button>
+                >提交</el-button
+              >
               <el-button
                 v-if="detail.status === 1"
                 v-permission="[2]"
@@ -525,7 +530,8 @@
                 size="mini"
                 plain
                 @click="handleResolveTask(true, false)"
-              >通过</el-button>
+                >通过</el-button
+              >
               <el-button
                 v-if="detail.status === 5"
                 v-permission="[1]"
@@ -534,7 +540,8 @@
                 size="mini"
                 plain
                 @click="handleResolveTask(false, false)"
-              >驳回</el-button>
+                >驳回</el-button
+              >
               <el-button
                 v-if="detail.can_add_task === 1"
                 icon="el-icon-document-add"
@@ -597,7 +604,8 @@
                   icon="el-icon-paperclip"
                   style="margin: 0 10px"
                   plain
-                >上传附件</el-button>
+                  >上传附件</el-button
+                >
               </el-upload>
               <el-button
                 v-if="detail.status === 7"
@@ -611,7 +619,7 @@
                 驳回
               </el-button>
               <el-button
-                v-if="detail.status === 7"
+                v-if="[7, 9].indexOf(detail.status) >= 0"
                 v-permission="[3]"
                 icon="el-icon-box"
                 size="mini"
@@ -722,7 +730,8 @@
                   size="mini"
                   plain
                   @click="downLoadContract(file.name, file.url)"
-                >下载</el-button>
+                  >下载</el-button
+                >
               </div>
               <div
                 v-for="(file, _fileIndex) in detail.supplier_files"
@@ -735,7 +744,8 @@
                   size="mini"
                   plain
                   @click="downLoadContract(file.name, file.url)"
-                >下载</el-button>
+                  >下载</el-button
+                >
               </div>
             </div>
           </div>
@@ -834,7 +844,7 @@
                   "
                   :status="
                     selectedProcess.budget_dep.budget_used >
-                      selectedProcess.budget_dep.budget_warn
+                    selectedProcess.budget_dep.budget_warn
                       ? 'warning'
                       : 'success'
                   "
@@ -863,7 +873,8 @@
               v-for="(tag, tagIndex) in tagOptions"
               :key="tagIndex"
               :label="tag.id"
-            >{{ tag.name }}</el-radio>
+              >{{ tag.name }}</el-radio
+            >
           </el-radio-group>
         </el-form-item>
 
@@ -1177,19 +1188,19 @@
               :rules="
                 property.type === 1
                   ? [
-                    {
-                      required: true,
-                      message: `请选择${property.name}`,
-                      trigger: 'change',
-                    },
-                  ]
+                      {
+                        required: true,
+                        message: `请选择${property.name}`,
+                        trigger: 'change',
+                      },
+                    ]
                   : [
-                    {
-                      required: true,
-                      message: `请输入${property.name}`,
-                      trigger: 'blur',
-                    },
-                  ]
+                      {
+                        required: true,
+                        message: `请输入${property.name}`,
+                        trigger: 'blur',
+                      },
+                    ]
               "
               :prop="`extend.${propIndex}.value`"
             >
@@ -1230,7 +1241,7 @@
                   v-if="tempTask.task_image_url"
                   :src="tempTask.task_image_url"
                   class="task-image"
-                >
+                />
                 <i v-else class="el-icon-plus task-image-uploader-icon" />
                 <div slot="tip" class="el-upload__tip">
                   只能上传jpg/png/jpeg文件，且不超过2M
@@ -1379,138 +1390,138 @@ import {
   verifyOrder,
   exportTaskTpl,
   batchAddTasks,
-  uploadDemandPaperclip
-} from '@/api/demand/index'
+  uploadDemandPaperclip,
+} from "@/api/demand/index";
 import {
   createTask,
   updateTask,
   fetchTaskDetail,
   verifyTask,
   finishTask,
-  deleteTask
-} from '@/api/demand/task'
+  deleteTask,
+} from "@/api/demand/task";
 import {
   fetchAllProcess,
   fetchProcessCategory,
-  fetchProcessVerifyMember
-} from '@/api/project/process'
-import { fetchReasonList } from '@/api/system/reason'
-import permission from '@/directive/permission/index.js' // 权限判断指令
-import TaskDetail from '@/components/TaskDetail'
-import { downloadFile } from '@/api/system/file'
-import { baseName, downloadFileStream } from '@/utils/index'
-import { fetchAllProvider } from '@/api/provider/index'
-import waves from '@/directive/waves'
+  fetchProcessVerifyMember,
+} from "@/api/project/process";
+import { fetchReasonList } from "@/api/system/reason";
+import permission from "@/directive/permission/index.js"; // 权限判断指令
+import TaskDetail from "@/components/TaskDetail";
+import { downloadFile } from "@/api/system/file";
+import { baseName, downloadFileStream } from "@/utils/index";
+import { fetchAllProvider } from "@/api/provider/index";
+import waves from "@/directive/waves";
 const tagList = [
-  { id: 0, name: '正式包' },
-  { id: 1, name: '测试包' },
-  { id: 2, name: '外派' },
-  { id: 3, name: '动态团队' }
-]
+  { id: 0, name: "正式包" },
+  { id: 1, name: "测试包" },
+  { id: 2, name: "外派" },
+  { id: 3, name: "动态团队" },
+];
 export default {
-  name: 'Demand',
+  name: "Demand",
   components: { TaskDetail },
   directives: { permission, waves },
   filters: {
     categoryText(category) {
       if (!category) {
-        return '-'
+        return "-";
       }
-      if (typeof category === 'string') {
-        return category
+      if (typeof category === "string") {
+        return category;
       }
-      let name = category.category_name
+      let name = category.category_name;
       if (category.parent) {
-        name = `${category.parent.category_name}/${name}`
+        name = `${category.parent.category_name}/${name}`;
         if (category.parent.parent) {
-          name = `${category.parent.parent.category_name}/${name}`
+          name = `${category.parent.parent.category_name}/${name}`;
         }
       }
-      return name
+      return name;
     },
     tagText(tag) {
-      let text = tag
+      let text = tag;
       tagList.some((tagItem) => {
         if (tagItem.id === parseInt(tag)) {
-          text = tagItem.name
-          return true
+          text = tagItem.name;
+          return true;
         }
-        return false
-      })
-      return text
+        return false;
+      });
+      return text;
     },
     statusText(status) {
       const statusMap = {
-        0: '待提报',
-        1: '审核中',
-        2: '审核未通过',
-        3: '待分配供应商',
-        4: '待填写物件',
-        5: '物件审核中',
-        6: '物件审核未通过',
-        7: '待生成订单',
-        8: '订单待审核',
-        9: '订单审核未通过',
-        10: '已生成订单'
-      }
-      return statusMap[status]
+        0: "待提报",
+        1: "审核中",
+        2: "审核未通过",
+        3: "待分配供应商",
+        4: "待填写物件",
+        5: "物件审核中",
+        6: "物件审核未通过",
+        7: "待生成订单",
+        8: "订单待审核",
+        9: "订单审核未通过",
+        10: "已生成订单",
+      };
+      return statusMap[status];
     },
     taskStatusText(status) {
       const statusMap = {
-        0: '正常',
-        1: '终止'
-      }
-      return statusMap[status]
-    }
+        0: "正常",
+        1: "终止",
+      };
+      return statusMap[status];
+    },
   },
   data() {
     return {
       listQuery: {
         page: 1,
         page_num: 20,
-        keyword: '',
-        status: undefined
+        keyword: "",
+        status: undefined,
       },
       listLoading: false,
       list: [],
       total: 0,
       multipleSelection: [],
-      dialogStatus: '',
+      dialogStatus: "",
       dialogFormVisible: false,
       temp: {
         id: undefined,
-        process_id: '',
-        name: '',
+        process_id: "",
+        name: "",
         tag: 0,
-        introduce: '',
-        verify_id: '',
-        cat_id: '',
-        file: '',
-        supplier: '',
-        remark: '',
-        status: 0
+        introduce: "",
+        verify_id: "",
+        cat_id: "",
+        file: "",
+        supplier: "",
+        remark: "",
+        status: 0,
       },
       selectedProcess: undefined,
       tagOptions: tagList,
       textMap: {
-        update: '修改需求',
-        copy: '复制需求',
-        create: '新增需求',
-        resolve: '审批',
-        reject: '驳回',
-        provider: '选择供应商',
-        create_task: '填写物件',
-        update_task: '修改物件',
-        import_task: '导入物件'
+        update: "修改需求",
+        copy: "复制需求",
+        create: "新增需求",
+        resolve: "审批",
+        reject: "驳回",
+        provider: "选择供应商",
+        create_task: "填写物件",
+        update_task: "修改物件",
+        import_task: "导入物件",
       },
       rules: {
         process_id: [
-          { required: true, message: '请选择项目流程', trigger: 'change' }
+          { required: true, message: "请选择项目流程", trigger: "change" },
         ],
-        name: [{ required: true, message: '请输入需求名称', trigger: 'blur' }],
+        name: [{ required: true, message: "请输入需求名称", trigger: "blur" }],
         category_id: [
-          { required: true, message: '请选择需求品类', trigger: 'change' }
-        ]
+          { required: true, message: "请选择需求品类", trigger: "change" },
+        ],
       },
       posting: false,
       processLoading: false,
@@ -1527,109 +1538,109 @@ export default {
       detailLoading: false,
       detailLoaded: false,
       textMap: {
-        update: '修改需求',
-        copy: '复制需求',
-        create: '新增需求',
-        resolve: '审批',
-        reject: '驳回',
-        provider: '选择供应商',
-        create_task: '填写物件',
-        update_task: '修改物件',
-        import_task: '导入物件'
+        update: "修改需求",
+        copy: "复制需求",
+        create: "新增需求",
+        resolve: "审批",
+        reject: "驳回",
+        provider: "选择供应商",
+        create_task: "填写物件",
+        update_task: "修改物件",
+        import_task: "导入物件",
       },
-      dialogStatus: '',
+      dialogStatus: "",
       dialogVerifyVisible: false,
       confirmVerifyVisible: false,
       dialogVerifyTaskVisible: false,
       dialogVerifyOrderVisible: false,
       tempVerify: {
-        reason: ''
+        reason: "",
       },
       verifyRules: {},
       verifyStatus: false,
       dialogRejectTaskVisible: false,
       dialogTaskVisible: false,
       tempTaskCategory: {
-        category_id: '',
-        category_name: '',
-        property_json: '[]',
-        property_array: []
+        category_id: "",
+        category_name: "",
+        property_json: "[]",
+        property_array: [],
       },
       tempTask: {
-        demand_id: '',
-        task_name: '',
-        task_image: '',
-        task_image_url: '',
-        work_unit: '',
-        work_num: '',
-        deliver_date: '',
-        remark: '',
-        extend: []
+        demand_id: "",
+        task_name: "",
+        task_image: "",
+        task_image_url: "",
+        work_unit: "",
+        work_num: "",
+        deliver_date: "",
+        remark: "",
+        extend: [],
       },
       taskRules: {
         task_name: [
-          { required: true, message: '请输入物件名称', trigger: 'blur' }
+          { required: true, message: "请输入物件名称", trigger: "blur" },
         ],
         task_image: [
-          { required: true, message: '请添加缩略图', trigger: 'blur' }
+          { required: true, message: "请添加缩略图", trigger: "blur" },
         ],
         work_unit: [
-          { required: true, message: '请选择单位', trigger: 'change' }
+          { required: true, message: "请选择单位", trigger: "change" },
         ],
         work_num: [
           {
             required: true,
-            type: 'integer',
-            message: '请输入单位数量',
-            trigger: 'blur'
-          }
+            type: "integer",
+            message: "请输入单位数量",
+            trigger: "blur",
+          },
         ],
         deliver_date: [
-          { required: true, message: '请选择日期', trigger: 'blur' }
+          { required: true, message: "请选择日期", trigger: "blur" },
         ],
-        value: [{ required: true, message: '请设置属性值', trigger: 'blur' }]
+        value: [{ required: true, message: "请设置属性值", trigger: "blur" }],
       },
       dialogProviderVisible: false,
       providerRules: {
         supplier_id: [
-          { required: true, message: '请选择供应商', trigger: 'change' }
-        ]
+          { required: true, message: "请选择供应商", trigger: "change" },
+        ],
       },
       tempProvider: {
-        demand_id: '',
-        supplier_id: '',
-        supplier_file: '',
-        supplier_reason: ''
+        demand_id: "",
+        supplier_id: "",
+        supplier_file: "",
+        supplier_reason: "",
       },
       demandFileList: [],
       demandSupplierFileList: [],
-      dialogImageUrl: '',
+      dialogImageUrl: "",
       dialogImageVisible: false,
       dialogFinishVisible: false,
       finishRules: {
         reason: [
-          { required: true, message: '请输入终止原因', trigger: 'blur' }
-        ]
+          { required: true, message: "请输入终止原因", trigger: "blur" },
+        ],
       },
       tempFinish: {
         task_id: [],
-        reason: '',
-        file: ''
+        reason: "",
+        file: "",
       },
       stopFileList: [],
       dialogRejectReasonVisible: false,
       dialogImportTaskVisible: false,
       tempImportTask: {
-        demand_id: '',
-        tasks: []
+        demand_id: "",
+        tasks: [],
       },
       importTaskRules: {},
-      tempImportTaskFileName: ''
-    }
+      tempImportTaskFileName: "",
+    };
   },
   computed: {
-    path: function() {
-      return this.$route.path.replace('/pending/', '')
+    path: function () {
+      return this.$route.path.replace("/pending/", "");
     },
     verifyVisible: {
       get() {
@@ -1638,139 +1649,139 @@ export default {
             this.dialogVerifyTaskVisible ||
             this.dialogRejectTaskVisible ||
             this.dialogVerifyOrderVisible) &&
-          this.dialogStatus === 'reject'
-        )
+          this.dialogStatus === "reject"
+        );
       },
       set(newValue) {
-        this.dialogVerifyVisible = newValue
-        this.dialogVerifyTaskVisible = newValue
-        this.dialogRejectTaskVisible = newValue
-        this.dialogVerifyOrderVisible = newValue
-      }
+        this.dialogVerifyVisible = newValue;
+        this.dialogVerifyTaskVisible = newValue;
+        this.dialogRejectTaskVisible = newValue;
+        this.dialogVerifyOrderVisible = newValue;
+      },
     },
-    showHeader: function() {
+    showHeader: function () {
       const hiddenPaths = [
-        '/pending/gg/assign/vendor',
-        '/pending/xmz/demand/draft',
-        '/pending/gg/demand/draft'
-      ]
-      return hiddenPaths.indexOf(this.$route.path) < 0
+        "/pending/gg/assign/vendor",
+        "/pending/xmz/demand/draft",
+        "/pending/gg/demand/draft",
+      ];
+      return hiddenPaths.indexOf(this.$route.path) < 0;
     },
-    showTaskCheckRow: function() {
+    showTaskCheckRow: function () {
       const hiddenTaskCheckRowPaths = [
-        '/pending/gys/demand/quote',
-        '/pending/xmz/demand/review',
+        "/pending/gys/demand/quote",
+        "/pending/xmz/demand/review",
         // '/pending/gg/order/prepare',
-        '/pending/ggfzr/order/approval'
-      ]
-      return hiddenTaskCheckRowPaths.indexOf(this.$route.path) < 0
+        "/pending/ggfzr/order/approval",
+      ];
+      return hiddenTaskCheckRowPaths.indexOf(this.$route.path) < 0;
     },
-    showTaskActionRow: function() {
+    showTaskActionRow: function () {
       const hiddenTaskActionRowPaths = [
-        '/pending/xmz/demand/review',
-        '/pending/xmzfzr/demand/review',
-        '/pending/gg/order/prepare',
-        '/pending/ggfzr/order/approval',
-        '/pending/xmzfzr/demand/draft'
-      ]
-      return hiddenTaskActionRowPaths.indexOf(this.$route.path) < 0
+        "/pending/xmz/demand/review",
+        "/pending/xmzfzr/demand/review",
+        "/pending/gg/order/prepare",
+        "/pending/ggfzr/order/approval",
+        "/pending/xmzfzr/demand/draft",
+      ];
+      return hiddenTaskActionRowPaths.indexOf(this.$route.path) < 0;
     },
-    filterStatus: function() {
+    filterStatus: function () {
       const statusMap = {
-        '/pending/xmz/demand/draft': 0,
-        '/pending/gg/demand/draft': 0,
-        '/pending/xmzfzr/demand/check': 1,
-        '/pending/gg/assign/vendor': 3,
-        '/pending/gys/demand/quote': 4,
-        '/pending/xmz/demand/review': 5,
-        '/pending/xmzfzr/demand/review': 5,
-        '/pending/gg/order/prepare': 7,
-        '/pending/ggfzr/order/approval': 8
-      }
+        "/pending/xmz/demand/draft": 0,
+        "/pending/gg/demand/draft": 0,
+        "/pending/xmzfzr/demand/check": 1,
+        "/pending/gg/assign/vendor": 3,
+        "/pending/gys/demand/quote": 4,
+        "/pending/xmz/demand/review": 5,
+        "/pending/xmzfzr/demand/review": 5,
+        "/pending/gg/order/prepare": 7,
+        "/pending/ggfzr/order/approval": 8,
+      };
       if (statusMap.hasOwnProperty(this.$route.path)) {
-        return statusMap[this.$route.path]
+        return statusMap[this.$route.path];
       }
-      return undefined
-    }
+      return undefined;
+    },
   },
   created() {
-    if (this.$route.query.hasOwnProperty('createDemand')) {
-      this.handleCreate()
+    if (this.$route.query.hasOwnProperty("createDemand")) {
+      this.handleCreate();
     }
-    this.getList(true)
+    this.getList(true);
   },
   mounted() {
-    this.$bus.$on('createDemandEvent', () => {
-      this.handleCreate()
-    })
-    this.$bus.$on('navSearch', (keyword) => {
-      this.listQuery = Object.assign({}, this.listQuery, { keyword })
-      this.getList(false)
-    })
+    this.$bus.$on("createDemandEvent", () => {
+      this.handleCreate();
+    });
+    this.$bus.$on("navSearch", (keyword) => {
+      this.listQuery = Object.assign({}, this.listQuery, { keyword });
+      this.getList(false);
+    });
   },
   beforeDestroy() {
-    this.$bus.$off('createDemandEvent')
-    this.$bus.$off('navSearch')
+    this.$bus.$off("createDemandEvent");
+    this.$bus.$off("navSearch");
   },
   methods: {
     statusColor(status) {
       const statusMap = {
-        0: '#606266;',
-        1: '#606266',
-        2: '#606266',
-        3: '#606266',
-        4: '#606266',
-        5: '#606266',
-        6: '#606266',
-        7: '#606266',
-        8: '#606266',
-        9: '#606266',
-        10: '#cccccc'
-      }
-      return statusMap[status]
+        0: "#606266;",
+        1: "#606266",
+        2: "#606266",
+        3: "#606266",
+        4: "#606266",
+        5: "#606266",
+        6: "#606266",
+        7: "#606266",
+        8: "#606266",
+        9: "#606266",
+        10: "#cccccc",
+      };
+      return statusMap[status];
     },
     /**
      * 获取需求列表
      */
     getList(loading = true) {
       if (loading) {
-        this.listLoading = true
+        this.listLoading = true;
       }
       this.listQuery = Object.assign({}, this.listQuery, {
-        status: this.filterStatus
-      })
+        status: this.filterStatus,
+      });
       fetchList(this.listQuery)
         .then((response) => {
-          this.listLoading = false
-          const { total, list } = response.data
-          this.total = total
-          this.list = list
+          this.listLoading = false;
+          const { total, list } = response.data;
+          this.total = total;
+          this.list = list;
           this.$nextTick(() => {
-            this.$refs.listTable.setCurrentRow(list[this.detailIndex])
-            this.handleDetail()
-          })
+            this.$refs.listTable.setCurrentRow(list[this.detailIndex]);
+            this.handleDetail();
+          });
         })
         .catch((_error) => {
-          this.listLoading = false
-        })
+          this.listLoading = false;
+        });
     },
     handleSelectionChange(val) {
-      this.multipleSelection = val
+      this.multipleSelection = val;
     },
     handleTaskSelectionChange(val) {
-      this.multipleTaskSelection = val
+      this.multipleTaskSelection = val;
     },
     /**
      * 获取流程列表
      */
     fetchProcessList(query) {
-      this.processLoading = true
+      this.processLoading = true;
       fetchAllProcess({ flow_name: query, create_needs_permission: 1 })
         .then((response) => {
-          this.processLoading = false
-          this.process = response.data.list
+          this.processLoading = false;
+          this.process = response.data.list;
         })
-        .catch((_error) => {})
+        .catch((_error) => {});
     },
     /**
      * 流程变化
@@ -1778,16 +1789,16 @@ export default {
      */
     demandProcessChange(process) {
       if (!process) {
-        this.categorys = []
-        this.demandVerifyMembers = []
-        return false
+        this.categorys = [];
+        this.demandVerifyMembers = [];
+        return false;
       }
 
       const processIndex = this.process.findIndex(
         (item) => item.process_id === process
-      )
+      );
       if (processIndex >= 0) {
-        this.selectedProcess = this.process[processIndex]
+        this.selectedProcess = this.process[processIndex];
       }
 
       fetchProcessCategory({ process_id: process })
@@ -1797,35 +1808,35 @@ export default {
               const thirds = second.children.map((third) => {
                 return {
                   label: third.category_name,
-                  value: third.cat_id
-                }
-              })
+                  value: third.cat_id,
+                };
+              });
               return {
                 label: second.category_name,
                 value: second.cat_id,
-                children: thirds
-              }
-            })
+                children: thirds,
+              };
+            });
             return {
               label: first.category_name,
               value: first.cat_id,
-              children: seconds
-            }
-          })
+              children: seconds,
+            };
+          });
         })
-        .catch((_error) => {})
+        .catch((_error) => {});
 
       fetchProcessVerifyMember({ process_id: process })
         .then((response) => {
-          this.demandVerifyMembers = response.data.list
+          this.demandVerifyMembers = response.data.list;
         })
-        .catch((_error) => {})
+        .catch((_error) => {});
 
       fetchAllProvider({ process_id: process, status: 1 })
         .then((response) => {
-          this.providers = response.data.list
+          this.providers = response.data.list;
         })
-        .catch((_error) => {})
+        .catch((_error) => {});
     },
     /**
      * 文件上传成功回调
@@ -1834,7 +1845,7 @@ export default {
      * @param {*} fileList
      */
     handleAddDemandFileSucc(response, file, fileList) {
-      this.handleDemandFileChange(file, fileList)
+      this.handleDemandFileChange(file, fileList);
     },
     /**
      * 文件上传变化
@@ -1842,411 +1853,411 @@ export default {
      * @param {*} fileList
      */
     handleDemandFileChange(file, fileList) {
-      this.demandFileList = fileList
+      this.demandFileList = fileList;
       const fileStr = fileList
         .map((fileItem) => {
-          return fileItem.response.data.file_id
+          return fileItem.response.data.file_id;
         })
-        .join(',')
+        .join(",");
       const fileArr = fileList.map((fileItem) => {
         return {
           name: fileItem.name,
           url: fileItem.url,
           response: {
             data: {
-              file_id: fileItem.response.data.file_id
-            }
-          }
-        }
-      })
+              file_id: fileItem.response.data.file_id,
+            },
+          },
+        };
+      });
       this.temp = Object.assign({}, this.temp, {
         file: fileStr,
-        files: fileArr
-      })
+        files: fileArr,
+      });
     },
     /**
      * 重置需求数据
      */
     resetTemp() {
-      this.demandFileList = []
+      this.demandFileList = [];
       this.temp = {
         id: undefined,
-        process_id: '',
-        name: '',
+        process_id: "",
+        name: "",
         tag: 0,
-        introduce: '',
-        verify_id: '',
-        cat_id: '',
-        file: '',
-        supplier: '',
-        remark: '',
-        status: 0
-      }
+        introduce: "",
+        verify_id: "",
+        cat_id: "",
+        file: "",
+        supplier: "",
+        remark: "",
+        status: 0,
+      };
     },
     /**
      * 增加需求弹窗
      */
     handleCreate() {
-      this.resetTemp()
+      this.resetTemp();
       if (this.$store.getters.roles.indexOf(3) >= 0) {
         this.rules = Object.assign({}, this.rules, {
           verify_id: [
-            { required: true, message: '请选择审核人', trigger: 'change' }
-          ]
-        })
+            { required: true, message: "请选择审核人", trigger: "change" },
+          ],
+        });
       } else {
         if (this.rules.verify_id) {
-          delete this.rules.verify_id
+          delete this.rules.verify_id;
         }
       }
-      this.providers = []
-      this.dialogStatus = 'create'
-      this.dialogFormVisible = true
+      this.providers = [];
+      this.dialogStatus = "create";
+      this.dialogFormVisible = true;
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+        this.$refs["dataForm"].clearValidate();
+      });
     },
     /**
      * 增加需求
      */
     createData(status = 0) {
       if (this.posting) {
-        return false
+        return false;
       }
-      this.$refs['dataForm'].validate((valid) => {
+      this.$refs["dataForm"].validate((valid) => {
         if (valid) {
-          const temp = Object.assign({}, this.temp)
-          const postTemp = Object.assign({}, this.temp)
-          postTemp.status = status
+          const temp = Object.assign({}, this.temp);
+          const postTemp = Object.assign({}, this.temp);
+          postTemp.status = status;
           // temp.demand_id = parseInt(Math.random() * 100) + 1024
-          temp.status = status
-          this.posting = true
+          temp.status = status;
+          this.posting = true;
           createDemand(postTemp)
-            .then(async(response) => {
-              this.posting = false
+            .then(async (response) => {
+              this.posting = false;
               const checkedNodes =
-                this.$refs.categoryCascader.getCheckedNodes()
+                this.$refs.categoryCascader.getCheckedNodes();
               if (checkedNodes.length > 0) {
-                temp.category = `${checkedNodes[0].pathLabels[0]}/${checkedNodes[0].pathLabels[1]}/${checkedNodes[0].pathLabels[2]}`
+                temp.category = `${checkedNodes[0].pathLabels[0]}/${checkedNodes[0].pathLabels[1]}/${checkedNodes[0].pathLabels[2]}`;
               } else {
-                temp.category = ''
+                temp.category = "";
               }
 
               if (
-                this.dialogStatus === 'create' ||
-                this.dialogStatus === 'copy'
+                this.dialogStatus === "create" ||
+                this.dialogStatus === "copy"
               ) {
-                temp.demand_id = response.data.id
-                temp.current_operator = response.data.current_operator
-                temp.is_creator = 1
+                temp.demand_id = response.data.id;
+                temp.current_operator = response.data.current_operator;
+                temp.is_creator = 1;
                 // this.list.unshift(temp)
-                await this.$store.dispatch('user/getPending')
-                this.getList(false)
-                this.dialogFormVisible = false
+                await this.$store.dispatch("user/getPending");
+                this.getList(false);
+                this.dialogFormVisible = false;
                 this.$message({
-                  message: '创建成功',
-                  type: 'success'
-                })
-              } else if (this.dialogStatus === 'update') {
+                  message: "创建成功",
+                  type: "success",
+                });
+              } else if (this.dialogStatus === "update") {
                 const index = this.list.findIndex(
                   (v) => v.demand_id === temp.demand_id
-                )
-                this.list.splice(index, 1, temp)
-                this.detail = Object.assign({}, this.detail, temp)
-                this.dialogFormVisible = false
+                );
+                this.list.splice(index, 1, temp);
+                this.detail = Object.assign({}, this.detail, temp);
+                this.dialogFormVisible = false;
                 this.$message({
-                  message: '修改成功',
-                  type: 'success'
-                })
-              } else if (this.dialogStatus === 'detail') {
+                  message: "修改成功",
+                  type: "success",
+                });
+              } else if (this.dialogStatus === "detail") {
                 const index = this.list.findIndex(
                   (v) => v.demand_id === temp.demand_id
-                )
-                this.list.splice(index, 1, temp)
-                this.dialogDetailVisible = false
+                );
+                this.list.splice(index, 1, temp);
+                this.dialogDetailVisible = false;
                 this.$message({
-                  message: '提交成功',
-                  type: 'success'
-                })
+                  message: "提交成功",
+                  type: "success",
+                });
               }
             })
             .catch((error) => {
-              console.log(error)
-              this.posting = false
-            })
+              console.log(error);
+              this.posting = false;
+            });
         }
-      })
+      });
     },
     /**
      * 修改需求弹窗
      */
     async handleUpdate() {
-      this.detail = Object.assign({}, this.detail, { editLoading: true })
+      this.detail = Object.assign({}, this.detail, { editLoading: true });
       try {
         const processData = await fetchAllProcess({
-          create_needs_permission: 1
-        })
-        this.process = processData.data.list || []
+          create_needs_permission: 1,
+        });
+        this.process = processData.data.list || [];
 
         const categoryData = await fetchProcessCategory({
-          process_id: this.detail.process_id
-        })
+          process_id: this.detail.process_id,
+        });
         this.categorys = categoryData.data.list.map((first) => {
           const seconds = first.children.map((second) => {
             const thirds = second.children.map((third) => {
               return {
                 label: third.category_name,
-                value: third.cat_id
-              }
-            })
+                value: third.cat_id,
+              };
+            });
             return {
               label: second.category_name,
               value: second.cat_id,
-              children: thirds
-            }
-          })
+              children: thirds,
+            };
+          });
           return {
             label: first.category_name,
             value: first.cat_id,
-            children: seconds
-          }
-        })
+            children: seconds,
+          };
+        });
 
         const verifyMemberData = await fetchProcessVerifyMember({
-          process_id: this.detail.process_id
-        })
-        this.demandVerifyMembers = verifyMemberData.data.list
+          process_id: this.detail.process_id,
+        });
+        this.demandVerifyMembers = verifyMemberData.data.list;
 
         const providerData = await fetchAllProvider({
           process_id: this.detail.process_id,
-          status: 1
-        })
-        this.providers = providerData.data.list
+          status: 1,
+        });
+        this.providers = providerData.data.list;
       } catch (error) {
-        console.log(error)
-        this.detail = Object.assign({}, this.detail, { editLoading: false })
-        this.$message.error('修改失败')
+        console.log(error);
+        this.detail = Object.assign({}, this.detail, { editLoading: false });
+        this.$message.error("修改失败");
       }
-      this.detail = Object.assign({}, this.detail, { editLoading: false })
+      this.detail = Object.assign({}, this.detail, { editLoading: false });
       this.temp = Object.assign({}, this.detail, {
         tag: parseInt(this.detail.tag),
-        supplier: this.detail.supplier ? parseInt(this.detail.supplier.id) : ''
-      })
+        supplier: this.detail.supplier ? parseInt(this.detail.supplier.id) : "",
+      });
       this.demandFileList = this.temp.files.map((file) => {
         return {
           name: file.name,
           url: file.url,
           response: {
             data: {
-              file_id: file.file_id
-            }
-          }
-        }
-      })
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
+              file_id: file.file_id,
+            },
+          },
+        };
+      });
+      this.dialogStatus = "update";
+      this.dialogFormVisible = true;
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+        this.$refs["dataForm"].clearValidate();
+      });
     },
     /**
      * 复制需求弹窗
      */
     async handleCopy() {
-      this.detail = Object.assign({}, this.detail, { copyLoading: true })
+      this.detail = Object.assign({}, this.detail, { copyLoading: true });
       try {
         const processData = await fetchAllProcess({
-          create_needs_permission: 1
-        })
-        this.process = processData.data.list || []
+          create_needs_permission: 1,
+        });
+        this.process = processData.data.list || [];
 
         const categoryData = await fetchProcessCategory({
-          process_id: this.detail.process_id
-        })
+          process_id: this.detail.process_id,
+        });
         this.categorys = categoryData.data.list.map((first) => {
           const seconds = first.children.map((second) => {
             const thirds = second.children.map((third) => {
               return {
                 label: third.category_name,
-                value: third.cat_id
-              }
-            })
+                value: third.cat_id,
+              };
+            });
             return {
               label: second.category_name,
               value: second.cat_id,
-              children: thirds
-            }
-          })
+              children: thirds,
+            };
+          });
           return {
             label: first.category_name,
             value: first.cat_id,
-            children: seconds
-          }
-        })
+            children: seconds,
+          };
+        });
 
         const verifyMemberData = await fetchProcessVerifyMember({
-          process_id: this.detail.process_id
-        })
-        this.demandVerifyMembers = verifyMemberData.data.list
+          process_id: this.detail.process_id,
+        });
+        this.demandVerifyMembers = verifyMemberData.data.list;
 
         const providerData = await fetchAllProvider({
           process_id: this.detail.process_id,
-          status: 1
-        })
-        this.providers = providerData.data.list
+          status: 1,
+        });
+        this.providers = providerData.data.list;
       } catch (error) {
-        this.detail = Object.assign({}, this.detail, { copyLoading: false })
-        this.$message.error('复制失败')
+        this.detail = Object.assign({}, this.detail, { copyLoading: false });
+        this.$message.error("复制失败");
       }
-      this.detail = Object.assign({}, this.detail, { copyLoading: false })
-      let supplier = ''
+      this.detail = Object.assign({}, this.detail, { copyLoading: false });
+      let supplier = "";
       if (this.detail.supplier) {
         const supplierIndex = this.providers.findIndex(
           (provider) => provider.id === this.detail.supplier.id
-        )
+        );
         if (supplierIndex >= 0) {
-          supplier = this.providers[supplierIndex].id
+          supplier = this.providers[supplierIndex].id;
         }
       }
 
       this.temp = Object.assign(
         {},
         {
-          project_id: this.process.length > 0 ? this.detail.project_id : '',
-          process_id: this.process.length > 0 ? this.detail.process_id : '',
-          name: this.detail.name || '',
-          introduce: this.detail.introduce || '',
-          cat_id: this.detail.cat_id || '',
-          file: this.detail.file || '',
+          project_id: this.process.length > 0 ? this.detail.project_id : "",
+          process_id: this.process.length > 0 ? this.detail.process_id : "",
+          name: this.detail.name || "",
+          introduce: this.detail.introduce || "",
+          cat_id: this.detail.cat_id || "",
+          file: this.detail.file || "",
           files: this.detail.files || [],
-          remark: this.detail.remark || '',
-          tag: parseInt(this.detail.tag) || '',
-          supplier: parseInt(supplier) || ''
+          remark: this.detail.remark || "",
+          tag: parseInt(this.detail.tag) || "",
+          supplier: parseInt(supplier) || "",
         }
-      )
+      );
       this.demandFileList = this.temp.files.map((file) => {
         return {
           name: file.name,
           url: file.url,
           response: {
             data: {
-              file_id: file.file_id
-            }
-          }
-        }
-      })
-      this.dialogStatus = 'copy'
-      this.dialogFormVisible = true
+              file_id: file.file_id,
+            },
+          },
+        };
+      });
+      this.dialogStatus = "copy";
+      this.dialogFormVisible = true;
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+        this.$refs["dataForm"].clearValidate();
+      });
     },
     /**
      * 删除需求
      */
     handleDelete() {
-      this.$confirm('确定删除?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+      this.$confirm("确定删除?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
       })
         .then(() => {
-          this.detail = Object.assign({}, this.detail, { deleteLoading: true })
+          this.detail = Object.assign({}, this.detail, { deleteLoading: true });
           deleteDemand({ demand_id: this.detail.demand_id })
             .then(() => {
               this.detail = Object.assign({}, this.detail, {
-                deleteLoading: false
-              })
-              this.$message.success('删除成功')
-              this.getList(false)
+                deleteLoading: false,
+              });
+              this.$message.success("删除成功");
+              this.getList(false);
             })
             .catch((_error) => {
               this.detail = Object.assign({}, this.detail, {
-                deleteLoading: false
-              })
-            })
+                deleteLoading: false,
+              });
+            });
         })
-        .catch(() => {})
+        .catch(() => {});
     },
     /**
      * 提交审核
      */
     handleToVerify() {
-      this.$confirm('确定提交审核?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+      this.$confirm("确定提交审核?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
       })
         .then(() => {
-          this.detail = Object.assign({}, this.detail, { verifyLoading: true })
+          this.detail = Object.assign({}, this.detail, { verifyLoading: true });
           toVerifyDemand({ demand_id: this.detail.demand_id })
-            .then(async() => {
+            .then(async () => {
               this.detail = Object.assign({}, this.detail, {
-                verifyLoading: false
-              })
-              this.$message.success('提交成功')
-              await this.$store.dispatch('user/getPending')
-              this.getList(false)
+                verifyLoading: false,
+              });
+              this.$message.success("提交成功");
+              await this.$store.dispatch("user/getPending");
+              this.getList(false);
             })
             .catch((_error) => {
               this.detail = Object.assign({}, this.detail, {
-                verifyLoading: false
-              })
-            })
+                verifyLoading: false,
+              });
+            });
         })
-        .catch(() => {})
+        .catch(() => {});
     },
     /**
      * 审批弹窗
      */
     handleResolve(ok) {
       if (this.multipleSelection.length <= 0) {
-        this.$message.error('请先选择需求')
-        return false
+        this.$message.error("请先选择需求");
+        return false;
       }
 
-      const checkeds = []
+      const checkeds = [];
 
       this.multipleSelection.some((listItem) => {
         if (listItem.status !== 1) {
-          const errorName = `[${listItem.name}] 该需求并不是待审核状态，无法审核`
-          this.$message.error(errorName)
-          return true
+          const errorName = `[${listItem.name}] 该需求并不是待审核状态，无法审核`;
+          this.$message.error(errorName);
+          return true;
         }
-        checkeds.push(listItem.demand_id)
-        return false
-      })
+        checkeds.push(listItem.demand_id);
+        return false;
+      });
 
       if (checkeds.length <= 0) {
-        return false
+        return false;
       }
 
-      this.dialogStatus = ok === true ? 'resolve' : 'reject'
+      this.dialogStatus = ok === true ? "resolve" : "reject";
       if (ok) {
         if (this.verifyRules.reason) {
-          delete this.verifyRules.reason
+          delete this.verifyRules.reason;
         }
-        this.$confirm('确定通过?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
+        this.$confirm("确定通过?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
         })
           .then(() => {
-            this.dialogVerifyVisible = true
-            this.baseConfirmVerify()
+            this.dialogVerifyVisible = true;
+            this.baseConfirmVerify();
           })
-          .catch(() => {})
+          .catch(() => {});
       } else {
-        this.tempVerify.reason = ''
+        this.tempVerify.reason = "";
         this.verifyRules = Object.assign({}, this.verifyRules, {
           reason: [
-            { required: true, message: '请输入驳回原因', trigger: 'blur' }
-          ]
-        })
-        this.dialogVerifyVisible = true
+            { required: true, message: "请输入驳回原因", trigger: "blur" },
+          ],
+        });
+        this.dialogVerifyVisible = true;
         this.$nextTick(() => {
-          this.$refs['verifyDataForm'].clearValidate()
-        })
+          this.$refs["verifyDataForm"].clearValidate();
+        });
       }
     },
     /**
@@ -2254,253 +2265,253 @@ export default {
      */
     detailHandleResolve(ok) {
       if (this.detail.status !== 1) {
-        const errorName = `[${this.detail.name}] 该需求并不是待审核状态，无法审核`
-        this.$message.error(errorName)
-        return false
+        const errorName = `[${this.detail.name}] 该需求并不是待审核状态，无法审核`;
+        this.$message.error(errorName);
+        return false;
       }
 
-      this.dialogStatus = ok === true ? 'resolve' : 'reject'
+      this.dialogStatus = ok === true ? "resolve" : "reject";
       if (ok) {
         if (this.verifyRules.reason) {
-          delete this.verifyRules.reason
+          delete this.verifyRules.reason;
         }
-        this.$confirm('确定通过?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
+        this.$confirm("确定通过?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
         })
           .then(() => {
-            this.dialogVerifyVisible = true
-            this.baseConfirmVerify()
+            this.dialogVerifyVisible = true;
+            this.baseConfirmVerify();
           })
-          .catch(() => {})
+          .catch(() => {});
       } else {
-        this.tempVerify.reason = ''
+        this.tempVerify.reason = "";
         this.verifyRules = Object.assign({}, this.verifyRules, {
           reason: [
-            { required: true, message: '请输入驳回原因', trigger: 'blur' }
-          ]
-        })
-        this.dialogVerifyVisible = true
+            { required: true, message: "请输入驳回原因", trigger: "blur" },
+          ],
+        });
+        this.dialogVerifyVisible = true;
         this.$nextTick(() => {
-          this.$refs['verifyDataForm'].clearValidate()
-        })
+          this.$refs["verifyDataForm"].clearValidate();
+        });
       }
     },
     /**
      * 物件审核弹窗
      */
     handleResolveTask(ok, multi = true) {
-      const checkeds = []
+      const checkeds = [];
 
       if (multi) {
         if (this.multipleSelection.length <= 0) {
-          this.$message.error('请先选择需求')
-          return false
+          this.$message.error("请先选择需求");
+          return false;
         }
         this.multipleSelection.some((listItem) => {
           if ([5].indexOf(listItem.status) < 0) {
-            const errorName = `[${listItem.name}] 该需求状态错误，无法审核`
-            this.$message.error(errorName)
-            return true
+            const errorName = `[${listItem.name}] 该需求状态错误，无法审核`;
+            this.$message.error(errorName);
+            return true;
           }
-          checkeds.push(listItem.demand_id)
-          return false
-        })
+          checkeds.push(listItem.demand_id);
+          return false;
+        });
       } else {
         if ([5].indexOf(this.detail.status) < 0) {
-          const errorName = `[${this.detail.name}] 该需求状态错误，无法审核`
-          this.$message.error(errorName)
-          return false
+          const errorName = `[${this.detail.name}] 该需求状态错误，无法审核`;
+          this.$message.error(errorName);
+          return false;
         }
-        checkeds.push(this.detail.demand_id)
+        checkeds.push(this.detail.demand_id);
       }
 
       if (checkeds.length <= 0) {
-        return false
+        return false;
       }
 
-      this.dialogStatus = ok === true ? 'resolve' : 'reject'
+      this.dialogStatus = ok === true ? "resolve" : "reject";
       if (ok) {
         if (this.verifyRules.reason) {
-          delete this.verifyRules.reason
+          delete this.verifyRules.reason;
         }
-        this.$confirm('确定通过?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
+        this.$confirm("确定通过?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
         })
           .then(() => {
-            this.dialogVerifyTaskVisible = true
-            this.baseConfirmVerify()
+            this.dialogVerifyTaskVisible = true;
+            this.baseConfirmVerify();
           })
-          .catch(() => {})
+          .catch(() => {});
       } else {
-        this.tempVerify.reason = ''
+        this.tempVerify.reason = "";
         this.verifyRules = Object.assign({}, this.verifyRules, {
           reason: [
-            { required: true, message: '请输入驳回原因', trigger: 'blur' }
-          ]
-        })
-        this.dialogVerifyTaskVisible = true
+            { required: true, message: "请输入驳回原因", trigger: "blur" },
+          ],
+        });
+        this.dialogVerifyTaskVisible = true;
         this.$nextTick(() => {
-          this.$refs['verifyDataForm'].clearValidate()
-        })
+          this.$refs["verifyDataForm"].clearValidate();
+        });
       }
     },
     /**
      * 审批确认
      */
     confirmVerify() {
-      this.$refs['verifyDataForm'].validate((valid) => {
+      this.$refs["verifyDataForm"].validate((valid) => {
         if (valid) {
-          this.baseConfirmVerify()
+          this.baseConfirmVerify();
         }
-      })
+      });
     },
     baseConfirmVerify() {
-      const checkeds = []
+      const checkeds = [];
 
-      let baseError
-      let checkStatus
-      let status
-      let verifyFunc
+      let baseError;
+      let checkStatus;
+      let status;
+      let verifyFunc;
 
       if (this.dialogVerifyVisible === true) {
-        baseError = '该需求并不是待审核状态，无法审核'
-        checkStatus = [1]
-        status = this.dialogStatus === 'resolve' ? 3 : 2
-        verifyFunc = verifyDemand
+        baseError = "该需求并不是待审核状态，无法审核";
+        checkStatus = [1];
+        status = this.dialogStatus === "resolve" ? 3 : 2;
+        verifyFunc = verifyDemand;
       } else if (this.dialogVerifyTaskVisible === true) {
-        baseError = '该需求并不是物件待审核状态，无法审核'
-        checkStatus = [5]
-        status = this.dialogStatus === 'resolve' ? 7 : 6
-        verifyFunc = verifyTask
+        baseError = "该需求并不是物件待审核状态，无法审核";
+        checkStatus = [5];
+        status = this.dialogStatus === "resolve" ? 7 : 6;
+        verifyFunc = verifyTask;
       } else if (this.dialogRejectTaskVisible === true) {
-        baseError = '该需求并不是待生成订单状态，无法驳回'
-        checkStatus = [7]
-        status = 6
-        verifyFunc = rejectDemand
+        baseError = "该需求并不是待生成订单状态，无法驳回";
+        checkStatus = [7];
+        status = 6;
+        verifyFunc = rejectDemand;
       } else if (this.dialogVerifyOrderVisible === true) {
-        baseError = '该需求并不是订单待审核状态，无法审核'
-        checkStatus = [8]
-        status = this.dialogStatus === 'resolve' ? 10 : 9
-        verifyFunc = verifyOrder
+        baseError = "该需求并不是订单待审核状态，无法审核";
+        checkStatus = [8];
+        status = this.dialogStatus === "resolve" ? 10 : 9;
+        verifyFunc = verifyOrder;
       } else {
-        this.$message.error('审核失败啦')
-        return false
+        this.$message.error("审核失败啦");
+        return false;
       }
 
       this.multipleSelection.some((listItem) => {
         if (checkStatus.indexOf(listItem.status) < 0) {
-          this.$message.error(`[${listItem.name}] ${baseError}`)
-          return true
+          this.$message.error(`[${listItem.name}] ${baseError}`);
+          return true;
         }
-        checkeds.push(listItem.demand_id)
-        return false
-      })
+        checkeds.push(listItem.demand_id);
+        return false;
+      });
 
       if (checkeds.length <= 0) {
-        checkeds.push(this.detail.demand_id)
+        checkeds.push(this.detail.demand_id);
       }
 
       verifyFunc({
         demand_id: checkeds,
         status,
-        reason: this.tempVerify.reason
+        reason: this.tempVerify.reason,
       })
-        .then(async(response) => {
-          this.dialogVerifyVisible = false
-          this.dialogVerifyTaskVisible = false
-          this.dialogRejectTaskVisible = false
-          this.dialogVerifyOrderVisible = false
-          this.$message.success('操作成功')
-          await this.$store.dispatch('user/getPending')
-          this.getList(false)
+        .then(async (response) => {
+          this.dialogVerifyVisible = false;
+          this.dialogVerifyTaskVisible = false;
+          this.dialogRejectTaskVisible = false;
+          this.dialogVerifyOrderVisible = false;
+          this.$message.success("操作成功");
+          await this.$store.dispatch("user/getPending");
+          this.getList(false);
         })
-        .catch((_error) => {})
+        .catch((_error) => {});
     },
     /**
      * 需求详情
      */
     async handleDetail() {
       if (!this.list[this.detailIndex]) {
-        this.detailLoading = false
-        this.detailLoaded = true
-        this.detail = {}
-        return false
+        this.detailLoading = false;
+        this.detailLoaded = true;
+        this.detail = {};
+        return false;
       }
-      this.detailLoading = true
-      this.detailLoaded = false
+      this.detailLoading = true;
+      this.detailLoaded = false;
       const detailData = await fetchDemandDetail({
-        demand_id: this.list[this.detailIndex].demand_id
-      }).catch((_error) => {})
+        demand_id: this.list[this.detailIndex].demand_id,
+      }).catch((_error) => {});
 
-      this.detailLoading = false
-      this.detailLoaded = true
-      this.detail = Object.assign({}, this.detail, detailData.data)
-      this.multipleTaskSelection = []
+      this.detailLoading = false;
+      this.detailLoaded = true;
+      this.detail = Object.assign({}, this.detail, detailData.data);
+      this.multipleTaskSelection = [];
     },
     /**
      * 重置物件数据
      */
     resetTaskTemp() {
       this.tempTask = {
-        demand_id: '',
-        task_name: '',
-        task_image: '',
-        task_image_url: '',
-        work_unit: '',
-        work_num: '',
-        deliver_date: '',
-        remark: '',
-        extend: []
-      }
+        demand_id: "",
+        task_name: "",
+        task_image: "",
+        task_image_url: "",
+        work_unit: "",
+        work_num: "",
+        deliver_date: "",
+        remark: "",
+        extend: [],
+      };
     },
     /**
      * 新增物件弹窗
      */
     handleCreateTask() {
-      this.tempTaskCategory = this.detail.category
-      this.resetTaskTemp()
+      this.tempTaskCategory = this.detail.category;
+      this.resetTaskTemp();
       this.tempTask = Object.assign({}, this.tempTask, {
         demand_id: this.detail.demand_id,
         extend: this.detail.category.property_array.map((property) => {
           return {
             name: property.extend_name,
-            value: '',
+            value: "",
             type: property.extend_tag,
-            options: property.extend_value
-          }
-        })
-      })
-      this.dialogStatus = 'create_task'
-      this.dialogTaskVisible = true
+            options: property.extend_value,
+          };
+        }),
+      });
+      this.dialogStatus = "create_task";
+      this.dialogTaskVisible = true;
       this.$nextTick(() => {
-        this.$refs['taskDataForm'].clearValidate()
-      })
+        this.$refs["taskDataForm"].clearValidate();
+      });
     },
     /**
      * 新增物件
      */
     createTaskData() {
-      this.$refs['taskDataForm'].validate((valid) => {
+      this.$refs["taskDataForm"].validate((valid) => {
         if (valid) {
-          const temp = JSON.parse(JSON.stringify(this.tempTask))
+          const temp = JSON.parse(JSON.stringify(this.tempTask));
           // temp.task_id = parseInt(Math.random() * 100) + 1024
           if (temp.task_id) {
-            delete temp.task_id
+            delete temp.task_id;
           }
           createTask(temp)
-            .then(async(response) => {
-              this.dialogTaskVisible = false
-              this.$message.success('创建成功')
-              await this.$store.dispatch('user/getPending')
-              this.getList(false)
+            .then(async (response) => {
+              this.dialogTaskVisible = false;
+              this.$message.success("创建成功");
+              await this.$store.dispatch("user/getPending");
+              this.getList(false);
             })
-            .catch((_error) => {})
+            .catch((_error) => {});
         }
-      })
+      });
     },
     /**
      * 导入物件弹窗
@@ -2508,14 +2519,14 @@ export default {
     handleImportTask() {
       this.tempImportTask = Object.assign({}, this.tempImportTask, {
         demand_id: this.detail.demand_id,
-        tasks: []
-      })
-      this.dialogStatus = 'import_task'
-      this.dialogImportTaskVisible = true
-      this.tempImportTaskFileName = ''
+        tasks: [],
+      });
+      this.dialogStatus = "import_task";
+      this.dialogImportTaskVisible = true;
+      this.tempImportTaskFileName = "";
       this.$nextTick(() => {
-        this.$refs['importTaskDataForm'].clearValidate()
-      })
+        this.$refs["importTaskDataForm"].clearValidate();
+      });
     },
     /**
      * 导出物件模板
@@ -2524,63 +2535,63 @@ export default {
       if (this.tempImportTask.demand_id) {
         exportTaskTpl(this.tempImportTask.demand_id)
           .then((response) => {
-            downloadFileStream('物件模板.xlsx', response)
+            downloadFileStream("物件模板.xlsx", response);
           })
           .catch((error) => {
-            console.log(error)
-          })
+            console.log(error);
+          });
       }
     },
     /**
      * 导入模板成功
      */
     handleAddTaskTplSucc(response, file, fileList) {
-      this.tempImportTaskFileName = file.name
+      this.tempImportTaskFileName = file.name;
       this.tempImportTask = Object.assign({}, this.tempImportTask, {
-        tasks: response
-      })
+        tasks: response,
+      });
     },
     /**
      * 确认导入物件
      */
     confirmImportTask() {
-      this.$refs['importTaskDataForm'].validate((valid) => {
+      this.$refs["importTaskDataForm"].validate((valid) => {
         if (valid) {
-          const temp = JSON.parse(JSON.stringify(this.tempImportTask))
+          const temp = JSON.parse(JSON.stringify(this.tempImportTask));
           batchAddTasks(temp)
-            .then(async(response) => {
-              this.dialogImportTaskVisible = false
-              this.$message.success('导入成功')
-              await this.$store.dispatch('user/getPending')
-              this.getList(false)
+            .then(async (response) => {
+              this.dialogImportTaskVisible = false;
+              this.$message.success("导入成功");
+              await this.$store.dispatch("user/getPending");
+              this.getList(false);
             })
-            .catch((_error) => {})
+            .catch((_error) => {});
         }
-      })
+      });
     },
     /**
      * 修改物件
      */
     updateTaskData() {
-      this.$refs['taskDataForm'].validate((valid) => {
+      this.$refs["taskDataForm"].validate((valid) => {
         if (valid) {
-          const temp = JSON.parse(JSON.stringify(this.tempTask))
+          const temp = JSON.parse(JSON.stringify(this.tempTask));
           updateTask(temp)
-            .then(async(response) => {
-              this.dialogTaskVisible = false
-              this.$message.success('修改成功')
-              await this.$store.dispatch('user/getPending')
-              this.getList(false)
+            .then(async (response) => {
+              this.dialogTaskVisible = false;
+              this.$message.success("修改成功");
+              await this.$store.dispatch("user/getPending");
+              this.getList(false);
             })
-            .catch((_error) => {})
+            .catch((_error) => {});
         }
-      })
+      });
     },
     /**
      * 上传物件图片成功回调
      */
     handleTaskImageSuccess(response, file) {
-      this.handleTaskImageChange(file)
+      this.handleTaskImageChange(file);
     },
     /**
      * 上传物件图片变化回调
@@ -2589,83 +2600,83 @@ export default {
       if (file.response) {
         this.tempTask = Object.assign({}, this.tempTask, {
           task_image: file.response.data.file_id,
-          task_image_url: URL.createObjectURL(file.raw)
-        })
+          task_image_url: URL.createObjectURL(file.raw),
+        });
       }
     },
     /**
      * 修改物件弹窗
      */
     handleUpdateTask(task, taskIndex) {
-      let extend
-      const category = this.detail.category
-      const props = task.props || []
+      let extend;
+      const category = this.detail.category;
+      const props = task.props || [];
       if (category.property_array.length > 0) {
         extend = category.property_array.map((property) => {
-          let value = ''
+          let value = "";
           if (props.length > 0) {
             const propIndex = props.findIndex(
               (prop) => prop.extend_name === property.extend_name
-            )
+            );
             if (propIndex >= 0) {
-              value = props[propIndex].extend_value
+              value = props[propIndex].extend_value;
             }
           }
           return {
             name: property.extend_name,
             value: value,
             type: property.extend_tag,
-            options: property.extend_value
-          }
-        })
+            options: property.extend_value,
+          };
+        });
       }
 
-      this.tempTaskCategory = this.detail.category
+      this.tempTaskCategory = this.detail.category;
       this.tempTask = Object.assign({}, task, {
-        extend
-      })
-      this.dialogStatus = 'update_task'
-      this.dialogTaskVisible = true
+        extend,
+      });
+      this.dialogStatus = "update_task";
+      this.dialogTaskVisible = true;
       this.$nextTick(() => {
-        this.$refs['taskDataForm'].clearValidate()
-      })
+        this.$refs["taskDataForm"].clearValidate();
+      });
     },
     /**
      * 复制物件弹窗
      */
     handleCopyTask(task, taskIndex) {
-      let extend
-      const category = this.detail.category
-      const props = task.props || []
+      let extend;
+      const category = this.detail.category;
+      const props = task.props || [];
       if (category.property_array.length > 0) {
         extend = category.property_array.map((property) => {
-          let value = ''
+          let value = "";
           if (props.length > 0) {
             const propIndex = props.findIndex(
               (prop) => prop.extend_name === property.extend_name
-            )
+            );
             if (propIndex >= 0) {
-              value = props[propIndex].extend_value
+              value = props[propIndex].extend_value;
             }
           }
           return {
             name: property.extend_name,
             value: value,
             type: property.extend_tag,
-            options: property.extend_value
-          }
-        })
+            options: property.extend_value,
+          };
+        });
       }
 
-      this.tempTaskCategory = this.detail.category
+      this.tempTaskCategory = this.detail.category;
       this.tempTask = Object.assign({}, task, {
-        extend
-      })
-      this.dialogStatus = 'create_task'
-      this.dialogTaskVisible = true
+        extend,
+      });
+      this.dialogStatus = "create_task";
+      this.dialogTaskVisible = true;
       this.$nextTick(() => {
-        this.$refs['taskDataForm'].clearValidate()
-      })
+        this.$refs["taskDataForm"].clearValidate();
+      });
     },
     /**
      * 删除物件弹窗
@@ -2674,100 +2685,100 @@ export default {
       deleteTask({ task_id: task.task_id })
         .then(() => {
           this.$notify({
-            title: '成功',
-            message: '删除成功',
-            type: 'success',
-            duration: 2000
-          })
-          this.detail.tasks.splice(taskIndex, 1)
+            title: "成功",
+            message: "删除成功",
+            type: "success",
+            duration: 2000,
+          });
+          this.detail.tasks.splice(taskIndex, 1);
         })
-        .catch((_error) => {})
+        .catch((_error) => {});
     },
     downLoadContract(fileName, filePath) {
       downloadFile({ url: filePath })
         .then((response) => {
-          downloadFileStream(baseName(filePath), response)
+          downloadFileStream(baseName(filePath), response);
         })
-        .catch((_error) => {})
+        .catch((_error) => {});
     },
     handleCurrentChange(row, column, event) {
       const index = this.list.findIndex(
         (item) => item.demand_id === row.demand_id
-      )
+      );
       if (index >= 0) {
-        this.detailIndex = index
-        this.handleDetail()
+        this.detailIndex = index;
+        this.handleDetail();
       }
     },
     /**
      * 分配供应商弹窗
      */
     async handleProvider() {
-      this.detail = Object.assign({}, this.detail, { assignLoading: true })
+      this.detail = Object.assign({}, this.detail, { assignLoading: true });
       try {
-        const reasonData = await fetchReasonList()
-        this.providerReasons = reasonData.data.list
+        const reasonData = await fetchReasonList();
+        this.providerReasons = reasonData.data.list;
 
         const providerData = await fetchAllProvider({
           process_id: this.detail.process_id,
-          status: 1
-        })
-        this.providers = providerData.data.list
-        this.detail = Object.assign({}, this.detail, { assignLoading: false })
+          status: 1,
+        });
+        this.providers = providerData.data.list;
+        this.detail = Object.assign({}, this.detail, { assignLoading: false });
         this.tempProvider = Object.assign({}, this.tempProvider, {
           demand_id: this.detail.demand_id,
-          supplier_id: '',
-          supplier_file: '',
-          supplier_reason: ''
-        })
-        this.dialogProviderVisible = true
+          supplier_id: "",
+          supplier_file: "",
+          supplier_reason: "",
+        });
+        this.dialogProviderVisible = true;
       } catch (error) {
-        console.log(error)
-        this.detail = Object.assign({}, this.detail, { assignLoading: false })
+        console.log(error);
+        this.detail = Object.assign({}, this.detail, { assignLoading: false });
         this.$notify({
-          title: '失败',
-          message: '分配供应商失败',
-          type: 'error',
-          duration: 2000
-        })
+          title: "失败",
+          message: "分配供应商失败",
+          type: "error",
+          duration: 2000,
+        });
       }
     },
     handleAddDemandSupplierFileSucc(response, file, fileList) {
-      this.handleDemandSupplierFileChange(file, fileList)
+      this.handleDemandSupplierFileChange(file, fileList);
     },
     handleDemandSupplierFileChange(file, fileList) {
-      this.demandSupplierFileList = fileList
+      this.demandSupplierFileList = fileList;
       const fileStr = fileList
         .map((fileItem) => {
-          return fileItem.response.data.file_id
+          return fileItem.response.data.file_id;
         })
-        .join(',')
+        .join(",");
       const fileArr = fileList.map((fileItem) => {
         return {
           name: fileItem.name,
           url: fileItem.url,
           response: {
             data: {
-              file_id: fileItem.response.data.file_id
-            }
-          }
-        }
-      })
+              file_id: fileItem.response.data.file_id,
+            },
+          },
+        };
+      });
       this.tempProvider = Object.assign({}, this.tempProvider, {
         supplier_file: fileStr,
-        files: fileArr
-      })
+        files: fileArr,
+      });
     },
     /**
      * 确认供应商
      */
     confirmProvider() {
-      this.$refs['providerDataForm'].validate((valid) => {
+      this.$refs["providerDataForm"].validate((valid) => {
         if (valid) {
-          const temp = Object.assign({}, this.tempProvider)
+          const temp = Object.assign({}, this.tempProvider);
 
           assignSupplier(temp)
-            .then(async(response) => {
+            .then(async (response) => {
               // const index = this.list.findIndex(
               //   (listItem) => listItem.demand_id === this.tempProvider.demand_id
               // )
@@ -2780,331 +2791,331 @@ export default {
               //     current_operator
               //   )
               // }
-              this.dialogProviderVisible = false
-              this.$message.success('分配成功')
-              await this.$store.dispatch('user/getPending')
-              this.getList(false)
+              this.dialogProviderVisible = false;
+              this.$message.success("分配成功");
+              await this.$store.dispatch("user/getPending");
+              this.getList(false);
             })
-            .catch((_error) => {})
+            .catch((_error) => {});
         }
-      })
+      });
     },
     /**
      * 物件提交审核
      */
     handleToVerifyTask(multi = true) {
-      const checkeds = []
+      const checkeds = [];
 
       // 列表选择
       if (multi) {
         if (this.multipleSelection.length < 0) {
-          this.$message.error('请先选择需求')
-          return false
+          this.$message.error("请先选择需求");
+          return false;
         }
 
         const result = this.multipleSelection.some((listItem) => {
           if ([4, 6].indexOf(listItem.status) < 0) {
-            const errorName = `[${listItem.name}]: 该需求状态无法提交审核物件`
-            this.$message.error(errorName)
-            return true
+            const errorName = `[${listItem.name}]: 该需求状态无法提交审核物件`;
+            this.$message.error(errorName);
+            return true;
           }
 
           return listItem.tasks.some((taskItem) => {
             if (taskItem.task_status !== 0) {
-              const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法提交审核`
-              this.$message.error(errorName)
-              return true
+              const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法提交审核`;
+              this.$message.error(errorName);
+              return true;
             }
-            checkeds.push(taskItem.task_id)
-            return false
-          })
-        })
+            checkeds.push(taskItem.task_id);
+            return false;
+          });
+        });
         if (result) {
-          return false
+          return false;
         }
       } else {
         if ([4, 6].indexOf(this.detail.status) < 0) {
-          const errorName = `[${this.detail.name}]: 该需求状态无法提交审核物件`
-          this.$message.error(errorName)
-          return true
+          const errorName = `[${this.detail.name}]: 该需求状态无法提交审核物件`;
+          this.$message.error(errorName);
+          return true;
         }
 
         if (this.detail.tasks.length <= 0) {
-          this.$message.error('请先新增物件')
-          return false
+          this.$message.error("请先新增物件");
+          return false;
         }
 
         const result = this.detail.tasks.some((taskItem) => {
           if (taskItem.task_status !== 0) {
-            const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法提交审核`
-            this.$message.error(errorName)
-            return true
+            const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法提交审核`;
+            this.$message.error(errorName);
+            return true;
           }
-          checkeds.push(taskItem.task_id)
-          return false
-        })
+          checkeds.push(taskItem.task_id);
+          return false;
+        });
         if (result) {
-          return false
+          return false;
         }
       }
 
       toVerifyTask({
-        task_id: checkeds
+        task_id: checkeds,
       })
-        .then(async(response) => {
-          this.$message.success('操作成功')
-          await this.$store.dispatch('user/getPending')
-          this.getList(false)
+        .then(async (response) => {
+          this.$message.success("操作成功");
+          await this.$store.dispatch("user/getPending");
+          this.getList(false);
         })
-        .catch((_error) => {})
+        .catch((_error) => {});
     },
     /**
      * 供管驳回待生成订单的需求
      */
     handleGongGuanResolveTask(multi) {
-      const checkeds = []
+      const checkeds = [];
 
       if (multi) {
         this.multipleSelection.some((listItem) => {
           if (listItem.status !== 7) {
-            const errorName = `[${listItem.name}] 该需求并不是待生成订单状态，无法驳回`
-            this.$message.error(errorName)
-            return true
+            const errorName = `[${listItem.name}] 该需求并不是待生成订单状态，无法驳回`;
+            this.$message.error(errorName);
+            return true;
           }
-          checkeds.push(listItem.demand_id)
-          return false
-        })
+          checkeds.push(listItem.demand_id);
+          return false;
+        });
       } else {
         if (this.detail.status !== 7) {
-          const errorName = `[${this.detail.name}] 该需求并不是待生成订单状态，无法驳回`
-          this.$message.error(errorName)
-          return false
+          const errorName = `[${this.detail.name}] 该需求并不是待生成订单状态，无法驳回`;
+          this.$message.error(errorName);
+          return false;
         }
-        checkeds.push(this.detail.demand_id)
+        checkeds.push(this.detail.demand_id);
       }
 
       if (checkeds.length <= 0) {
-        this.$message.error('请先选择需求')
-        return false
+        this.$message.error("请先选择需求");
+        return false;
       }
-      this.tempVerify.reason = ''
+      this.tempVerify.reason = "";
       this.verifyRules = Object.assign({}, this.verifyRules, {
         reason: [
-          { required: true, message: '请输入驳回原因', trigger: 'blur' }
-        ]
-      })
-      this.dialogStatus = 'reject'
-      this.dialogRejectTaskVisible = true
+          { required: true, message: "请输入驳回原因", trigger: "blur" },
+        ],
+      });
+      this.dialogStatus = "reject";
+      this.dialogRejectTaskVisible = true;
       this.$nextTick(() => {
-        this.$refs['verifyDataForm'].clearValidate()
-      })
+        this.$refs["verifyDataForm"].clearValidate();
+      });
     },
     /**
      * 预制订单弹窗
      */
     handleCreateOrder(multi) {
-      const checkeds = []
+      const checkeds = [];
 
       if (multi) {
         this.multipleSelection.some((listItem) => {
           if ([7, 9].indexOf(listItem.status) < 0) {
-            const errorName = `[${listItem.name}]: 该需求状态错误`
-            this.$message.error(errorName)
-            return true
+            const errorName = `[${listItem.name}]: 该需求状态错误`;
+            this.$message.error(errorName);
+            return true;
           }
-          checkeds.push(listItem.demand_id)
-          return false
-        })
+          checkeds.push(listItem.demand_id);
+          return false;
+        });
       } else {
         if ([7, 9].indexOf(this.detail.status) < 0) {
-          const errorName = `[${this.detail.name}]: 该需求状态错误`
-          this.$message.error(errorName)
-          return false
+          const errorName = `[${this.detail.name}]: 该需求状态错误`;
+          this.$message.error(errorName);
+          return false;
         }
-        checkeds.push(this.detail.demand_id)
+        checkeds.push(this.detail.demand_id);
       }
 
       if (checkeds.length <= 0) {
-        this.$message.error('请先选择需求')
-        return false
+        this.$message.error("请先选择需求");
+        return false;
       }
 
       createOrder({ demand_id: checkeds })
-        .then(async(response) => {
-          this.$message.success('订单生成成功')
-          await this.$store.dispatch('user/getPending')
-          this.getList(false)
+        .then(async (response) => {
+          this.$message.success("订单生成成功");
+          await this.$store.dispatch("user/getPending");
+          this.getList(false);
         })
-        .catch((_error) => {})
+        .catch((_error) => {});
     },
     /**
      * 终止弹窗
      */
     handleFinish(multi = true) {
-      const checkeds = []
+      const checkeds = [];
 
       if (multi) {
         if (this.multipleSelection.length <= 0) {
-          this.$message.error('请先选择需求')
-          return false
+          this.$message.error("请先选择需求");
+          return false;
         }
         const result = this.multipleSelection.some((listItem) => {
           if (listItem.status !== 7) {
-            const errorName = `[${listItem.name}] 该需求并不是待生成订单状态，无法终止`
-            this.$message.error(errorName)
-            return true
+            const errorName = `[${listItem.name}] 该需求并不是待生成订单状态，无法终止`;
+            this.$message.error(errorName);
+            return true;
           }
           return listItem.tasks.some((taskItem) => {
             if (taskItem.checked) {
               if (taskItem.task_status !== 0) {
-                const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法终止`
-                this.$message.error(errorName)
-                return true
+                const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法终止`;
+                this.$message.error(errorName);
+                return true;
               }
-              checkeds.push(taskItem.task_id)
-              return false
+              checkeds.push(taskItem.task_id);
+              return false;
             }
-            return false
-          })
-        })
+            return false;
+          });
+        });
         if (result) {
-          return false
+          return false;
         }
       } else {
         if (this.detail.status !== 7) {
-          const errorName = `[${this.detail.name}] 该需求并不是待生成订单状态，无法终止`
-          this.$message.error(errorName)
-          return false
+          const errorName = `[${this.detail.name}] 该需求并不是待生成订单状态，无法终止`;
+          this.$message.error(errorName);
+          return false;
         }
         if (this.multipleTaskSelection.length <= 0) {
-          this.$message.error('请先选择终止物件')
-          return false
+          this.$message.error("请先选择终止物件");
+          return false;
         }
         const result = this.multipleTaskSelection.some((taskItem) => {
           if (taskItem.task_status !== 0) {
-            const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法终止`
-            this.$message.error(errorName)
-            return true
+            const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法终止`;
+            this.$message.error(errorName);
+            return true;
           }
-          checkeds.push(taskItem.task_id)
-          return false
-        })
+          checkeds.push(taskItem.task_id);
+          return false;
+        });
         if (result) {
-          return false
+          return false;
         }
       }
 
       this.tempFinish = Object.assign({}, this.tempFinish, {
         task_id: checkeds,
-        reason: '',
-        file: ''
-      })
-      this.dialogFinishVisible = true
+        reason: "",
+        file: "",
+      });
+      this.dialogFinishVisible = true;
     },
     handleAddStopFileSucc(response, file, fileList) {
-      this.handleStopFileChange(file, fileList)
+      this.handleStopFileChange(file, fileList);
     },
     handleStopFileChange(file, fileList) {
-      this.stopFileList = fileList
+      this.stopFileList = fileList;
       const fileStr = fileList
         .map((fileItem) => {
-          return fileItem.response.data.file_id
+          return fileItem.response.data.file_id;
         })
-        .join(',')
+        .join(",");
       const fileArr = fileList.map((fileItem) => {
         return {
           name: fileItem.name,
           url: fileItem.url,
           response: {
             data: {
-              file_id: fileItem.response.data.file_id
-            }
-          }
-        }
-      })
+              file_id: fileItem.response.data.file_id,
+            },
+          },
+        };
+      });
       this.tempFinish = Object.assign({}, this.tempFinish, {
         file: fileStr,
-        files: fileArr
-      })
+        files: fileArr,
+      });
     },
     /**
      * 确认终止
      */
     confirmFinish() {
-      this.$refs['finishDataForm'].validate((valid) => {
+      this.$refs["finishDataForm"].validate((valid) => {
         if (valid) {
-          const temp = Object.assign({}, this.tempFinish)
+          const temp = Object.assign({}, this.tempFinish);
 
           finishTask(temp)
-            .then(async(response) => {
-              this.$message.success('终止成功')
-              this.dialogFinishVisible = false
-              await this.$store.dispatch('user/getPending')
-              this.getList(false)
+            .then(async (response) => {
+              this.$message.success("终止成功");
+              this.dialogFinishVisible = false;
+              await this.$store.dispatch("user/getPending");
+              this.getList(false);
             })
-            .catch((_error) => {})
+            .catch((_error) => {});
         }
-      })
+      });
     },
     /**
      * 订单审核弹窗
      */
     handleResolveOrder(ok, multi = true) {
-      const checkeds = []
+      const checkeds = [];
 
       if (multi) {
         if (this.multipleSelection.length <= 0) {
-          this.$message.error('请先选择需求')
-          return false
+          this.$message.error("请先选择需求");
+          return false;
         }
         this.multipleSelection.some((listItem) => {
           if ([8].indexOf(listItem.status) < 0) {
-            const errorName = `[${listItem.name}] 该需求状态错误，无法审核`
-            this.$message.error(errorName)
-            return true
+            const errorName = `[${listItem.name}] 该需求状态错误，无法审核`;
+            this.$message.error(errorName);
+            return true;
           }
-          checkeds.push(listItem.demand_id)
-          return false
-        })
+          checkeds.push(listItem.demand_id);
+          return false;
+        });
       } else {
         if ([8].indexOf(this.detail.status) < 0) {
-          const errorName = `[${this.detail.name}] 该需求状态错误，无法审核`
-          this.$message.error(errorName)
-          return false
+          const errorName = `[${this.detail.name}] 该需求状态错误，无法审核`;
+          this.$message.error(errorName);
+          return false;
         }
-        checkeds.push(this.detail.demand_id)
+        checkeds.push(this.detail.demand_id);
       }
 
       if (checkeds.length <= 0) {
-        return false
+        return false;
       }
 
-      this.dialogStatus = ok === true ? 'resolve' : 'reject'
+      this.dialogStatus = ok === true ? "resolve" : "reject";
       if (ok) {
         if (this.verifyRules.reason) {
-          delete this.verifyRules.reason
+          delete this.verifyRules.reason;
         }
-        this.$confirm('确定通过?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
+        this.$confirm("确定通过?", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
         })
           .then(() => {
-            this.dialogVerifyOrderVisible = true
-            this.baseConfirmVerify()
+            this.dialogVerifyOrderVisible = true;
+            this.baseConfirmVerify();
           })
-          .catch(() => {})
+          .catch(() => {});
       } else {
-        this.tempVerify.reason = ''
+        this.tempVerify.reason = "";
         this.verifyRules = Object.assign({}, this.verifyRules, {
           reason: [
-            { required: true, message: '请输入驳回原因', trigger: 'blur' }
-          ]
-        })
-        this.dialogVerifyOrderVisible = true
+            { required: true, message: "请输入驳回原因", trigger: "blur" },
+          ],
+        });
+        this.dialogVerifyOrderVisible = true;
         this.$nextTick(() => {
-          this.$refs['verifyDataForm'].clearValidate()
-        })
+          this.$refs["verifyDataForm"].clearValidate();
+        });
       }
     },
     handleUploadWorkSuccess(response, file, fileList) {
@@ -3113,46 +3124,46 @@ export default {
           name: fileItem.name,
           url: fileItem.response
             ? fileItem.response.data.url
-            : fileItem.url || '',
+            : fileItem.url || "",
           file_id: fileItem.response
             ? fileItem.response.data.file_id
-            : fileItem.file_id || ''
-        }
-      })
+            : fileItem.file_id || "",
+        };
+      });
       const fileStr = fileArr
         .map((fileItem) => {
-          return fileItem.file_id
+          return fileItem.file_id;
         })
-        .join(',')
+        .join(",");
 
       uploadDemandPaperclip({
         demand_id: this.detail.demand_id,
-        file_id: fileStr
+        file_id: fileStr,
       })
         .then((response) => {
-          this.$set(this.detail, 'supplier_files', fileArr)
-          this.$message.success('上传成功')
+          this.$set(this.detail, "supplier_files", fileArr);
+          this.$message.success("上传成功");
         })
-        .catch((_error) => {})
+        .catch((_error) => {});
     },
     handleUploadWorkError(err, file, fileList) {
-      console.log('上传失败', err, file, fileList)
-      this.$message.error('上传失败')
+      console.log("上传失败", err, file, fileList);
+      this.$message.error("上传失败");
     },
     /**
      * 驳回原因
      */
     handleRejectReason() {
       if (!this.detail.reject) {
-        this.$message.error('对不起，没有驳回原因')
-        return false
+        this.$message.error("对不起，没有驳回原因");
+        return false;
       }
       this.$nextTick(() => {
-        this.dialogRejectReasonVisible = true
-      })
-    }
-  }
-}
+        this.dialogRejectReasonVisible = true;
+      });
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -3167,6 +3178,7 @@ export default {
   align-items: center;
 }
 .app-container {
+  padding: 0;
   height: calc(100vh - 50px);
   .lucien-row {
     height: 100%;
@@ -3190,12 +3202,15 @@ export default {
   }
   .list-container {
     height: 100%;
-    background: #eef1f6;
+    background: #f7f7f7;
+    margin-top: 5px;
     .item-box {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: flex-start;
+      font-size: 12px;
+      color: #848484;
       .item-no,
       .item-name {
         width: 100%;
@@ -3208,7 +3223,7 @@ export default {
   .detail-container {
     height: 100%;
     overflow-y: scroll;
-    padding: 0 20px;
+    padding: 20px;
     box-sizing: border-box;
     .title {
       span {
@@ -3218,6 +3233,9 @@ export default {
     .info-content {
       .description {
         margin-top: 10px;
+        .el-descriptions {
+          font-size: 12px;
+        }
       }
       .actions {
         margin-top: 20px;
@@ -3261,30 +3279,37 @@ export default {
     align-items: center;
   }
   ::v-deep .list-table {
-    background: #eef1f6;
+    background: #f7f7f7;
+    .el-table__header th {
+      background: #f7f7f7 !important;
+    }
     .el-table__header th.el-table__cell.is-leaf {
       height: 60px;
-      border-bottom: 1px solid rgb(221, 221, 221);
+      border-bottom: 1px solid #e5e5e5;
     }
     .el-table__body .el-table__row {
-      background: #eef1f6;
+      background: #f7f7f7;
       &:hover > td {
-        background-color: #ffffff !important;
+        background-color: #fcfcfc !important;
       }
       &.cuttent-row > td {
-        background-color: #ffffff !important;
+        background-color: #fcfcfc !important;
       }
       td.el-table__cell {
-        border-bottom: 1px solid rgb(221, 221, 221);
+        border-bottom: 1px solid #e5e5e5;
       }
     }
     tr.current-row > td.el-table__cell {
-      background-color: #ffffff;
+      background-color: #fcfcfc;
     }
+  }
+  ::v-deep .detail-container .el-table {
+    font-size: 12px !important;
   }
   ::v-deep .detail-container .el-table.table-info th {
     background: #409eff !important;
     color: #ffffff;
+    border-right: 0;
   }
   ::v-deep .el-icon-my-prohibit {
     background: url("../../assets/icon/prohibit.png") center no-repeat;
