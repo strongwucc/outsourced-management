@@ -1,84 +1,84 @@
 <template>
   <div class="navbar">
-    <div class="left-box">
+    <div class="left-box" :style="{ width: listWidth }">
       <hamburger
         :is-active="sidebar.opened"
         class="hamburger-container"
         @toggleClick="toggleSideBar"
       />
-
       <breadcrumb class="breadcrumb-container" />
-      <div v-if="isPending" class="search-box">
-        <el-popover v-model="searchVisible" width="300">
-          <div class="hidden-info">
-            <el-input
-              v-model="listQuery.name"
-              placeholder="输入需求名称"
-              style="width: 200px; margin-bottom: 20px"
-              class="filter-item"
-              size="mini"
-            />
-            <el-input
-              v-model="listQuery.demand_id"
-              placeholder="输入需求单号"
-              style="width: 200px; margin-bottom: 20px"
-              class="filter-item"
-              size="mini"
-            />
-            <el-input
-              v-model="listQuery.category_name"
-              placeholder="输入需求品类"
-              style="width: 200px; margin-bottom: 20px"
-              class="filter-item"
-              size="mini"
-            />
-            <el-select
-              v-model="listQuery.tag"
-              placeholder="需求属性"
-              clearable
-              class="filter-item"
-              style="width: 200px; margin-bottom: 20px"
-              size="mini"
-            >
-              <el-option
-                v-for="item in tagList"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
-            </el-select>
+    </div>
 
-            <el-button
-              class="filter-item"
-              type="primary"
-              icon="el-icon-search"
-              size="mini"
-              @click="navSearch"
-            >
-              搜索
-            </el-button>
-          </div>
-          <div slot="reference">
-            <el-input
-              v-model="keyword"
-              placeholder="请输入搜索内容"
-              style="width: 300px"
-              class="show-input"
-              size="mini"
-              :disabled="true"
+    <div v-if="isPending" class="search-box">
+      <el-popover v-model="searchVisible" width="300">
+        <div class="hidden-info">
+          <el-input
+            v-model="listQuery.name"
+            placeholder="输入需求名称"
+            style="width: 200px; margin-bottom: 20px"
+            class="filter-item"
+            size="mini"
+          />
+          <el-input
+            v-model="listQuery.demand_id"
+            placeholder="输入需求单号"
+            style="width: 200px; margin-bottom: 20px"
+            class="filter-item"
+            size="mini"
+          />
+          <el-input
+            v-model="listQuery.category_name"
+            placeholder="输入需求品类"
+            style="width: 200px; margin-bottom: 20px"
+            class="filter-item"
+            size="mini"
+          />
+          <el-select
+            v-model="listQuery.tag"
+            placeholder="需求属性"
+            clearable
+            class="filter-item"
+            style="width: 200px; margin-bottom: 20px"
+            size="mini"
+          >
+            <el-option
+              v-for="item in tagList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
             />
-          </div>
-        </el-popover>
-        <el-button
-          class="show-btn"
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click.stop="searchVisible = !searchVisible"
-        >
-          搜索
-        </el-button>
-      </div>
+          </el-select>
+
+          <el-button
+            class="filter-item"
+            type="primary"
+            icon="el-icon-search"
+            size="mini"
+            @click="navSearch"
+          >
+            搜索
+          </el-button>
+        </div>
+        <div slot="reference">
+          <el-input
+            v-model="keyword"
+            placeholder="请输入搜索内容"
+            style="width: 300px"
+            class="show-input"
+            size="mini"
+            :disabled="true"
+          />
+        </div>
+      </el-popover>
+      <el-button
+        class="show-btn"
+        type="primary"
+        icon="el-icon-search"
+        size="mini"
+        @click.stop="searchVisible = !searchVisible"
+      >
+        搜索
+      </el-button>
     </div>
 
     <div class="right-menu">
@@ -132,8 +132,14 @@ export default {
         demand_id: '',
         category_name: '',
         tag: ''
-      }
+      },
+      listWidth: '350px'
     }
+  },
+  mounted() {
+    this.$bus.$on('leftListResize', (listWidth) => {
+      this.listWidth = `${listWidth}px`
+    })
   },
   methods: {
     toggleSideBar() {
@@ -165,15 +171,7 @@ export default {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    .search-box {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-left: 190px;
-      .show-btn {
-        margin-left: 10px;
-      }
-    }
+    flex: none;
   }
   .hamburger-container {
     line-height: 46px;
@@ -190,7 +188,20 @@ export default {
 
   .breadcrumb-container {
   }
+  .search-box {
+    flex: auto;
+    height: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+    .show-btn {
+      margin-left: 10px;
+    }
+  }
   .right-menu {
+    flex: none;
     display: flex;
     justify-content: flex-end;
     align-items: center;

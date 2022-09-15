@@ -3,6 +3,7 @@
     <div class="lucien-row">
       <div
         v-loading="listLoading"
+        v-resize
         element-loading-text="拼命加载中"
         element-loading-spinner="el-icon-loading"
         element-loading-background="rgba(237, 244, 253, 0.8)"
@@ -56,6 +57,7 @@
                   v-permission="[0]"
                   type="primary"
                   size="mini"
+                  waves
                   @click="handleToVerifyTask(true)"
                 >
                   提交审核
@@ -1719,6 +1721,19 @@ export default {
       this.listQuery = Object.assign({}, this.listQuery, listQuery)
       this.getList(false)
     })
+    // this.$nextTick(() => {
+    //   const ro = new ResizeObserver((entries, observer) => {
+    //     // console.log('Elements resized:', entries.length)
+    //     entries.forEach((entry, index) => {
+    //       const { inlineSize: width } =
+    //         entry.contentBoxSize[0]
+    //       this.$bus.$emit('leftListResize', width)
+    //       // console.log(`Element ${index + 1}:`, `${width}x${height}`)
+    //     })
+    //   })
+    //   const resizeableElement = this.$refs.resizeableElement
+    //   ro.observe(resizeableElement)
+    // })
   },
   beforeDestroy() {
     this.$bus.$off('createDemandEvent')

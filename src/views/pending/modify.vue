@@ -1,7 +1,14 @@
 <template>
   <div class="app-container">
     <div class="lucien-row">
-      <div class="lucien-col col-left">
+      <div
+        v-resize
+        v-loading="listLoading"
+        element-loading-text="拼命加载中"
+        element-loading-spinner="el-icon-loading"
+        element-loading-background="rgba(237, 244, 253, 0.8)"
+        class="lucien-col col-left"
+      >
         <div class="grid-content list-container">
           <el-table
             ref="listTable"
