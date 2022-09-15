@@ -109,7 +109,7 @@
                 <el-descriptions-item label="创建时间" span="3">{{
                   detail.demand.created_at
                 }}</el-descriptions-item>
-                <el-descriptions-item label="需求名称" span="3">
+                <el-descriptions-item label="需求名称">
                   <span>{{ detail.demand.name }}</span>
                   <el-tag size="mini" style="margin-left: 10px">{{
                     detail.demand.tag | demandTagText
