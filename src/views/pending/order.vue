@@ -229,7 +229,7 @@
                     :task-id="scope.row.task_id"
                     :file-editable="
                       [0, 4].indexOf(scope.row.task_status) >= 0 &&
-                        $store.getters.roles.indexOf(0) >= 0
+                      $store.getters.roles.indexOf(0) >= 0
                     "
                     @updateFile="updateTaskFile"
                   />
@@ -318,14 +318,16 @@
                       type="primary"
                       style="margin-left: 10px"
                       plain
-                    >已上传作品</el-button>
+                      >已上传作品</el-button
+                    >
                     <el-button
                       v-else
                       size="mini"
                       type="primary"
                       style="margin-left: 10px"
                       plain
-                    >上传作品</el-button>
+                      >上传作品</el-button
+                    >
                   </el-upload>
                   <el-button
                     type="primary"
@@ -426,8 +428,8 @@
           <div
             v-if="
               detail.demand &&
-                (detail.demand.files.length > 0 ||
-                  detail.demand.supplier_files.length)
+              (detail.demand.files.length > 0 ||
+                detail.demand.supplier_files.length)
             "
             class="download-content"
           >
@@ -447,7 +449,8 @@
                   size="mini"
                   plain
                   @click="downLoadContract(file.name, file.url)"
-                >下载</el-button>
+                  >下载</el-button
+                >
               </div>
               <div
                 v-for="(file, _fileIndex) in detail.demand.supplier_files"
@@ -460,7 +463,8 @@
                   size="mini"
                   plain
                   @click="downLoadContract(file.name, file.url)"
-                >下载</el-button>
+                  >下载</el-button
+                >
               </div>
             </div>
           </div>
@@ -557,19 +561,19 @@
               :rules="
                 property.type === 1
                   ? [
-                    {
-                      required: true,
-                      message: `请选择${property.name}`,
-                      trigger: 'change',
-                    },
-                  ]
+                      {
+                        required: true,
+                        message: `请选择${property.name}`,
+                        trigger: 'change',
+                      },
+                    ]
                   : [
-                    {
-                      required: true,
-                      message: `请输入${property.name}`,
-                      trigger: 'blur',
-                    },
-                  ]
+                      {
+                        required: true,
+                        message: `请输入${property.name}`,
+                        trigger: 'blur',
+                      },
+                    ]
               "
               :prop="`extend.${propIndex}.value`"
             >
@@ -610,7 +614,7 @@
                   v-if="tempTask.task_image_url"
                   :src="tempTask.task_image_url"
                   class="task-image"
-                >
+                />
                 <i v-else class="el-icon-plus task-image-uploader-icon" />
                 <div slot="tip" class="el-upload__tip">
                   只能上传jpg/png/jpeg文件，且不超过2M
@@ -740,11 +744,13 @@
                 size="mini"
                 plain
                 @click="downLoadContract(file.name, file.url)"
-              >下载</el-button>
+                >下载</el-button
+              >
             </div>
           </div>
         </el-form-item>
-      </el-form></el-dialog>
+      </el-form></el-dialog
+    >
   </div>
 </template>
 
@@ -755,89 +761,89 @@ import {
   modifyOrder,
   addTask,
   toCheckOrder,
-  uploadWorkImage
-} from '@/api/order/index'
-import { createTask } from '@/api/demand/task'
-import { downloadFile } from '@/api/system/file'
-import { downloadFileStream, baseName } from '@/utils/index'
+  uploadWorkImage,
+} from "@/api/order/index";
+import { createTask } from "@/api/demand/task";
+import { downloadFile } from "@/api/system/file";
+import { downloadFileStream, baseName } from "@/utils/index";
 
-import waves from '@/directive/waves'
-import permission from '@/directive/permission/index.js' // 权限判断指令
-import Pagination from '@/components/Pagination'
-import TaskDetail from '@/components/TaskDetail'
+import waves from "@/directive/waves";
+import permission from "@/directive/permission/index.js"; // 权限判断指令
+import Pagination from "@/components/Pagination";
+import TaskDetail from "@/components/TaskDetail";
 const tagList = [
-  { id: 0, name: '正式包' },
-  { id: 1, name: '测试包' },
-  { id: 2, name: '外派' },
-  { id: 3, name: '动态团队' }
-]
+  { id: 0, name: "正式包" },
+  { id: 1, name: "测试包" },
+  { id: 2, name: "外派" },
+  { id: 3, name: "动态团队" },
+];
 export default {
   components: { Pagination, TaskDetail },
   directives: { waves, permission },
   filters: {
     tagText(tag) {
-      let text = tag
+      let text = tag;
       tagList.some((tagItem) => {
         if (tagItem.id === parseInt(tag)) {
-          text = tagItem.name
-          return true
+          text = tagItem.name;
+          return true;
         }
-        return false
-      })
-      return text
+        return false;
+      });
+      return text;
     },
     taskStatusText(status) {
       const statusMap = {
-        0: '待交付验收',
-        1: '变更中',
-        2: '资源审核中',
-        3: '资源已验收',
-        4: '验收未通过',
-        5: '物件已终止',
-        6: '验收通过'
-      }
-      return statusMap[status]
+        0: "待交付验收",
+        1: "变更中",
+        2: "资源审核中",
+        3: "资源已验收",
+        4: "验收未通过",
+        5: "物件已终止",
+        6: "验收通过",
+      };
+      return statusMap[status];
     },
     categoryText(category) {
       if (!category) {
-        return '-'
+        return "-";
       }
-      if (typeof category === 'string') {
-        return category
+      if (typeof category === "string") {
+        return category;
       }
-      let name = category.category_name
+      let name = category.category_name;
       if (category.parent) {
-        name = `${category.parent.category_name}/${name}`
+        name = `${category.parent.category_name}/${name}`;
         if (category.parent.parent) {
-          name = `${category.parent.parent.category_name}/${name}`
+          name = `${category.parent.parent.category_name}/${name}`;
         }
       }
-      return name
+      return name;
     },
     statusText(status) {
       const statusMap = {
-        0: '待提报',
-        1: '审核中',
-        2: '审核未通过',
-        3: '待分配供应商',
-        4: '待填写物件',
-        5: '物件审核中',
-        6: '物件审核未通过',
-        7: '待生成订单',
-        8: '订单待审核',
-        9: '订单审核未通过',
-        10: '已生成订单'
-      }
-      return statusMap[status]
+        0: "待提报",
+        1: "审核中",
+        2: "审核未通过",
+        3: "待分配供应商",
+        4: "待填写物件",
+        5: "物件审核中",
+        6: "物件审核未通过",
+        7: "待生成订单",
+        8: "订单待审核",
+        9: "订单审核未通过",
+        10: "已生成订单",
+      };
+      return statusMap[status];
     },
     stayTimeHours(seconds) {
-      const diff = parseInt(seconds)
+      const diff = parseInt(seconds);
       if (isNaN(diff)) {
-        return 0
+        return 0;
       }
 
-      return Math.round(+(diff / 3600) + 'e' + 1) / Math.pow(10, 1)
-    }
+      return Math.round(+(diff / 3600) + "e" + 1) / Math.pow(10, 1);
+    },
   },
   data() {
     return {
@@ -848,14 +854,14 @@ export default {
       multipleSelection: [],
       listLoading: true,
       listQuery: {
-        order_id: '',
-        task_id: '',
-        project_name: '',
-        supplier_name: '',
-        tag: '',
+        order_id: "",
+        task_id: "",
+        project_name: "",
+        supplier_name: "",
+        tag: "",
         page: 1,
         page_num: 10,
-        keyword: ''
+        keyword: "",
       },
       detail: {},
       detailIndex: 0,
@@ -863,174 +869,176 @@ export default {
       detailLoading: false,
       detailLoaded: false,
       textMap: {
-        modify: '申请变更',
-        create_task: '新增物件'
+        modify: "申请变更",
+        create_task: "新增物件",
       },
-      dialogStatus: '',
+      dialogStatus: "",
       dialogTaskVisible: false,
       tempTaskCategory: {
-        category_id: '',
-        category_name: '',
-        property_json: '[]',
-        property_array: []
+        category_id: "",
+        category_name: "",
+        property_json: "[]",
+        property_array: [],
       },
       tempTask: {
-        order_id: '',
-        demand_id: '',
-        task_name: '',
-        task_image: '',
-        task_image_url: '',
-        work_unit: '',
-        work_num: '',
-        deliver_date: '',
-        remark: '',
+        order_id: "",
+        demand_id: "",
+        task_name: "",
+        task_image: "",
+        task_image_url: "",
+        work_unit: "",
+        work_num: "",
+        deliver_date: "",
+        remark: "",
         extend: [],
-        reason: ''
+        reason: "",
       },
       taskRules: {
         task_name: [
-          { required: true, message: '请输入物件名称', trigger: 'blur' }
+          { required: true, message: "请输入物件名称", trigger: "blur" },
         ],
         task_image: [
-          { required: true, message: '请添加缩略图', trigger: 'blur' }
+          { required: true, message: "请添加缩略图", trigger: "blur" },
         ],
         work_unit: [
-          { required: true, message: '请选择单位', trigger: 'change' }
+          { required: true, message: "请选择单位", trigger: "change" },
         ],
         work_num: [
           {
             required: true,
-            type: 'integer',
-            message: '请输入单位数量',
-            trigger: 'blur'
-          }
+            type: "integer",
+            message: "请输入单位数量",
+            trigger: "blur",
+          },
         ],
         deliver_date: [
-          { required: true, message: '请选择日期', trigger: 'blur' }
+          { required: true, message: "请选择日期", trigger: "blur" },
         ],
-        value: [{ required: true, message: '请设置属性值', trigger: 'blur' }],
+        value: [{ required: true, message: "请设置属性值", trigger: "blur" }],
         reason: [
-          { required: true, message: '请输入新增物件原因', trigger: 'blur' }
-        ]
+          { required: true, message: "请输入新增物件原因", trigger: "blur" },
+        ],
       },
       dialogModifyVisible: false,
       tempModify: {
-        order_id: '',
+        order_id: "",
         task_id: [],
-        nums: '',
-        work_price: '',
-        work_amount: '',
-        deliver_date: '',
-        reason: ''
+        nums: "",
+        work_price: "",
+        work_amount: "",
+        deliver_date: "",
+        reason: "",
       },
       modifyRules: {},
       dialogRejectReasonVisible: false,
       dialogStopReasonVisible: false,
       fileList: [],
-      posting: false
-    }
+      posting: false,
+    };
   },
   computed: {
-    showHeader: function() {
+    showHeader: function () {
       const hiddenPaths = [
-        '/pending/gg/assign/vendor',
-        '/pending/xmz/demand/draft',
-        '/pending/gg/demand/draft'
-      ]
-      return hiddenPaths.indexOf(this.$route.path) < 0
+        "/pending/gg/assign/vendor",
+        "/pending/xmz/demand/draft",
+        "/pending/gg/demand/draft",
+      ];
+      return hiddenPaths.indexOf(this.$route.path) < 0;
     },
-    showTaskCheckRow: function() {
+    showTaskCheckRow: function () {
       const hiddenTaskCheckRowPaths = [
-        '/pending/gys/demand/quote',
-        '/pending/xmz/demand/review',
-        '/pending/gg/order/prepare',
-        '/pending/ggfzr/order/approval'
-      ]
-      return hiddenTaskCheckRowPaths.indexOf(this.$route.path) < 0
+        "/pending/gys/demand/quote",
+        "/pending/xmz/demand/review",
+        "/pending/gg/order/prepare",
+        "/pending/ggfzr/order/approval",
+      ];
+      return hiddenTaskCheckRowPaths.indexOf(this.$route.path) < 0;
     },
-    showTaskActionRow: function() {
+    showTaskActionRow: function () {
       const hiddenTaskActionRowPaths = [
-        '/pending/xmz/demand/review',
-        '/pending/gg/order/prepare',
-        '/pending/ggfzr/order/approval'
-      ]
-      return hiddenTaskActionRowPaths.indexOf(this.$route.path) < 0
+        "/pending/xmz/demand/review",
+        "/pending/gg/order/prepare",
+        "/pending/ggfzr/order/approval",
+      ];
+      return hiddenTaskActionRowPaths.indexOf(this.$route.path) < 0;
     },
-    taskActionColumnWidth: function() {
-      let width = 100
-      const status = this.detail.tasks.map((task) => task.task_status)
+    taskActionColumnWidth: function () {
+      let width = 100;
+      const status = this.detail.tasks.map((task) => task.task_status);
       if (status.indexOf(4) >= 0) {
-        width = 440
+        width = 440;
       } else if (status.indexOf(0) >= 0) {
-        width = 340
+        width = 340;
       } else if (status.indexOf(5) >= 0) {
-        width = 240
+        width = 240;
       }
-      return width
-    }
+      return width;
+    },
   },
   created() {
-    this.getList(true)
+    this.getList(true);
   },
   mounted() {
-    this.$bus.$on('navSearch', (keyword) => {
-      this.listQuery = Object.assign({}, this.listQuery, { keyword })
-      this.getList(false)
-    })
+    this.$bus.$on("navSearch", (listQuery) => {
+      this.listQuery = Object.assign({}, this.listQuery, listQuery);
+      this.getList(false);
+    });
   },
   beforeDestroy() {
-    this.$bus.$off('navSearch')
+    this.$bus.$off("navSearch");
   },
   methods: {
     handleSelectionChange(val) {
-      this.multipleSelection = val
+      this.multipleSelection = val;
     },
     handleTaskSelectionChange(val) {
-      this.multipleTaskSelection = val
+      this.multipleTaskSelection = val;
     },
     /**
      * 获取订单列表
      */
     getList(needLoading = true) {
       if (needLoading) {
-        this.listLoading = true
+        this.listLoading = true;
       }
 
       fetchOrderList(this.listQuery)
         .then((response) => {
-          this.listLoading = false
-          this.total = response.data.total
-          const list = response.data.list
-          this.list = list
+          this.listLoading = false;
+          this.total = response.data.total;
+          const list = response.data.list;
+          this.list = list;
           this.$nextTick(() => {
             if (list.length > 0) {
               if (!list[this.detailIndex]) {
-                this.detailIndex = 0
+                this.detailIndex = 0;
               }
-              this.$refs.listTable.setCurrentRow(list[this.detailIndex])
-              this.handleDetail()
+              this.$refs.listTable.setCurrentRow(list[this.detailIndex]);
+              this.handleDetail();
+            } else {
+              this.detail = {};
             }
-          })
+          });
         })
         .catch((error) => {
-          console.log(error)
-          this.listLoading = false
-        })
+          console.log(error);
+          this.listLoading = false;
+        });
     },
     /**
      * 查询过滤
      */
     handleFilter() {
-      this.listQuery.page = 1
-      this.getList(true)
+      this.listQuery.page = 1;
+      this.getList(true);
     },
     handleCurrentChange(row, column, event) {
       const index = this.list.findIndex(
         (item) => item.order_id === row.order_id
-      )
+      );
       if (index >= 0) {
-        this.detailIndex = index
-        this.handleDetail()
+        this.detailIndex = index;
+        this.handleDetail();
       }
     },
     /**
@@ -1038,49 +1046,49 @@ export default {
      */
     async handleDetail() {
       if (!this.list[this.detailIndex]) {
-        this.detailLoading = false
-        this.detailLoaded = true
-        this.detail = {}
-        return false
+        this.detailLoading = false;
+        this.detailLoaded = true;
+        this.detail = {};
+        return false;
       }
-      this.detailLoading = true
-      this.detailLoaded = false
+      this.detailLoading = true;
+      this.detailLoaded = false;
       const detailData = await fetchOrderDetail({
-        order_id: this.list[this.detailIndex].order_id
-      }).catch((_error) => {})
+        order_id: this.list[this.detailIndex].order_id,
+      }).catch((_error) => {});
 
-      this.detailLoading = false
-      this.detailLoaded = true
-      this.detail = Object.assign({}, this.detail, detailData.data)
-      this.multipleTaskSelection = []
+      this.detailLoading = false;
+      this.detailLoaded = true;
+      this.detail = Object.assign({}, this.detail, detailData.data);
+      this.multipleTaskSelection = [];
     },
     /**
      * 申请变更
      */
     handleModify() {
       if (this.multipleTaskSelection.length <= 0) {
-        this.$message.error('请先选择物件')
-        return false
+        this.$message.error("请先选择物件");
+        return false;
       }
 
-      const taskCheckeds = []
+      const taskCheckeds = [];
 
-      let price, amount
+      let price, amount;
 
       this.multipleTaskSelection.some((taskItem, taskIndex) => {
         if ([0].indexOf(taskItem.task_status) < 0) {
-          const errorName = `[${taskItem.task_id}]: 该物件状态无法申请变更`
-          this.$message.error(errorName)
-          return true
+          const errorName = `[${taskItem.task_id}]: 该物件状态无法申请变更`;
+          this.$message.error(errorName);
+          return true;
         }
-        taskCheckeds.push(taskItem.task_id)
-        price = taskItem.price
-        amount = taskItem.amount
-        return false
-      })
+        taskCheckeds.push(taskItem.task_id);
+        price = taskItem.price;
+        amount = taskItem.amount;
+        return false;
+      });
 
       if (taskCheckeds.length <= 0) {
-        return false
+        return false;
       }
 
       this.tempModify = Object.assign({}, this.tempModify, {
@@ -1088,132 +1096,132 @@ export default {
         task_id: taskCheckeds,
         work_price: price,
         work_amount: amount,
-        nums: '',
-        deliver_date: '',
-        reason: ''
-      })
-      this.dialogStatus = 'modify'
-      this.dialogModifyVisible = true
+        nums: "",
+        deliver_date: "",
+        reason: "",
+      });
+      this.dialogStatus = "modify";
+      this.dialogModifyVisible = true;
       this.$nextTick(() => {
-        this.$refs['modifyDataForm'].clearValidate()
-      })
+        this.$refs["modifyDataForm"].clearValidate();
+      });
     },
     /**
      * 确认变更
      */
     confirmModify() {
       if (this.posting) {
-        return false
+        return false;
       }
-      this.$refs['modifyDataForm'].validate((valid) => {
+      this.$refs["modifyDataForm"].validate((valid) => {
         if (valid) {
-          const tempData = JSON.parse(JSON.stringify(this.tempModify))
-          this.posting = true
+          const tempData = JSON.parse(JSON.stringify(this.tempModify));
+          this.posting = true;
           modifyOrder(tempData)
-            .then(async(response) => {
-              this.posting = false
-              this.$message.success('申请成功')
-              this.dialogModifyVisible = false
-              await this.$store.dispatch('user/getPending')
-              this.getList(false)
+            .then(async (response) => {
+              this.posting = false;
+              this.$message.success("申请成功");
+              this.dialogModifyVisible = false;
+              await this.$store.dispatch("user/getPending");
+              this.getList(false);
             })
             .catch((error) => {
-              console.log(error)
-              this.posting = false
-            })
+              console.log(error);
+              this.posting = false;
+            });
         }
-      })
+      });
     },
     /**
      * 交付验收
      */
     handleDeliver(multi = true) {
-      const taskCheckeds = []
+      const taskCheckeds = [];
 
       if (multi) {
         if (this.multipleSelection.length <= 0) {
-          this.$message.error('请先选择订单')
-          return false
+          this.$message.error("请先选择订单");
+          return false;
         }
         if (this.multipleSelection.length > 1) {
-          this.$message.error('只能选择单个交付验收')
-          return false
+          this.$message.error("只能选择单个交付验收");
+          return false;
         }
         const result = this.multipleSelection.some((orderItem) => {
           return orderItem.tasks.some((taskItem) => {
             if ([0, 4].indexOf(taskItem.task_status) < 0) {
-              const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
-              this.$message.error(errorName)
-              return true
+              const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`;
+              this.$message.error(errorName);
+              return true;
             }
             if (taskItem.finished_product.length <= 0) {
-              const errorName = `[${taskItem.task_id}]: 请上传该物件的作品`
-              this.$message.error(errorName)
-              return true
+              const errorName = `[${taskItem.task_id}]: 请上传该物件的作品`;
+              this.$message.error(errorName);
+              return true;
             }
             taskCheckeds.push({
               task_id: taskItem.task_id,
               file: taskItem.finished_product
                 .map((product) => {
-                  return product.file_id
+                  return product.file_id;
                 })
-                .join(',')
-            })
-            return false
-          })
-        })
+                .join(","),
+            });
+            return false;
+          });
+        });
         if (result) {
-          return false
+          return false;
         }
       } else {
         if (this.multipleTaskSelection.length <= 0) {
-          this.$message.error('请先选择物件')
-          return false
+          this.$message.error("请先选择物件");
+          return false;
         }
         const result = this.multipleTaskSelection.some((taskItem) => {
           if ([0, 4].indexOf(taskItem.task_status) < 0) {
-            const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
-            this.$message.error(errorName)
-            return true
+            const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`;
+            this.$message.error(errorName);
+            return true;
           }
           if (taskItem.finished_product.length <= 0) {
-            const errorName = `[${taskItem.task_id}]: 请上传该物件的作品`
-            this.$message.error(errorName)
-            return true
+            const errorName = `[${taskItem.task_id}]: 请上传该物件的作品`;
+            this.$message.error(errorName);
+            return true;
           }
           taskCheckeds.push({
             task_id: taskItem.task_id,
             file: taskItem.finished_product
               .map((product) => {
-                return product.file_id
+                return product.file_id;
               })
-              .join(',')
-          })
-        })
+              .join(","),
+          });
+        });
         if (result) {
-          return false
+          return false;
         }
       }
 
       if (taskCheckeds.length <= 0) {
-        return false
+        return false;
       }
 
-      this.$confirm('确定交付验收?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+      this.$confirm("确定交付验收?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
       })
         .then(() => {
           toCheckOrder({ tasks: taskCheckeds })
-            .then(async(response) => {
-              this.$message.success('交付验收成功')
-              await this.$store.dispatch('user/getPending')
-              this.getList(false)
+            .then(async (response) => {
+              this.$message.success("交付验收成功");
+              await this.$store.dispatch("user/getPending");
+              this.getList(false);
             })
-            .catch((_error) => {})
+            .catch((_error) => {});
         })
-        .catch(() => {})
+        .catch(() => {});
     },
     /**
      * 上传作品
@@ -1221,73 +1229,73 @@ export default {
     handleUploadWork(task, taskIndex, demandIndex) {},
     handleUploadWorkSuccess(response, file, fileList, taskIndex, keyName) {
       if (!response.data) {
-        this.$message.error(response.message || '哎呀，出错啦')
-        return false
+        this.$message.error(response.message || "哎呀，出错啦");
+        return false;
       }
       const fileArr = fileList.map((fileItem) => {
         return {
           name: fileItem.name,
           url: fileItem.response
             ? fileItem.response.data.url
-            : fileItem.url || '',
+            : fileItem.url || "",
           file_id: fileItem.response
             ? fileItem.response.data.file_id
-            : fileItem.file_id || ''
-        }
-      })
+            : fileItem.file_id || "",
+        };
+      });
       const fileStr = fileArr
         .map((fileItem) => {
-          return fileItem.file_id
+          return fileItem.file_id;
         })
-        .join(',')
+        .join(",");
 
-      const task = this.detail.tasks[taskIndex]
-      const upType = keyName === 'display_area' ? 1 : 0
+      const task = this.detail.tasks[taskIndex];
+      const upType = keyName === "display_area" ? 1 : 0;
 
       uploadWorkImage({
         task_id: task.task_id,
         up_type: upType,
-        file_id: fileStr
+        file_id: fileStr,
       })
         .then((response) => {
-          this.$set(this.detail.tasks[taskIndex], keyName, fileArr)
+          this.$set(this.detail.tasks[taskIndex], keyName, fileArr);
           this.$set(
             this.list[this.detailIndex].tasks[taskIndex],
             keyName,
             fileArr
-          )
-          this.$message.success('上传成功')
+          );
+          this.$message.success("上传成功");
         })
-        .catch((_error) => {})
+        .catch((_error) => {});
     },
     handleUploadWorkError(err, file, fileList) {
-      console.log('上传失败', err, file, fileList)
-      this.$message.error('上传失败')
+      console.log("上传失败", err, file, fileList);
+      this.$message.error("上传失败");
     },
     /**
      * 下载作品
      */
     handleDownloadWork(task, taskIndex) {
       if (task.finished_product.length > 0) {
-        this.$set(this.detail.tasks[taskIndex], 'downloading', true)
+        this.$set(this.detail.tasks[taskIndex], "downloading", true);
         const actions = task.finished_product.map((product) => {
-          return downloadFile({ url: product.url })
-        })
-        const results = Promise.all(actions)
+          return downloadFile({ url: product.url });
+        });
+        const results = Promise.all(actions);
         results
           .then((data) => {
             data.forEach((file, fileIndex) => {
               downloadFileStream(
                 baseName(task.finished_product[fileIndex].url),
                 file
-              )
-            })
-            this.$set(this.detail.tasks[taskIndex], 'downloading', false)
+              );
+            });
+            this.$set(this.detail.tasks[taskIndex], "downloading", false);
           })
           .catch((error) => {
-            this.$set(this.detail.tasks[taskIndex], 'downloading', false)
-            this.$message.error(error || '哎呀，下载失败啦')
-          })
+            this.$set(this.detail.tasks[taskIndex], "downloading", false);
+            this.$message.error(error || "哎呀，下载失败啦");
+          });
         // task.finished_product.forEach((product) => {
         //   downloadFile({ url: product.url })
         //     .then((response) => {
@@ -1302,104 +1310,104 @@ export default {
      */
     handleUploadPlanImage(task, taskIndex, demandIndex) {},
     handleUploadPlanImageSuccess(response, file, fileList) {
-      console.log('上传成功', response, file, fileList)
+      console.log("上传成功", response, file, fileList);
       this.$notify({
-        title: '成功',
-        message: '上传成功',
-        type: 'success',
-        duration: 2000
-      })
+        title: "成功",
+        message: "上传成功",
+        type: "success",
+        duration: 2000,
+      });
     },
     handleUploadPlanImageError(err, file, fileList) {
-      console.log('上传失败', err, file, fileList)
+      console.log("上传失败", err, file, fileList);
       this.$notify({
-        title: '失败',
-        message: '上传失败',
-        type: 'error',
-        duration: 2000
-      })
+        title: "失败",
+        message: "上传失败",
+        type: "error",
+        duration: 2000,
+      });
     },
     /**
      * 驳回原因
      */
     handleRejectTaskReason(task, taskIndex) {
       if (!task.reject) {
-        this.$message.error('对不起，没有驳回原因')
-        return false
+        this.$message.error("对不起，没有驳回原因");
+        return false;
       }
-      this.tempTask = JSON.parse(JSON.stringify(task))
+      this.tempTask = JSON.parse(JSON.stringify(task));
       this.$nextTick(() => {
-        this.dialogRejectReasonVisible = true
-      })
+        this.dialogRejectReasonVisible = true;
+      });
     },
     /**
      * 终止原因
      */
     handleStopTaskReason(task, taskIndex) {
-      this.tempTask = JSON.parse(JSON.stringify(task))
-      this.dialogStopReasonVisible = true
+      this.tempTask = JSON.parse(JSON.stringify(task));
+      this.dialogStopReasonVisible = true;
     },
     /**
      * 重置物件数据
      */
     resetTaskTemp() {
       this.tempTask = {
-        order_id: '',
-        demand_id: '',
-        task_name: '',
-        task_image: '',
-        work_unit: '',
-        work_num: '',
-        deliver_date: '',
-        remark: '',
-        extend: []
-      }
+        order_id: "",
+        demand_id: "",
+        task_name: "",
+        task_image: "",
+        work_unit: "",
+        work_num: "",
+        deliver_date: "",
+        remark: "",
+        extend: [],
+      };
     },
     /**
      * 新增物件弹窗
      */
     handleCreateTask() {
-      this.tempTaskCategory = this.detail.demand.category
-      this.resetTaskTemp()
+      this.tempTaskCategory = this.detail.demand.category;
+      this.resetTaskTemp();
       this.tempTask = Object.assign({}, this.tempTask, {
         order_id: this.detail.order_id,
         demand_id: this.detail.demand_id,
         extend: this.detail.demand.category.property_array.map((property) => {
           return {
             name: property.extend_name,
-            value: '',
+            value: "",
             type: property.extend_tag,
-            options: property.extend_value
-          }
-        })
-      })
-      this.dialogStatus = 'create_task'
-      this.dialogTaskVisible = true
+            options: property.extend_value,
+          };
+        }),
+      });
+      this.dialogStatus = "create_task";
+      this.dialogTaskVisible = true;
       this.$nextTick(() => {
-        this.$refs['taskDataForm'].clearValidate()
-      })
+        this.$refs["taskDataForm"].clearValidate();
+      });
     },
     /**
      * 新增物件
      */
     createTaskData() {
-      this.$refs['taskDataForm'].validate((valid) => {
+      this.$refs["taskDataForm"].validate((valid) => {
         if (valid) {
-          const temp = JSON.parse(JSON.stringify(this.tempTask))
-          addTask(temp).then(async(response) => {
-            this.dialogTaskVisible = false
-            this.$message.success('新增物件成功')
-            await this.$store.dispatch('user/getPending')
-            this.getList(false)
-          })
+          const temp = JSON.parse(JSON.stringify(this.tempTask));
+          addTask(temp).then(async (response) => {
+            this.dialogTaskVisible = false;
+            this.$message.success("新增物件成功");
+            await this.$store.dispatch("user/getPending");
+            this.getList(false);
+          });
         }
-      })
+      });
     },
     /**
      * 上传物件图片成功回调
      */
     handleTaskImageSuccess(response, file) {
-      this.handleTaskImageChange(file)
+      this.handleTaskImageChange(file);
     },
     /**
      * 上传物件图片变化回调
@@ -1408,22 +1416,22 @@ export default {
       if (file.response) {
         this.tempTask = Object.assign({}, this.tempTask, {
           task_image: file.response.data.file_id,
-          task_image_url: URL.createObjectURL(file.raw)
-        })
+          task_image_url: URL.createObjectURL(file.raw),
+        });
       }
     },
     downLoadContract(fileName, fileUrl) {
       downloadFile({ url: fileUrl, name: fileName })
         .then((response) => {
-          downloadFileStream(fileName, response)
+          downloadFileStream(fileName, response);
         })
-        .catch((_error) => {})
+        .catch((_error) => {});
     },
     updateTaskFile(data) {
-      this.$set(this.detail.tasks[data.index], data.key, data.value)
-    }
-  }
-}
+      this.$set(this.detail.tasks[data.index], data.key, data.value);
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>

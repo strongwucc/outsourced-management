@@ -9,19 +9,72 @@
 
       <breadcrumb class="breadcrumb-container" />
       <div v-if="isPending" class="search-box">
-        <el-input
-          v-model="keyword"
-          placeholder="请输入搜索内容"
-          style="width: 200px"
-          class="filter-item"
-          size="mini"
-        />
+        <el-popover v-model="searchVisible" width="300">
+          <div class="hidden-info">
+            <el-input
+              v-model="listQuery.name"
+              placeholder="输入需求名称"
+              style="width: 200px; margin-bottom: 20px"
+              class="filter-item"
+              size="mini"
+            />
+            <el-input
+              v-model="listQuery.demand_id"
+              placeholder="输入需求单号"
+              style="width: 200px; margin-bottom: 20px"
+              class="filter-item"
+              size="mini"
+            />
+            <el-input
+              v-model="listQuery.category_name"
+              placeholder="输入需求品类"
+              style="width: 200px; margin-bottom: 20px"
+              class="filter-item"
+              size="mini"
+            />
+            <el-select
+              v-model="listQuery.tag"
+              placeholder="需求属性"
+              clearable
+              class="filter-item"
+              style="width: 200px; margin-bottom: 20px"
+              size="mini"
+            >
+              <el-option
+                v-for="item in tagList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+              />
+            </el-select>
+
+            <el-button
+              class="filter-item"
+              type="primary"
+              icon="el-icon-search"
+              size="mini"
+              @click="navSearch"
+            >
+              搜索
+            </el-button>
+          </div>
+          <div slot="reference">
+            <el-input
+              v-model="keyword"
+              placeholder="请输入搜索内容"
+              style="width: 300px"
+              class="show-input"
+              size="mini"
+              :disabled="true"
+            />
+          </div>
+        </el-popover>
         <el-button
-          class="filter-item"
+          class="show-btn"
           type="primary"
           icon="el-icon-search"
           size="mini"
-          @click.stop="navSearch"
+          @click.stop="searchVisible = !searchVisible"
         >
           搜索
         </el-button>
@@ -66,7 +119,20 @@ export default {
   },
   data() {
     return {
-      keyword: ''
+      tagList: [
+        { id: 0, name: '正式包' },
+        { id: 1, name: '测试包' },
+        { id: 2, name: '外派' },
+        { id: 3, name: '动态团队' }
+      ],
+      keyword: '',
+      searchVisible: false,
+      listQuery: {
+        name: '',
+        demand_id: '',
+        category_name: '',
+        tag: ''
+      }
     }
   },
   methods: {
@@ -78,7 +144,8 @@ export default {
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
     navSearch() {
-      this.$bus.$emit('navSearch', this.keyword)
+      this.$bus.$emit('navSearch', this.listQuery)
+      this.searchVisible = false
     }
   }
 }
@@ -99,9 +166,12 @@ export default {
     justify-content: flex-start;
     align-items: center;
     .search-box {
-      margin-left: 200px;
-      .filter-item {
-        margin-right: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-left: 190px;
+      .show-btn {
+        margin-left: 10px;
       }
     }
   }
@@ -120,7 +190,6 @@ export default {
 
   .breadcrumb-container {
   }
-
   .right-menu {
     display: flex;
     justify-content: flex-end;

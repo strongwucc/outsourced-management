@@ -1,14 +1,18 @@
 <template>
   <div :class="{ 'has-logo': showLogo }">
     <logo v-if="showLogo" :collapse="isCollapse" />
-    <div v-permission="[1, 3]" class="new-demand-box">
+    <div v-if="!isCollapse" v-permission="[1, 3]" class="new-demand-box">
       <el-button
         type="primary"
         icon="el-icon-edit-outline"
         @click="handleCreateDemand"
       >发布需求</el-button>
     </div>
-    <div v-permission="[0, 2, 4, 5, 'administrator']" class="for-padding" style="height: 25px" />
+    <div
+      v-permission="[0, 2, 4, 5, 'administrator']"
+      class="for-padding"
+      style="height: 25px"
+    />
     <el-scrollbar wrap-class="scrollbar-wrapper">
       <el-menu
         :default-active="activeMenu"

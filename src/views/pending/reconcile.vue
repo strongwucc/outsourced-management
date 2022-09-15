@@ -818,8 +818,8 @@ export default {
     this.getList()
   },
   mounted() {
-    this.$bus.$on('navSearch', (keyword) => {
-      this.listQuery = Object.assign({}, this.listQuery, { keyword })
+    this.$bus.$on('navSearch', (listQuery) => {
+      this.listQuery = Object.assign({}, this.listQuery, listQuery)
       this.getList(false)
     })
   },
@@ -854,6 +854,8 @@ export default {
               }
               this.$refs.listTable.setCurrentRow(list[this.detailIndex])
               this.handleDetail()
+            } else {
+              this.detail = {}
             }
           })
         })
