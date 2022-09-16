@@ -1288,7 +1288,7 @@ export default {
         width: 350px;
         flex: none;
         resize: horizontal;
-        overflow: auto;
+        overflow: hidden;
       }
       &.col-right {
         flex: auto;

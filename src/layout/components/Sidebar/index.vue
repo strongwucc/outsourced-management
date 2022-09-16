@@ -5,13 +5,14 @@
       <el-button
         type="primary"
         icon="el-icon-edit-outline"
+        style="width: 147px"
         @click="handleCreateDemand"
       >发布需求</el-button>
     </div>
     <div
       v-permission="[0, 2, 4, 5, 'administrator']"
       class="for-padding"
-      style="height: 25px"
+      style="height: 12px"
     />
     <el-scrollbar wrap-class="scrollbar-wrapper">
       <el-menu
