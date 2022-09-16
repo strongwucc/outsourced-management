@@ -128,6 +128,7 @@
                 label="申请单号"
                 align="left"
                 min-width="200"
+                show-overflow-tooltip
               />
               <el-table-column
                 label="项目名称"
@@ -848,7 +849,7 @@ export default {
   align-items: center;
 }
 .app-container {
-  height: calc(100vh - 50px);
+  height: calc(100vh - 61px);
   padding: 0;
   .lucien-row {
     height: 100%;
@@ -872,7 +873,7 @@ export default {
   }
   .list-container {
     height: 100%;
-    background: #f7f7f7;
+    background: #f5f5f5;
     margin-top: 5px;
     .item-box {
       display: flex;
@@ -949,28 +950,28 @@ export default {
     align-items: center;
   }
   ::v-deep .list-table {
-    background: #f7f7f7;
+    background: #f5f5f5;
     .el-table__header th {
-      background: #f7f7f7 !important;
+      background: #f5f5f5 !important;
     }
     .el-table__header th.el-table__cell.is-leaf {
       height: 60px;
-      border-bottom: 1px solid #e5e5e5;
+      border-bottom: 1px solid #e7e7e7;
     }
     .el-table__body .el-table__row {
-      background: #f7f7f7;
+      background: #f5f5f5;
       &:hover > td {
-        background-color: #fcfcfc !important;
+        background-color: #ffffff !important;
       }
       &.cuttent-row > td {
-        background-color: #fcfcfc !important;
+        background-color: #ffffff !important;
       }
       td.el-table__cell {
-        border-bottom: 1px solid #e5e5e5;
+        border-bottom: 1px solid #e7e7e7;
       }
     }
     tr.current-row > td.el-table__cell {
-      background-color: #fcfcfc;
+      background-color: #ffffff;
     }
   }
   ::v-deep .detail-container .el-table {

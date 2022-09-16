@@ -49,12 +49,13 @@ export default {
   height: 1em;
 }
 .has-pending {
-  // display: flex;
-  // justify-content: flex-start;
-  // align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
   .pending-tag {
-    margin-left: 10px;
-    font-size: 10px;
+    margin-right: 10px;
+    font-size: 14px;
     font-weight: bold;
     height: 16px;
     line-height: 16px;

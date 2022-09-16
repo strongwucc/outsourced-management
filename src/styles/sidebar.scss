@@ -45,8 +45,23 @@
     }
 
     &.has-logo {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      // .el-scrollbar {
+      //   height: calc(100% - 50px);
+      // }
+      .sidebar-logo-container {
+        flex: none;
+      }
+      .new-demand-box {
+        flex: none;
+      }
       .el-scrollbar {
-        height: calc(100% - 50px);
+        width: 100%;
+        flex: auto;
+        height: 100px;
       }
     }
 
@@ -79,7 +94,12 @@
     // menu hover
     .submenu-title-noDropdown,
     .el-submenu__title {
-      margin-bottom: 10px;
+      // margin-bottom: 10px;
+      padding: 0 34px !important;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
       height: 46px;
       line-height: 46px;
       &:hover {
@@ -89,6 +109,11 @@
         font-size: 16px;
         color: #b8b8b8;
       }
+      .el-submenu__icon-arrow {
+        font-size: 14px !important;
+        font-weight: bold !important;
+        color: #ffffff !important;
+      }
     }
 
     .is-active>.el-submenu__title {
@@ -96,7 +121,7 @@
     }
 
     & .nest-menu {
-      padding: 0 20px;
+      padding: 0 34px;
       box-sizing: border-box;
     }
 
@@ -104,16 +129,16 @@
     & .el-submenu .el-menu-item {
       min-width: $sideBarWidth !important;
       background-color: $subMenuBg !important;
-      height: 46px;
-      line-height: 46px;
+      height: 32px;
+      line-height: 32px;
       color: #ffffff !important;
-      border-radius: 10px;
+      border-radius: 4px;
       &:hover {
         background-color: rgba($color: #3e6286, $alpha: 0.5) !important;
       }
       width: 100%;
       min-width: 0 !important;
-      padding: 0 0 0 30px !important;
+      padding: 0 0 0 20px !important;
       box-sizing: border-box;
       display: flex;
       &.is-active {
@@ -232,16 +257,16 @@
   }
 
   & .nest-menu {
-    padding: 0 20px;
+    padding: 0 34px;
     box-sizing: border-box;
   }
 
   .nest-menu .el-submenu>.el-submenu__title,
   .el-menu-item {
-    height: 46px;
-    line-height: 46px;
+    height: 32px;
+    line-height: 32px;
     color: #ffffff !important;
-    border-radius: 10px;
+    border-radius: 4px;
     &:hover {
       background-color: rgba($color: #3e6286, $alpha: 0.5) !important;
     }

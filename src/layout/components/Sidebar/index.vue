@@ -5,7 +5,7 @@
       <el-button
         type="primary"
         icon="el-icon-edit-outline"
-        style="width: 147px"
+        style="width: 144px; height: 40px;"
         @click="handleCreateDemand"
       >发布需求</el-button>
     </div>

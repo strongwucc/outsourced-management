@@ -153,39 +153,54 @@
               </el-descriptions>
             </div>
             <el-table :data="[detail]" class="table-info" width="100%" border>
-              <el-table-column label="验收单号" align="left" width="200">
+              <el-table-column
+                label="验收单号"
+                align="left"
+                min-width="200"
+                show-overflow-tooltip
+              >
                 <template slot-scope="{ row }">
                   <div class="pending-box">
                     <span class="txt">{{ row.receipt_id }}</span>
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column label="项目名称" align="center" width="200">
+              <el-table-column
+                label="项目名称"
+                align="center"
+                min-width="200"
+                show-overflow-tooltip
+              >
                 <template slot-scope="{ row }">
                   {{ row.project.project_name }}
                 </template>
               </el-table-column>
-              <el-table-column label="供应商" align="center" width="200">
+              <el-table-column
+                label="供应商"
+                align="center"
+                min-width="200"
+                show-overflow-tooltip
+              >
                 <template slot-scope="{ row }">
                   {{ row.supplier.name }}
                 </template>
               </el-table-column>
-              <el-table-column label="物件数量" align="center">
+              <el-table-column label="物件数量" align="center" width="80">
                 <template slot-scope="{ row }">
                   {{ row.nums }}
                 </template>
               </el-table-column>
-              <el-table-column label="工作总量" align="center">
+              <el-table-column label="工作总量" align="center" width="80">
                 <template slot-scope="{ row }">
                   {{ row.work_num }}
                 </template>
               </el-table-column>
-              <el-table-column label="总金额" align="center">
+              <el-table-column label="总金额" align="center" width="80">
                 <template slot-scope="{ row }">
                   {{ row.work_amount }}
                 </template>
               </el-table-column>
-              <el-table-column label="订单状态" align="center">
+              <el-table-column label="订单状态" align="center" width="150">
                 <template slot-scope="{ row }">
                   <!-- {{ row.receipts_status | statusText }} -->
                   <span :style="{ color: statusColor(row.receipts_status) }">
@@ -1274,7 +1289,7 @@ export default {
   align-items: center;
 }
 .app-container {
-  height: calc(100vh - 50px);
+  height: calc(100vh - 61px);
   padding: 0;
   .lucien-row {
     height: 100%;
@@ -1298,7 +1313,7 @@ export default {
   }
   .list-container {
     height: 100%;
-    background: #f7f7f7;
+    background: #f5f5f5;
     margin-top: 5px;
     .item-box {
       display: flex;
@@ -1372,28 +1387,28 @@ export default {
     align-items: center;
   }
   ::v-deep .list-table {
-    background: #f7f7f7;
+    background: #f5f5f5;
     .el-table__header th {
-      background: #f7f7f7 !important;
+      background: #f5f5f5 !important;
     }
     .el-table__header th.el-table__cell.is-leaf {
       height: 60px;
-      border-bottom: 1px solid #e5e5e5;
+      border-bottom: 1px solid #e7e7e7;
     }
     .el-table__body .el-table__row {
-      background: #f7f7f7;
+      background: #f5f5f5;
       &:hover > td {
-        background-color: #fcfcfc !important;
+        background-color: #ffffff !important;
       }
       &.cuttent-row > td {
-        background-color: #fcfcfc !important;
+        background-color: #ffffff !important;
       }
       td.el-table__cell {
-        border-bottom: 1px solid #e5e5e5;
+        border-bottom: 1px solid #e7e7e7;
       }
     }
     tr.current-row > td.el-table__cell {
-      background-color: #fcfcfc;
+      background-color: #ffffff;
     }
   }
   ::v-deep .detail-container .el-table {

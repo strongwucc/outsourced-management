@@ -10,7 +10,11 @@
     </div>
 
     <div v-if="isPending" class="search-box">
-      <el-popover v-model="searchVisible" width="300">
+      <el-popover
+        v-model="searchVisible"
+        width="300"
+        :disabled="!popoverVisible"
+      >
         <div class="hidden-info">
           <el-input
             v-model="listQuery.name"
@@ -61,13 +65,19 @@
         </div>
         <div slot="reference">
           <el-input
-            v-model="keyword"
+            v-model="listQuery.keyword"
             placeholder="请输入搜索内容"
             style="width: 300px"
             class="show-input"
             size="mini"
-            :disabled="true"
-          />
+          >
+            <el-button
+              slot="append"
+              icon="el-icon-s-unfold"
+              style="font-size: 16px;color: #000000;"
+              @click.stop="searchMore"
+            />
+          </el-input>
         </div>
       </el-popover>
       <el-button
@@ -75,7 +85,7 @@
         type="primary"
         icon="el-icon-search"
         size="mini"
-        @click.stop="searchVisible = !searchVisible"
+        @click.stop="navSearch"
       >
         搜索
       </el-button>
@@ -125,9 +135,10 @@ export default {
         { id: 2, name: '外派' },
         { id: 3, name: '动态团队' }
       ],
-      keyword: '',
+      popoverVisible: false,
       searchVisible: false,
       listQuery: {
+        keyword: '',
         name: '',
         demand_id: '',
         category_name: '',
@@ -152,6 +163,11 @@ export default {
     navSearch() {
       this.$bus.$emit('navSearch', this.listQuery)
       this.searchVisible = false
+      this.popoverVisible = false
+    },
+    searchMore() {
+      this.popoverVisible = !this.popoverVisible
+      this.searchVisible = !this.searchVisible
     }
   }
 }
@@ -159,7 +175,7 @@ export default {
 
 <style lang="scss" scoped>
 .navbar {
-  height: 50px;
+  height: 61px;
   overflow: hidden;
   position: relative;
   background: #fff;
