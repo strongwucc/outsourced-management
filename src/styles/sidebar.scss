@@ -108,6 +108,10 @@
       span {
         font-size: 16px;
         color: #b8b8b8;
+        &.pending-tag {
+          // color: #ffffff;
+          color: rgb(77, 154, 255);
+        }
       }
       .el-submenu__icon-arrow {
         font-size: 14px !important;
@@ -138,14 +142,14 @@
       }
       width: 100%;
       min-width: 0 !important;
-      padding: 0 0 0 20px !important;
+      padding: 0 0 0 28px !important;
       box-sizing: border-box;
       display: flex;
       &.is-active {
         background-color: #3e6286 !important;
-        .pending-tag {
-          color: #ffffff;
-        }
+        // .pending-tag {
+        //   color: #ffffff;
+        // }
       }
     }
   }
@@ -278,7 +282,8 @@
     &.is-active {
       background-color: #3e6286 !important;
       .pending-tag {
-        color: #ffffff;
+        // color: #ffffff;
+        color: rgb(77, 154, 255);
       }
     }
   }

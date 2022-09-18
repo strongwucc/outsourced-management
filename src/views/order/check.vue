@@ -298,6 +298,11 @@
           {{ row.project_name }}
         </template>
       </el-table-column>
+      <el-table-column label="需求名称" align="center" width="200">
+        <template slot-scope="{ row }">
+          {{ row.items.length > 0 && row.items[0].demand ? row.items[0].demand.name : '-' }}
+        </template>
+      </el-table-column>
       <el-table-column label="供应商" align="center" width="200">
         <template slot-scope="{ row }">
           {{ row.supplier_name }}

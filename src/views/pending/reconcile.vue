@@ -1297,7 +1297,7 @@ export default {
   .list-container {
     height: 100%;
     background: #f5f5f5;
-    margin-top: 5px;
+    margin-top: 3px;
     .item-box {
       display: flex;
       flex-direction: column;
@@ -1381,17 +1381,17 @@ export default {
     .el-table__body .el-table__row {
       background: #f5f5f5;
       &:hover > td {
-        background-color: #ffffff !important;
+        background-color: #fcfcfc !important;
       }
       &.cuttent-row > td {
-        background-color: #ffffff !important;
+        background-color: #fcfcfc !important;
       }
       td.el-table__cell {
         border-bottom: 1px solid #e7e7e7;
       }
     }
     tr.current-row > td.el-table__cell {
-      background-color: #ffffff;
+      background-color: #fcfcfc;
     }
   }
   ::v-deep .detail-container .el-table {
@@ -1399,7 +1399,7 @@ export default {
   }
   ::v-deep .detail-container .el-table.table-info th {
     background: #409eff !important;
-    color: #ffffff;
+    color: #fcfcfc;
     border-right: 0 !important;
   }
   ::v-deep .el-icon-my-prohibit {

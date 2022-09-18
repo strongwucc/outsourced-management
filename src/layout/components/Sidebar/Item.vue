@@ -64,8 +64,8 @@ export default {
     // border-radius: 6px;
     // background-color: #f56c6c;
     // border-color: #f56c6c;
-    // color: rgb(77, 154, 255);
-    color: #ffffff;
+    color: rgb(77, 154, 255);
+    // color: #ffffff;
   }
 }
 </style>

@@ -58,7 +58,7 @@
             type="primary"
             icon="el-icon-search"
             size="mini"
-            @click="navSearch"
+            @click="navSearch(true)"
           >
             搜索
           </el-button>
@@ -74,7 +74,7 @@
             <el-button
               slot="append"
               icon="el-icon-s-unfold"
-              style="font-size: 16px;color: #000000;"
+              style="font-size: 16px; color: #000000"
               @click.stop="searchMore"
             />
           </el-input>
@@ -85,7 +85,7 @@
         type="primary"
         icon="el-icon-search"
         size="mini"
-        @click.stop="navSearch"
+        @click.stop="navSearch(false)"
       >
         搜索
       </el-button>
@@ -160,14 +160,24 @@ export default {
       await this.$store.dispatch('user/logout')
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
-    navSearch() {
+    navSearch(multi) {
+      if (multi) {
+        this.listQuery = Object.assign({}, this.listQuery, { keyword: '' })
+      } else {
+        this.listQuery = Object.assign({}, this.listQuery, {
+          name: '',
+          demand_id: '',
+          category_name: '',
+          tag: ''
+        })
+      }
       this.$bus.$emit('navSearch', this.listQuery)
       this.searchVisible = false
       this.popoverVisible = false
     },
     searchMore() {
-      this.popoverVisible = !this.popoverVisible
       this.searchVisible = !this.searchVisible
+      this.popoverVisible = this.searchVisible
     }
   }
 }
