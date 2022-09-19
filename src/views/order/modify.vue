@@ -332,21 +332,21 @@
           {{ row.change_status | statusTxt }}
         </template>
       </el-table-column>
-      <!-- <el-table-column
+      <el-table-column
         label="操作"
         align="center"
         min-width="150"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
-          <el-button
+          <!-- <el-button
             type="primary"
             size="mini"
             plain
             @click.stop="handleModifyReason(row)"
           >
             变更原因
-          </el-button>
+          </el-button> -->
           <el-button
             v-if="[3].indexOf(row.change_status) >= 0"
             type="primary"
@@ -357,7 +357,7 @@
             驳回原因
           </el-button>
         </template>
-      </el-table-column> -->
+      </el-table-column>
     </el-table>
 
     <!--分页-->

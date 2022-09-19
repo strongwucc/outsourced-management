@@ -2935,6 +2935,7 @@ export default {
         this.$message.error('请先选择需求')
         return false
       }
+      this.tempVerify.checkeds = checkeds
       this.tempVerify.reason = ''
       this.verifyRules = Object.assign({}, this.verifyRules, {
         reason: [
@@ -3241,7 +3242,7 @@ export default {
   .list-container {
     height: 100%;
     background: #f5f5f5;
-    margin-top: 3px;
+    // margin-top: 3px;
     .item-box {
       display: flex;
       flex-direction: column;

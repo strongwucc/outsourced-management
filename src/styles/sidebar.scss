@@ -147,9 +147,9 @@
       display: flex;
       &.is-active {
         background-color: #3e6286 !important;
-        // .pending-tag {
-        //   color: #ffffff;
-        // }
+        .pending-tag {
+          color: #ffffff;
+        }
       }
     }
   }
@@ -282,8 +282,8 @@
     &.is-active {
       background-color: #3e6286 !important;
       .pending-tag {
-        // color: #ffffff;
-        color: rgb(77, 154, 255);
+        color: #ffffff;
+        // color: rgb(77, 154, 255);
       }
     }
   }

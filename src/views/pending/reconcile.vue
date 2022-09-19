@@ -335,6 +335,16 @@
               >
                 申请结算
               </el-button>
+              <el-button
+                v-if="[3].indexOf(detail.statement_status) >= 0"
+                v-permission="[0]"
+                type="primary"
+                icon="el-icon-warning-outline"
+                size="mini"
+                @click.stop="handleRejectReason()"
+              >
+                驳回原因
+              </el-button>
             </div>
           </div>
           <div
@@ -624,6 +634,21 @@
         <el-button type="primary" size="mini" @click="uploadBill">
           确认
         </el-button>
+      </div>
+    </el-dialog>
+
+    <!--驳回原因-->
+    <el-dialog
+      title="驳回原因"
+      :visible.sync="dialogRejectReasonVisible"
+      width="600px"
+    >
+      <div v-if="detail.reject" class="reason-box">
+        <div class="content">{{ detail.reject.reason || "" }}</div>
+        <div class="user-info">
+          <div>驳回人：{{ detail.reject.user }}</div>
+          <div>驳回时间：{{ detail.reject.created_at }}</div>
+        </div>
       </div>
     </el-dialog>
   </div>
@@ -1256,6 +1281,18 @@ export default {
           this.$message.success('申请成功')
         })
         .catch((_error) => {})
+    },
+    /**
+     * 驳回原因
+     */
+    handleRejectReason() {
+      if (!this.detail.reject) {
+        this.$message.error('对不起，没有驳回原因')
+        return false
+      }
+      this.$nextTick(() => {
+        this.dialogRejectReasonVisible = true
+      })
     }
   }
 }
@@ -1297,7 +1334,7 @@ export default {
   .list-container {
     height: 100%;
     background: #f5f5f5;
-    margin-top: 3px;
+    // margin-top: 3px;
     .item-box {
       display: flex;
       flex-direction: column;

@@ -193,6 +193,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  z-index: 99;
   .left-box {
     display: flex;
     justify-content: flex-start;

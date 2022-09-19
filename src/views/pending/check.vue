@@ -1314,7 +1314,7 @@ export default {
   .list-container {
     height: 100%;
     background: #f5f5f5;
-    margin-top: 3px;
+    // margin-top: 3px;
     .item-box {
       display: flex;
       flex-direction: column;
