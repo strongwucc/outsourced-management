@@ -1313,7 +1313,7 @@ export default {
   }
   .list-container {
     height: 100%;
-    background: #f5f5f5;
+    background: #f3f3f3;
     // margin-top: 3px;
     .item-box {
       display: flex;
@@ -1387,28 +1387,28 @@ export default {
     align-items: center;
   }
   ::v-deep .list-table {
-    background: #f5f5f5;
+    background: #f3f3f3;
     .el-table__header th {
-      background: #f5f5f5 !important;
+      background: #f3f3f3 !important;
     }
     .el-table__header th.el-table__cell.is-leaf {
       height: 60px;
       border-bottom: 1px solid #e7e7e7;
     }
     .el-table__body .el-table__row {
-      background: #f5f5f5;
+      background: #f3f3f3;
       &:hover > td {
-        background-color: #fcfcfc !important;
+        background-color: #f9f9f9 !important;
       }
       &.cuttent-row > td {
-        background-color: #fcfcfc !important;
+        background-color: #ffffff !important;
       }
       td.el-table__cell {
         border-bottom: 1px solid #e7e7e7;
       }
     }
     tr.current-row > td.el-table__cell {
-      background-color: #fcfcfc;
+      background-color: #ffffff;
     }
   }
   ::v-deep .detail-container .el-table {
