@@ -109,3 +109,17 @@
 .el-descriptions__title {
   color: #599CF7;
 }
+
+.el-form--label-left {
+  .el-form-item__label {
+    position: relative;
+  }
+
+
+  .el-form-item.is-required:not(.is-no-asterisk) .el-form-item__label-wrap>.el-form-item__label:before, .el-form-item.is-required:not(.is-no-asterisk)>.el-form-item__label:before {
+      content: '*';
+      color: #F56C6C;
+      position: absolute;
+      left: -8px;
+  }
+}

@@ -106,10 +106,10 @@
               <template slot-scope="scope">
                 <div class="item-box">
                   <span class="item-no">{{ scope.row.demand_id }}</span>
+                  <span class="item-name">{{ scope.row.name }}</span>
                   <span v-if="scope.row.provider" class="item-supplier">{{
                     scope.row.provider.name
                   }}</span>
-                  <span class="item-name">{{ scope.row.name }}</span>
                 </div>
               </template>
             </el-table-column>
@@ -151,7 +151,10 @@
                 <el-descriptions-item label="核算部门">{{
                   detail.flow ? detail.flow.account_dep.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="经费使用">
+                <el-descriptions-item
+                  v-permission="[1, 2, 3, 4, 5]"
+                  label="经费使用"
+                >
                   {{ detail.project ? detail.project.budget_used : 0 }}/{{
                     detail.project ? detail.project.budget_cost : 0
                   }}
@@ -226,6 +229,13 @@
                   {{ scope.row.name }}
                 </template>
               </el-table-column>
+              <el-table-column label="状态" width="150" align="center">
+                <template slot-scope="scope">
+                  <span :style="{ color: statusColor(scope.row.status) }">
+                    {{ scope.row.status | statusText }}
+                  </span>
+                </template>
+              </el-table-column>
               <el-table-column
                 label="需求品类"
                 min-width="200"
@@ -264,13 +274,6 @@
               >
                 <template slot-scope="scope">
                   {{ scope.row.current_operator }}
-                </template>
-              </el-table-column>
-              <el-table-column label="状态" width="150" align="center">
-                <template slot-scope="scope">
-                  <span :style="{ color: statusColor(scope.row.status) }">
-                    {{ scope.row.status | statusText }}
-                  </span>
                 </template>
               </el-table-column>
             </el-table>
@@ -356,6 +359,17 @@
               <el-button
                 v-if="[9].indexOf(detail.status) >= 0"
                 v-permission="[3]"
+                type="primary"
+                icon="el-icon-warning-outline"
+                size="mini"
+                plain
+                @click.stop="handleRejectReason()"
+              >
+                驳回原因
+              </el-button>
+              <el-button
+                v-if="[6].indexOf(detail.status) >= 0"
+                v-permission="[0]"
                 type="primary"
                 icon="el-icon-warning-outline"
                 size="mini"
@@ -788,8 +802,8 @@
         class="dialog-form"
         :rules="rules"
         :model="temp"
-        label-position="left"
-        label-width="150px"
+        label-position="right"
+        label-width="120px"
         style="margin: 0 50px"
       >
         <el-form-item label="选择项目流程:" prop="process_id">
@@ -818,7 +832,7 @@
         <div
           v-if="temp.process_id > 0 && selectedProcess"
           class="process-info-box"
-          style="margin-bottom: 10px"
+          style="margin: 0 0 10px 47px"
         >
           <el-descriptions
             :column="2"
@@ -1164,7 +1178,9 @@
                     '人日',
                     '套',
                     '件',
+                    '小时',
                     '分钟',
+                    '秒 ',
                     '千字',
                   ]"
                   :key="itemIndex"
@@ -1541,8 +1557,9 @@ export default {
         process_id: [
           { required: true, message: '请选择项目流程', trigger: 'change' }
         ],
+        tag: [{ required: true, message: '请选择需求标记', trigger: 'blur' }],
         name: [{ required: true, message: '请输入需求名称', trigger: 'blur' }],
-        category_id: [
+        cat_id: [
           { required: true, message: '请选择需求品类', trigger: 'change' }
         ]
       },
@@ -3227,7 +3244,7 @@ export default {
     .lucien-col {
       height: 100%;
       &.col-left {
-        min-width: 300px;
+        min-width: 100px;
         width: 350px;
         flex: none;
         resize: horizontal;

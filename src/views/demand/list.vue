@@ -903,20 +903,22 @@
             <el-table-column
               prop="content"
               label="内容"
-              width="180"
+              min-width="300"
               align="center"
+              show-overflow-tooltip
             />
             <el-table-column
               prop="created_at"
+              min-width="200"
               label="操作时间"
               align="center"
             />
-            <el-table-column prop="time" label="耗时" align="center" />
+            <el-table-column prop="time" label="耗时" align="center" width="180" />
           </el-table>
         </el-tab-pane>
       </el-tabs>
       <div slot="footer" class="dialog-footer">
-        <el-button
+        <!-- <el-button
           v-if="
             tempDetail.is_creator === 1 &&
               [0, 2].indexOf(tempDetail.status) >= 0
@@ -926,7 +928,7 @@
           @click="createData(1)"
         >
           提报需求
-        </el-button>
+        </el-button> -->
       </div>
     </el-dialog>
 
@@ -1129,7 +1131,9 @@
                     '人日',
                     '套',
                     '件',
+                    '小时',
                     '分钟',
+                    '秒 ',
                     '千字',
                   ]"
                   :key="itemIndex"
@@ -1667,15 +1671,17 @@
             <el-table-column
               prop="content"
               label="内容"
-              width="180"
+              min-width="300"
               align="center"
+              show-overflow-tooltip
             />
             <el-table-column
               prop="created_at"
+              min-width="200"
               label="操作时间"
               align="center"
             />
-            <el-table-column prop="time" label="耗时" align="center" />
+            <el-table-column prop="time" label="耗时" align="center" width="180" />
           </el-table>
         </el-tab-pane>
       </el-tabs>

@@ -409,15 +409,17 @@
             <el-table-column
               prop="content"
               label="内容"
-              width="180"
+              min-width="300"
               align="center"
+              show-overflow-tooltip
             />
             <el-table-column
               prop="created_at"
+              min-width="200"
               label="操作时间"
               align="center"
             />
-            <el-table-column prop="time" label="耗时" align="center" />
+            <el-table-column prop="time" label="耗时" align="center" width="180" />
           </el-table>
         </el-tab-pane>
       </el-tabs>

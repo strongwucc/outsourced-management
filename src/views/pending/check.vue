@@ -53,7 +53,12 @@
               <template slot-scope="scope">
                 <div class="item-box">
                   <span class="item-no">{{ scope.row.receipt_id }}</span>
-                  <!-- <span class="item-name">{{ scope.row.name }}</span> -->
+                  <span
+                    v-if="
+                      scope.row.items.length > 0 && scope.row.items[0].demand
+                    "
+                    class="item-name"
+                  >{{ scope.row.items[0].demand.name }}</span>
                   <span class="item-supplier">{{
                     scope.row.supplier_name
                   }}</span>
@@ -175,6 +180,14 @@
                   {{ row.project.project_name }}
                 </template>
               </el-table-column>
+              <el-table-column label="订单状态" align="center" width="150">
+                <template slot-scope="{ row }">
+                  <!-- {{ row.receipts_status | statusText }} -->
+                  <span :style="{ color: statusColor(row.receipts_status) }">
+                    {{ row.receipts_status | statusText }}
+                  </span>
+                </template>
+              </el-table-column>
               <el-table-column
                 label="供应商"
                 align="center"
@@ -198,14 +211,6 @@
               <el-table-column label="总金额" align="center" width="80">
                 <template slot-scope="{ row }">
                   {{ row.work_amount }}
-                </template>
-              </el-table-column>
-              <el-table-column label="订单状态" align="center" width="150">
-                <template slot-scope="{ row }">
-                  <!-- {{ row.receipts_status | statusText }} -->
-                  <span :style="{ color: statusColor(row.receipts_status) }">
-                    {{ row.receipts_status | statusText }}
-                  </span>
                 </template>
               </el-table-column>
             </el-table>
@@ -1299,7 +1304,7 @@ export default {
     .lucien-col {
       height: 100%;
       &.col-left {
-        min-width: 300px;
+        min-width: 100px;
         width: 350px;
         flex: none;
         resize: horizontal;

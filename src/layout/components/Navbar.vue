@@ -223,6 +223,7 @@ export default {
     align-items: center;
     padding: 0 20px;
     box-sizing: border-box;
+    background: #ffffff;
     .show-btn {
       margin-left: 10px;
     }

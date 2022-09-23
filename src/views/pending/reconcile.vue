@@ -143,6 +143,11 @@
                   {{ row.project.project_name }}
                 </template>
               </el-table-column>
+              <el-table-column label="订单状态" align="center" width="100">
+                <template slot-scope="{ row }">
+                  {{ row.statement_status | statusText }}
+                </template>
+              </el-table-column>
               <el-table-column
                 label="供应商"
                 align="center"
@@ -183,13 +188,19 @@
                   {{ row.current_operator }}
                 </template>
               </el-table-column>
-              <el-table-column label="订单状态" align="center" width="100">
-                <template slot-scope="{ row }">
-                  {{ row.statement_status | statusText }}
-                </template>
-              </el-table-column>
             </el-table>
-            <div class="actions" />
+            <div class="actions">
+              <el-button
+                v-if="[3].indexOf(detail.statement_status) >= 0"
+                v-permission="[0]"
+                type="primary"
+                icon="el-icon-warning-outline"
+                size="mini"
+                @click.stop="handleRejectReason()"
+              >
+                驳回原因
+              </el-button>
+            </div>
           </div>
           <el-divider />
           <div
@@ -1319,7 +1330,7 @@ export default {
     .lucien-col {
       height: 100%;
       &.col-left {
-        min-width: 300px;
+        min-width: 100px;
         width: 350px;
         flex: none;
         resize: horizontal;

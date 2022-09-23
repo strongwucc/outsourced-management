@@ -140,6 +140,11 @@
                   {{ row.project.project_name }}
                 </template>
               </el-table-column>
+              <el-table-column label="审核状态" align="center" width="120">
+                <template slot-scope="{ row }">
+                  {{ row.change_status | statusTxt }}
+                </template>
+              </el-table-column>
               <el-table-column
                 label="供应商"
                 align="center"
@@ -175,11 +180,6 @@
               >
                 <template slot-scope="{ row }">
                   {{ row.current_operator || "-" }}
-                </template>
-              </el-table-column>
-              <el-table-column label="审核状态" align="center" width="120">
-                <template slot-scope="{ row }">
-                  {{ row.change_status | statusTxt }}
                 </template>
               </el-table-column>
             </el-table>
@@ -859,7 +859,7 @@ export default {
     .lucien-col {
       height: 100%;
       &.col-left {
-        min-width: 300px;
+        min-width: 100px;
         width: 350px;
         flex: none;
         resize: horizontal;

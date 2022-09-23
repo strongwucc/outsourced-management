@@ -36,10 +36,10 @@
               <template slot-scope="scope">
                 <div class="item-box">
                   <span class="item-no">{{ scope.row.order_id }}</span>
+                  <span class="item-name">{{ scope.row.demand.name }}</span>
                   <span v-if="scope.row.supplier" class="item-supplier">{{
                     scope.row.supplier.name
                   }}</span>
-                  <span class="item-name">{{ scope.row.demand.name }}</span>
                 </div>
               </template>
             </el-table-column>
@@ -333,7 +333,7 @@
                       type="primary"
                       style="margin-left: 10px"
                       plain
-                    >上传作品</el-button>
+                    >交付作品</el-button>
                   </el-upload>
                   <el-button
                     type="primary"
@@ -427,7 +427,7 @@
                 plain
                 @click="handleDeliver(false)"
               >
-                交付验收
+                申请验收
               </el-button>
             </div>
           </div>
@@ -519,7 +519,9 @@
                     '人日',
                     '套',
                     '件',
+                    '小时',
                     '分钟',
+                    '秒 ',
                     '千字',
                   ]"
                   :key="itemIndex"
@@ -1459,7 +1461,7 @@ export default {
     .lucien-col {
       height: 100%;
       &.col-left {
-        min-width: 300px;
+        min-width: 100px;
         width: 350px;
         flex: none;
         resize: horizontal;
