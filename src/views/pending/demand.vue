@@ -353,6 +353,18 @@
               >
                 分配供应商
               </el-button>
+              <el-button
+                v-if="detail.status === 3"
+                v-permission="[3]"
+                icon="el-icon-remove"
+                type="primary"
+                size="mini"
+                plain
+                :loading="detail.finishLoading"
+                @click="handleFinishDemand()"
+              >
+                终止
+              </el-button>
               <!-- <el-button type="primary" icon="el-icon-jinzhi" size="mini" plain>
                 驳回
               </el-button> -->
@@ -647,6 +659,18 @@
                   plain
                 >上传附件</el-button>
               </el-upload>
+              <el-button
+                v-if="detail.status === 4 && detail.tasks.length <= 0"
+                v-permission="[0]"
+                icon="el-icon-remove"
+                type="primary"
+                size="mini"
+                plain
+                :loading="detail.finishLoading"
+                @click="handleRefuseDemand()"
+              >
+                拒绝
+              </el-button>
               <el-button
                 v-if="[7, 9].indexOf(detail.status) >= 0"
                 v-permission="[3]"
@@ -1429,7 +1453,9 @@ import {
   verifyOrder,
   exportTaskTpl,
   batchAddTasks,
-  uploadDemandPaperclip
+  uploadDemandPaperclip,
+  toFinishDemand,
+  toRefuseDemand
 } from '@/api/demand/index'
 import {
   createTask,
@@ -3111,6 +3137,62 @@ export default {
             .catch((_error) => {})
         }
       })
+    },
+    /**
+     * 终止需求
+     */
+    handleFinishDemand() {
+      this.$confirm('确定终止需求?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.detail = Object.assign({}, this.detail, { finishLoading: true })
+          toFinishDemand({ demand_id: this.detail.demand_id })
+            .then(async() => {
+              this.detail = Object.assign({}, this.detail, {
+                finishLoading: false
+              })
+              this.$message.success('终止成功')
+              await this.$store.dispatch('user/getPending')
+              this.getList(false)
+            })
+            .catch((_error) => {
+              this.detail = Object.assign({}, this.detail, {
+                finishLoading: false
+              })
+            })
+        })
+        .catch(() => {})
+    },
+    /**
+     * 拒绝需求
+     */
+    handleRefuseDemand() {
+      this.$confirm('确定拒绝需求?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.detail = Object.assign({}, this.detail, { refuseLoading: true })
+          toRefuseDemand({ demand_id: this.detail.demand_id })
+            .then(async() => {
+              this.detail = Object.assign({}, this.detail, {
+                refuseLoading: false
+              })
+              this.$message.success('拒绝成功')
+              await this.$store.dispatch('user/getPending')
+              this.getList(false)
+            })
+            .catch((_error) => {
+              this.detail = Object.assign({}, this.detail, {
+                refuseLoading: false
+              })
+            })
+        })
+        .catch(() => {})
     },
     /**
      * 订单审核弹窗

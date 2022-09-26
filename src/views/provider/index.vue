@@ -61,6 +61,13 @@
         </template>
       </el-table-column>
 
+      <el-table-column label="是否为短名单" align="center" width="120px">
+        <template slot-scope="{ row }">
+          <el-tag v-if="row.is_short_roster === 1" type="success"> 是 </el-tag>
+          <el-tag v-else type="danger"> 否 </el-tag>
+        </template>
+      </el-table-column>
+
       <el-table-column label="登录账户" align="center" min-width="150px">
         <template slot-scope="{ row }">
           {{ row.login_name }}
@@ -140,6 +147,11 @@
       >
         <el-form-item label="供应商名称:" prop="name">
           <el-input v-model="temp.name" class="dialog-form-item" />
+        </el-form-item>
+
+        <el-form-item label="是否为短名单:" prop="is_short_roster">
+          <el-radio v-model="temp.is_short_roster" :label="1">是</el-radio>
+          <el-radio v-model="temp.is_short_roster" :label="0">否</el-radio>
         </el-form-item>
 
         <el-form-item label="简介:" prop="brief">
@@ -511,6 +523,7 @@ export default {
       temp: {
         id: undefined,
         name: '',
+        is_short_roster: '',
         brief: '',
         login_name: '',
         pass_word: '',
@@ -535,6 +548,9 @@ export default {
       return {
         name: [
           { required: true, message: '请输入供应商名称', trigger: 'blur' }
+        ],
+        is_short_roster: [
+          { required: true, message: '请选择是否为短名单', trigger: 'blur' }
         ],
         brief: [
           { required: true, message: '请输入供应商简介', trigger: 'blur' }

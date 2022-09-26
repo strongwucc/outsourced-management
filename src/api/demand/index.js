@@ -120,3 +120,19 @@ export function uploadDemandPaperclip(data) {
     data
   })
 }
+
+export function toFinishDemand(data) {
+  return request({
+    url: '/api/needs/close',
+    method: 'post',
+    data
+  })
+}
+
+export function toRefuseDemand(data) {
+  return request({
+    url: '/api/needs/refuse',
+    method: 'post',
+    data
+  })
+}

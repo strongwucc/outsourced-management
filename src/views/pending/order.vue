@@ -1212,11 +1212,16 @@ export default {
         return false
       }
 
-      this.$confirm('确定交付验收?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
+      this.$confirm(
+        "<p style='color: red'>如无特殊情况，请完成整个需求卡中的任务后再申请验收</p><p>特殊情况请联系供应商管理部对接人</p>",
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          dangerouslyUseHTMLString: true
+          // type: 'warning'
+        }
+      )
         .then(() => {
           toCheckOrder({ tasks: taskCheckeds })
             .then(async(response) => {
