@@ -842,7 +842,7 @@ export default {
   computed: {
     showHeader: function() {
       const hiddenPaths = [
-        '/pending/gg/assign/vendor',
+        '/pending/xmz/assign/vendor',
         '/pending/xmz/demand/draft',
         '/pending/gg/demand/draft',
         '/pending/gys/order/reconcile'

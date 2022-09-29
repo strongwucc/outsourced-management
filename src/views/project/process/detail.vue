@@ -244,7 +244,7 @@
         </div>
       </el-form-item>
 
-      <el-form-item label="分配供应商（供管）:" prop="assign_supplier_json">
+      <el-form-item label="分配供应商（项目组）:" prop="assign_supplier_json">
         <div class="assign-supplier-box json-normal-box item-member">
           <el-select
             v-model="detail.assign_supplier_json"
@@ -421,7 +421,7 @@
         </div>
       </el-form-item>
 
-      <el-form-item
+      <!-- <el-form-item
         label="确认验收资源（供管）:"
         prop="check_confirm_supplier_json"
       >
@@ -489,7 +489,7 @@
             </div>
           </div>
         </div>
-      </el-form-item>
+      </el-form-item> -->
 
       <el-form-item label="推送结算申请（供管）:" prop="push_settle_json">
         <div class="push-settle-box json-normal-box item-member">
@@ -941,12 +941,12 @@ export default {
         //   }
         // ],
         change_review_json: [
-          {
-            required: true,
-            validator: validateJsonObj,
-            message: '请选择变更复审人员',
-            trigger: 'change'
-          },
+          // {
+          //   required: true,
+          //   validator: validateJsonObj,
+          //   message: '请选择变更复审人员',
+          //   trigger: 'change'
+          // },
           {
             validator: validateJsonRepeat,
             trigger: 'change'
@@ -1050,7 +1050,7 @@ export default {
         if (member.group && member.group.type === 2) {
           this.filterNeedsVerify.push(member)
         }
-        if (member.group && [3, 4].indexOf(member.group.type) >= 0) {
+        if (member.group && [1].indexOf(member.group.type) >= 0) {
           this.filterAssignSupplier.push(member)
         }
         if (member.group && member.group.type === 1) {

@@ -26,7 +26,7 @@
             <el-table-column>
               <template slot="header">
                 <el-button
-                  v-permission="[1, 2, 3, 4]"
+                  v-permission="[1, 2]"
                   type="primary"
                   size="mini"
                   @click="handleVerify(true, true)"
@@ -34,7 +34,7 @@
                   验收通过
                 </el-button>
                 <el-button
-                  v-permission="[1, 2, 3, 4]"
+                  v-permission="[1, 2]"
                   type="primary"
                   size="mini"
                   @click="handleVerify(false, true)"
@@ -360,7 +360,7 @@
             </el-table>
             <div class="actions">
               <el-button
-                v-permission="[1, 2, 3, 4]"
+                v-permission="[1, 2]"
                 icon="el-icon-check"
                 type="primary"
                 size="mini"
@@ -368,7 +368,7 @@
                 @click="handleVerify(true, false)"
               >通过</el-button>
               <el-button
-                v-permission="[1, 2, 3, 4]"
+                v-permission="[1, 2]"
                 icon="el-icon-jinzhi"
                 type="primary"
                 size="mini"
@@ -524,21 +524,35 @@
         label-width="100px"
         style="margin: 0 50px"
       >
-        <!-- <el-form-item
-          v-if="dialogStatus === 'resolve'"
-          label="通过原因:"
-          prop="reason"
-        >
-          <el-input
-            v-model="tempVerify.reason"
-            type="textarea"
-            placeholder="请输入通过原因"
-            class="dialog-form-item"
-          />
-        </el-form-item> -->
-        <div v-if="dialogStatus === 'resolve'" class="resolve-notice">
+        <template v-if="dialogStatus === 'resolve'">
+          <el-form-item
+            label="附件链接:"
+            prop="file_url"
+          >
+            <el-input
+              v-model="tempVerify.file_url"
+              placeholder="请输入附件链接"
+              class="dialog-form-item"
+            />
+          </el-form-item>
+          <el-form-item
+            label="上传附件:"
+            prop="file_id"
+          >
+            <el-upload
+              class="upload-demo"
+              :action="`${$baseUrl}/api/tools/upfile`"
+              :on-success="handleAddCheckFileSucc"
+              :on-remove="handleCheckFileChange"
+              :file-list="checkFileList"
+            >
+              <el-button size="mini" type="primary">上传</el-button>
+            </el-upload>
+          </el-form-item>
+        </template>
+        <!-- <div v-if="dialogStatus === 'resolve'" class="resolve-notice">
           是否确认审核通过？
-        </div>
+        </div> -->
         <el-form-item
           v-else-if="dialogStatus === 'reject'"
           label="驳回原因:"
@@ -783,11 +797,12 @@ export default {
       stopFileList: [],
       dialogVerifyVisible: false,
       tempVerify: {
-        task_id: [],
+        receipt_id: [],
         status: '',
         reason: ''
       },
       verifyRules: {},
+      checkFileList: [],
       tempTask: {
         receipt_id: '',
         task_id: '',
@@ -799,9 +814,11 @@ export default {
   computed: {
     showHeader: function() {
       const hiddenPaths = [
-        '/pending/gg/assign/vendor',
+        '/pending/xmz/assign/vendor',
         '/pending/xmz/demand/draft',
-        '/pending/gg/demand/draft'
+        '/pending/gg/demand/draft',
+        '/pending/xmz/accept/confirm',
+        '/pending/xmzfzr/accept/confirm'
       ]
       return hiddenPaths.indexOf(this.$route.path) < 0
     },
@@ -1035,56 +1052,77 @@ export default {
           return false
         }
         const result = this.multipleSelection.some((listItem) => {
-          return listItem.items.some((taskItem) => {
-            if ([0].indexOf(taskItem.task_status) < 0) {
-              const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
-              this.$message.error(errorName)
-              return true
-            }
-            checkeds.push(taskItem.task_id)
-            return false
-          })
+          // return listItem.items.some((taskItem) => {
+          //   if ([0].indexOf(taskItem.task_status) < 0) {
+          //     const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
+          //     this.$message.error(errorName)
+          //     return true
+          //   }
+          //   checkeds.push(taskItem.task_id)
+          //   return false
+          // })
+          checkeds.push(listItem.receipt_id)
         })
 
         if (result) {
           return false
         }
       } else {
-        if (this.multipleTaskSelection.length <= 0) {
-          this.$message.error('请先选择物件')
-          return false
-        }
-        const result = this.multipleTaskSelection.some((taskItem) => {
-          if ([0].indexOf(taskItem.task_status) < 0) {
-            const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
-            this.$message.error(errorName)
-            return true
-          }
-          checkeds.push(taskItem.task_id)
-          return false
-        })
-        if (result) {
-          return false
-        }
+        // if (this.multipleTaskSelection.length <= 0) {
+        //   this.$message.error('请先选择物件')
+        //   return false
+        // }
+        // const result = this.multipleTaskSelection.some((taskItem) => {
+        //   if ([0].indexOf(taskItem.task_status) < 0) {
+        //     const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
+        //     this.$message.error(errorName)
+        //     return true
+        //   }
+        //   checkeds.push(taskItem.task_id)
+        //   return false
+        // })
+        checkeds.push(this.detail.receipt_id)
+        // const result = this.detail.items.some((taskItem) => {
+        //   if ([0].indexOf(taskItem.task_status) < 0) {
+        //     const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
+        //     this.$message.error(errorName)
+        //     return true
+        //   }
+        //   checkeds.push(taskItem.task_id)
+        //   return false
+        // })
+        // if (result) {
+        //   return false
+        // }
       }
 
       this.dialogStatus = pass === true ? 'resolve' : 'reject'
       this.tempVerify.status = pass ? 1 : 0
-      this.tempVerify.task_id = checkeds
+      this.tempVerify.receipt_id = checkeds
       this.tempVerify.reason = ''
       if (pass) {
         if (this.verifyRules.reason) {
           delete this.verifyRules.reason
         }
-        this.$confirm('确定通过验收?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        })
-          .then(() => {
-            this.baseConfirmVerify()
+
+        if (!multi && this.detail.is_first_review === 1) {
+          this.tempVerify.file_url = ''
+          this.tempVerify.file_id = ''
+          this.dialogVerifyVisible = true
+          this.$nextTick(() => {
+            this.$refs['verifyDataForm'].clearValidate()
           })
-          .catch(() => {})
+        } else {
+          this.$confirm('确定通过验收?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          })
+            .then(() => {
+              this.baseConfirmVerify()
+            })
+            .catch(() => {})
+        }
       } else {
         this.verifyRules = Object.assign({}, this.verifyRules, {
           reason: [
@@ -1103,6 +1141,10 @@ export default {
     confirmVerify() {
       this.$refs['verifyDataForm'].validate((valid) => {
         if (valid) {
+          if (this.tempVerify.status === 1 && (this.tempVerify.file_url === '' || this.tempVerify.file_id === '')) {
+            this.$message.error('请输入附件链接或者上传附件')
+            return false
+          }
           this.baseConfirmVerify()
         }
       })
@@ -1194,6 +1236,15 @@ export default {
       this.tempFinish = Object.assign({}, this.tempFinish, {
         file: fileStr,
         files: fileArr
+      })
+    },
+    handleAddCheckFileSucc(response, file, fileList) {
+      this.handleCheckFileChange(file, fileList)
+    },
+    handleCheckFileChange(file, fileList) {
+      this.checkFileList = [file]
+      this.tempVerify = Object.assign({}, this.tempVerify, {
+        file_id: file.response.data.file_id
       })
     },
     /**

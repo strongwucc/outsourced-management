@@ -343,7 +343,7 @@
               </el-button>
               <el-button
                 v-if="detail.status === 3"
-                v-permission="[3]"
+                v-permission="[1]"
                 type="primary"
                 icon="el-icon-fenpei"
                 size="mini"
@@ -1727,7 +1727,7 @@ export default {
     },
     showHeader: function() {
       const hiddenPaths = [
-        '/pending/gg/assign/vendor',
+        '/pending/xmz/assign/vendor',
         '/pending/xmz/demand/draft',
         '/pending/gg/demand/draft'
       ]
@@ -1757,7 +1757,7 @@ export default {
         '/pending/xmz/demand/draft': 0,
         '/pending/gg/demand/draft': 0,
         '/pending/xmzfzr/demand/check': 1,
-        '/pending/gg/assign/vendor': 3,
+        '/pending/xmz/assign/vendor': 3,
         '/pending/gys/demand/quote': 4,
         '/pending/xmz/demand/review': 5,
         '/pending/xmzfzr/demand/review': 5,
