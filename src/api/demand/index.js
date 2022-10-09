@@ -136,3 +136,12 @@ export function toRefuseDemand(data) {
     data
   })
 }
+
+export function exportTask(demand_id) {
+  return request({
+    url: '/api/needs/exportTask',
+    method: 'get',
+    params: { demand_id },
+    responseType: 'arraybuffer'
+  })
+}

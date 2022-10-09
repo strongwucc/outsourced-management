@@ -596,6 +596,24 @@
                 @click="handleResolveTask(false, false)"
               >驳回</el-button>
               <el-button
+                v-if="detail.status === 5"
+                v-permission="[1]"
+                icon="el-icon-download"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleDownloadTask()"
+              >下载物件</el-button>
+              <el-button
+                v-if="[7, 9].indexOf(detail.status) >= 0"
+                v-permission="[3]"
+                icon="el-icon-download"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleDownloadTask()"
+              >下载物件</el-button>
+              <el-button
                 v-if="detail.can_add_task === 1"
                 icon="el-icon-document-add"
                 type="primary"
@@ -1455,7 +1473,8 @@ import {
   batchAddTasks,
   uploadDemandPaperclip,
   toFinishDemand,
-  toRefuseDemand
+  toRefuseDemand,
+  exportTask
 } from '@/api/demand/index'
 import {
   createTask,
@@ -3299,6 +3318,20 @@ export default {
       this.$nextTick(() => {
         this.dialogRejectReasonVisible = true
       })
+    },
+    /**
+     * 下载物件
+     */
+    handleDownloadTask() {
+      if (this.detail.demand_id) {
+        exportTask(this.detail.demand_id)
+          .then((response) => {
+            downloadFileStream('物件.xlsx', response)
+          })
+          .catch((error) => {
+            console.log(error)
+          })
+      }
     }
   }
 }

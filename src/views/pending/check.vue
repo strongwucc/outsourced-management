@@ -1141,7 +1141,7 @@ export default {
     confirmVerify() {
       this.$refs['verifyDataForm'].validate((valid) => {
         if (valid) {
-          if (this.tempVerify.status === 1 && (this.tempVerify.file_url === '' || this.tempVerify.file_id === '')) {
+          if (this.tempVerify.status === 1 && (this.tempVerify.file_url === '' && this.tempVerify.file_id === '')) {
             this.$message.error('请输入附件链接或者上传附件')
             return false
           }
