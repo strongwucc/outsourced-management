@@ -145,14 +145,14 @@
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="发起部门">{{
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="发起部门">{{
                   detail.flow ? detail.flow.launch_dep.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="核算部门">{{
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="核算部门">{{
                   detail.flow ? detail.flow.account_dep.name : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item
-                  v-permission="[1, 2, 3, 4, 5]"
+                  v-if="$store.getters.roles.indexOf(0) < 0"
                   label="经费使用"
                 >
                   {{ detail.project ? detail.project.budget_used : 0 }}/{{
@@ -200,10 +200,10 @@
                     </div>
                   </div>
                 </el-descriptions-item> -->
-                <el-descriptions-item label="意向供应商" span="4">{{
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="意向供应商" span="4">{{
                   detail.supplier ? detail.supplier.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="备注说明" span="4">{{
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="备注说明" span="4">{{
                   detail.remark
                 }}</el-descriptions-item>
               </el-descriptions>
@@ -343,7 +343,7 @@
               </el-button>
               <el-button
                 v-if="detail.status === 3"
-                v-permission="[1]"
+                v-permission="[3]"
                 type="primary"
                 icon="el-icon-fenpei"
                 size="mini"
@@ -1004,13 +1004,13 @@
           </el-upload>
         </el-form-item>
 
-        <el-form-item label="意向供应商:" prop="supplier">
+        <el-form-item label="意向供应商:" prop="supplier" class="custom-unrequired">
           <div class="has-secret-notice">
             <el-select
               v-model="temp.supplier"
               filterable
               clearable
-              placeholder="请输入关键词"
+              placeholder="非必填"
               class="dialog-form-item"
             >
               <el-option
@@ -1024,12 +1024,12 @@
           </div>
         </el-form-item>
 
-        <el-form-item label="备注说明:" prop="remark">
+        <el-form-item label="备注说明:" prop="remark" class="custom-unrequired">
           <div class="has-secret-notice">
             <el-input
               v-model="temp.remark"
               type="textarea"
-              placeholder="请输入说明"
+              placeholder="非必填"
               class="dialog-form-item"
             />
             <div class="secret-notice">仅内部可见</div>
@@ -1746,7 +1746,7 @@ export default {
     },
     showHeader: function() {
       const hiddenPaths = [
-        '/pending/xmz/assign/vendor',
+        '/pending/gg/assign/vendor',
         '/pending/xmz/demand/draft',
         '/pending/gg/demand/draft'
       ]
@@ -1776,7 +1776,7 @@ export default {
         '/pending/xmz/demand/draft': 0,
         '/pending/gg/demand/draft': 0,
         '/pending/xmzfzr/demand/check': 1,
-        '/pending/xmz/assign/vendor': 3,
+        '/pending/gg/assign/vendor': 3,
         '/pending/gys/demand/quote': 4,
         '/pending/xmz/demand/review': 5,
         '/pending/xmzfzr/demand/review': 5,
@@ -3542,6 +3542,10 @@ export default {
       height: 178px;
       display: block;
     }
+  }
+
+  ::v-deep .custom-unrequired .el-form-item__label {
+    opacity: 0.6;
   }
 }
 .reason-box {

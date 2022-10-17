@@ -219,6 +219,7 @@
               width="100%"
               border
               row-key="task_id"
+              :row-class-name="tableRowClassName"
               @selection-change="handleTaskSelectionChange"
             >
               <el-table-column
@@ -380,7 +381,7 @@
 
                   <el-button
                     v-if="[4].indexOf(scope.row.task_status) >= 0"
-                    type="primary"
+                    type="danger"
                     size="mini"
                     style="margin-left: 10px"
                     plain
@@ -993,6 +994,12 @@ export default {
     this.$bus.$off('navSearch')
   },
   methods: {
+    tableRowClassName({ row, rowIndex }) {
+      if (row.task_status === 4) {
+        return 'danger-row'
+      }
+      return ''
+    },
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
@@ -1615,6 +1622,9 @@ export default {
     content: "替";
     font-size: 10px;
     visibility: hidden;
+  }
+  ::v-deep .el-table__body .danger-row {
+    color: #F56C6C;
   }
 }
 .dialog-form {

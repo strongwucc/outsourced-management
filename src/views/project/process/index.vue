@@ -486,7 +486,7 @@
             </div>
           </div>
         </el-form-item>
-        <el-form-item label="分配供应商（项目组）:" prop="assign_supplier_json">
+        <el-form-item label="分配供应商（供管）:" prop="assign_supplier_json">
           <div class="assign-supplier-box json-normal-box item-member">
             <el-select
               v-model="temp.assign_supplier_json"
@@ -496,10 +496,10 @@
               multiple
               collapse-tags
               placeholder="请输入关键词"
-              :remote-method="(query) => fetchMemberList(query, '1')"
+              :remote-method="(query) => fetchMemberList(query, '3')"
               :loading="memberLoading"
               :multiple-limit="2"
-              @focus="fetchMemberList('', '1')"
+              @focus="fetchMemberList('', '3')"
             >
               <el-option
                 v-for="member in members"

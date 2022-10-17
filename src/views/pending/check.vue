@@ -22,7 +22,8 @@
             @selection-change="handleSelectionChange"
             @row-click="handleCurrentChange"
           >
-            <el-table-column type="selection" width="50" />
+            <el-table-column v-if="showHeader" type="selection" width="50" />
+            <el-table-column v-else width="50" />
             <el-table-column>
               <template slot="header">
                 <el-button
@@ -231,6 +232,7 @@
               width="100%"
               border
               row-key="task_id"
+              :row-class-name="tableRowClassName"
               @selection-change="handleTaskSelectionChange"
             >
               <el-table-column
@@ -336,7 +338,7 @@
                   </el-button>
                   <el-button
                     v-if="[3].indexOf(scope.row.task_status) >= 0"
-                    type="primary"
+                    type="danger"
                     size="mini"
                     style="margin-left: 10px"
                     plain
@@ -347,7 +349,7 @@
                   <el-button
                     v-if="scope.row.reject"
                     v-permission="[1, 3]"
-                    type="primary"
+                    type="danger"
                     size="mini"
                     style="margin-left: 10px"
                     plain
@@ -526,12 +528,12 @@
       >
         <template v-if="dialogStatus === 'resolve'">
           <el-form-item
-            label="附件链接:"
+            label="资源存放地址:"
             prop="file_url"
           >
             <el-input
               v-model="tempVerify.file_url"
-              placeholder="请输入附件链接"
+              placeholder="请输入资源存放地址"
               class="dialog-form-item"
             />
           </el-form-item>
@@ -817,8 +819,8 @@ export default {
         '/pending/xmz/assign/vendor',
         '/pending/xmz/demand/draft',
         '/pending/gg/demand/draft',
-        '/pending/xmz/accept/confirm',
-        '/pending/xmzfzr/accept/confirm'
+        '/pending/xmz/accept/confirm'
+        // '/pending/xmzfzr/accept/confirm'
       ]
       return hiddenPaths.indexOf(this.$route.path) < 0
     },
@@ -853,6 +855,12 @@ export default {
     this.$bus.$off('navSearch')
   },
   methods: {
+    tableRowClassName({ row, rowIndex }) {
+      if (row.task_status === 3) {
+        return 'danger-row'
+      }
+      return ''
+    },
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
@@ -1142,7 +1150,7 @@ export default {
       this.$refs['verifyDataForm'].validate((valid) => {
         if (valid) {
           if (this.tempVerify.status === 1 && (this.tempVerify.file_url === '' && this.tempVerify.file_id === '')) {
-            this.$message.error('请输入附件链接或者上传附件')
+            this.$message.error('请输入资源存放地址或者上传附件')
             return false
           }
           this.baseConfirmVerify()
@@ -1484,6 +1492,9 @@ export default {
     content: "替";
     font-size: 10px;
     visibility: hidden;
+  }
+  ::v-deep .el-table__body .danger-row {
+    color: #F56C6C;
   }
 }
 .dialog-form {
