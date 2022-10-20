@@ -77,13 +77,24 @@
                     ? detail.demand.project.project_name
                     : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="发起部门">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="发起部门"
+                >{{
                   detail.demand.flow ? detail.demand.flow.launch_dep.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="核算部门">{{
-                  detail.demand.flow ? detail.demand.flow.account_dep.name : ""
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="核算部门"
+                >{{
+                  detail.demand.flow
+                    ? detail.demand.flow.account_dep.name
+                    : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="经费使用">
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="经费使用"
+                >
                   {{
                     detail.demand.project
                       ? detail.demand.project.budget_used
@@ -135,12 +146,18 @@
                     </div>
                   </div>
                 </el-descriptions-item> -->
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="意向供应商" span="4">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="意向供应商"
+                  span="4"
+                >{{
                   detail.demand.supplier ? detail.demand.supplier.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="备注说明" span="4">{{
-                  detail.demand.remark
-                }}</el-descriptions-item>
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="备注说明"
+                  span="4"
+                >{{ detail.demand.remark }}</el-descriptions-item>
               </el-descriptions>
             </div>
             <el-table :data="[detail]" class="table-info" width="100%" border>
@@ -200,7 +217,57 @@
                 </template>
               </el-table-column>
             </el-table>
-            <div class="actions" />
+            <div class="actions">
+              <el-button
+                v-permission="[0]"
+                type="primary"
+                icon="el-icon-document-add"
+                size="mini"
+                plain
+                @click.stop="handleCreateTask()"
+              >
+                新增物件
+              </el-button>
+              <el-upload
+                v-permission="[0]"
+                class="upload-box"
+                style="margin-left: 10px"
+                :action="`${$baseUrl}/api/tools/upfile`"
+                :show-file-list="false"
+                multiple
+                :file-list="detail.work_file"
+                :on-success="
+                  (response, file, fileList) =>
+                    handleUploadWorkFileSuccess(
+                      response,
+                      file,
+                      fileList,
+                    )
+                "
+                :on-error="handleUploadWorkError"
+              >
+                <el-button
+                  v-if="detail.work_file.length === 0"
+                  ref="uploadWorkFileElement"
+                  icon="el-icon-upload2"
+                  type="primary"
+                  size="mini"
+                  plain
+                >
+                  上传作品截图集
+                </el-button>
+                <el-button
+                  v-else
+                  ref="uploadWorkFileElement"
+                  icon="el-icon-upload2"
+                  type="primary"
+                  size="mini"
+                  plain
+                >
+                  已上传作品截图集
+                </el-button>
+              </el-upload>
+            </div>
           </div>
           <el-divider />
           <div
@@ -402,16 +469,6 @@
               </el-table-column>
             </el-table>
             <div class="actions">
-              <el-button
-                v-permission="[0]"
-                type="primary"
-                icon="el-icon-document-add"
-                size="mini"
-                plain
-                @click.stop="handleCreateTask()"
-              >
-                新增物件
-              </el-button>
               <el-button
                 type="primary"
                 icon="el-icon-editor2b"
@@ -766,7 +823,8 @@ import {
   modifyOrder,
   addTask,
   toCheckOrder,
-  uploadWorkImage
+  uploadWorkImage,
+  uploadWorkFile
 } from '@/api/order/index'
 import { createTask } from '@/api/demand/task'
 import { downloadFile } from '@/api/system/file'
@@ -1159,6 +1217,22 @@ export default {
           this.$message.error('只能选择单个交付验收')
           return false
         }
+
+        const order = this.multipleSelection[0]
+        if (order.work_file.length === 0) {
+          this.$confirm("<p style='color: red'>请上传作品截图集</p>", '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            dangerouslyUseHTMLString: true
+            // type: 'warning'
+          })
+            .then(() => {
+              this.$refs.uploadWorkFileElement.$el.click()
+            })
+            .catch(() => {})
+          return false
+        }
+
         const result = this.multipleSelection.some((orderItem) => {
           return orderItem.tasks.some((taskItem) => {
             if ([0, 4].indexOf(taskItem.task_status) < 0) {
@@ -1190,6 +1264,21 @@ export default {
           this.$message.error('请先选择物件')
           return false
         }
+
+        if (this.detail.work_file.length === 0) {
+          this.$confirm("<p style='color: red'>请上传作品截图集</p>", '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            dangerouslyUseHTMLString: true
+            // type: 'warning'
+          })
+            .then(() => {
+              this.$refs.uploadWorkFileElement.$el.click()
+            })
+            .catch(() => {})
+          return false
+        }
+
         const result = this.multipleTaskSelection.some((taskItem) => {
           if ([0, 4].indexOf(taskItem.task_status) < 0) {
             const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
@@ -1446,6 +1535,43 @@ export default {
     },
     updateTaskFile(data) {
       this.$set(this.detail.tasks[data.index], data.key, data.value)
+    },
+    handleUploadWorkFileSuccess(response, file, fileList) {
+      if (!response.data) {
+        this.$message.error(response.message || '哎呀，出错啦')
+        return false
+      }
+      const fileArr = fileList.map((fileItem) => {
+        return {
+          name: fileItem.name,
+          url: fileItem.response
+            ? fileItem.response.data.url
+            : fileItem.url || '',
+          file_id: fileItem.response
+            ? fileItem.response.data.file_id
+            : fileItem.file_id || ''
+        }
+      })
+      const fileStr = fileArr
+        .map((fileItem) => {
+          return fileItem.file_id
+        })
+        .join(',')
+
+      uploadWorkFile({
+        order_id: this.detail.order_id,
+        file_id: fileStr
+      })
+        .then((response) => {
+          this.$set(this.detail, 'work_file', fileArr)
+          this.$set(
+            this.list[this.detailIndex],
+            'work_file',
+            fileArr
+          )
+          this.$message.success('上传成功')
+        })
+        .catch((_error) => {})
     }
   }
 }
@@ -1530,9 +1656,6 @@ export default {
       margin-top: 50px;
       .task-table {
         margin-top: 20px;
-        .upload-box {
-          display: inline-block;
-        }
         .pending-box {
           display: flex;
           justify-content: flex-start;
@@ -1624,7 +1747,7 @@ export default {
     visibility: hidden;
   }
   ::v-deep .el-table__body .danger-row {
-    color: #F56C6C;
+    color: #f56c6c;
   }
 }
 .dialog-form {
@@ -1689,5 +1812,8 @@ export default {
     justify-content: space-between;
     align-items: center;
   }
+}
+.upload-box {
+  display: inline-block;
 }
 </style>

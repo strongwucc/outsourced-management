@@ -185,6 +185,28 @@
             </el-table>
             <div class="actions">
               <el-button
+                v-if="detail.change_status === 0"
+                v-permission="[1, 2, 3, 4, 0]"
+                icon="el-icon-check"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleVerify(true, false)"
+              >
+                通过
+              </el-button>
+              <el-button
+                v-if="detail.change_status === 0"
+                v-permission="[1, 2, 3, 4, 0]"
+                type="primary"
+                icon="el-icon-jinzhi"
+                size="mini"
+                plain
+                @click="handleVerify(false, false)"
+              >
+                驳回
+              </el-button>
+              <el-button
                 type="primary"
                 icon="el-icon-warning-outline"
                 size="mini"
@@ -291,30 +313,7 @@
                 </template>
               </el-table-column>
             </el-table>
-            <div class="actions">
-              <el-button
-                v-if="detail.change_status === 0"
-                v-permission="[1, 2, 3, 4, 0]"
-                icon="el-icon-check"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleVerify(true, false)"
-              >
-                通过
-              </el-button>
-              <el-button
-                v-if="detail.change_status === 0"
-                v-permission="[1, 2, 3, 4, 0]"
-                type="primary"
-                icon="el-icon-jinzhi"
-                size="mini"
-                plain
-                @click="handleVerify(false, false)"
-              >
-                驳回
-              </el-button>
-            </div>
+            <div class="actions" />
           </div>
           <div
             v-if="

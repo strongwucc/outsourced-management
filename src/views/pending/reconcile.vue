@@ -191,6 +191,49 @@
             </el-table>
             <div class="actions">
               <el-button
+                v-if="detail.apply_seal === 0"
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-zhihuan"
+                size="mini"
+                plain
+                @click.stop="handleApplySeal()"
+              >
+                申请用印
+              </el-button>
+              <el-button
+                v-if="detail.invoice_file"
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-search"
+                size="mini"
+                plain
+                @click.stop="handleShowBill()"
+              >
+                查看发票
+              </el-button>
+              <el-button
+                v-if="[0, 1, 3].indexOf(detail.statement_status) >= 0"
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-document"
+                size="mini"
+                plain
+                @click.stop="handleUploadReconcile()"
+              >
+                上传对账单
+              </el-button>
+              <el-button
+                v-if="[0, 3].indexOf(detail.statement_status) >= 0"
+                v-permission="[0]"
+                type="primary"
+                icon="el-icon-document"
+                size="mini"
+                @click.stop="handleUploadBill(false)"
+              >
+                申请结算
+              </el-button>
+              <el-button
                 v-if="[3].indexOf(detail.statement_status) >= 0"
                 v-permission="[0]"
                 type="primary"
@@ -199,6 +242,39 @@
                 @click.stop="handleRejectReason()"
               >
                 驳回原因
+              </el-button>
+              <el-button
+                v-if="detail.invoice_file"
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-box"
+                size="mini"
+                plain
+                @click.stop="handlePackZip()"
+              >
+                打包所有文件
+              </el-button>
+              <el-button
+                v-if="detail.invoice_file"
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-tickets"
+                size="mini"
+                plain
+                @click.stop="handlePackZip()"
+              >
+                查看合同
+              </el-button>
+              <el-button
+                v-if="detail.invoice_file"
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-download"
+                size="mini"
+                plain
+                @click.stop="handleShowBill()"
+              >
+                下载对账单
               </el-button>
             </div>
           </div>
@@ -302,61 +378,7 @@
                 </template>
               </el-table-column>
             </el-table>
-            <div class="actions">
-              <el-button
-                v-if="detail.apply_seal === 0"
-                v-permission="[3]"
-                type="primary"
-                icon="el-icon-zhihuan"
-                size="mini"
-                plain
-                @click.stop="handleApplySeal()"
-              >
-                申请用印
-              </el-button>
-              <el-button
-                v-if="detail.invoice_file"
-                v-permission="[3]"
-                type="primary"
-                icon="el-icon-search"
-                size="mini"
-                plain
-                @click.stop="handleShowBill()"
-              >
-                查看发票
-              </el-button>
-              <el-button
-                v-if="[0, 1, 3].indexOf(detail.statement_status) >= 0"
-                v-permission="[3]"
-                type="primary"
-                icon="el-icon-document"
-                size="mini"
-                plain
-                @click.stop="handleUploadReconcile()"
-              >
-                上传对账单
-              </el-button>
-              <el-button
-                v-if="[0, 3].indexOf(detail.statement_status) >= 0"
-                v-permission="[0]"
-                type="primary"
-                icon="el-icon-document"
-                size="mini"
-                @click.stop="handleUploadBill(false)"
-              >
-                申请结算
-              </el-button>
-              <el-button
-                v-if="[3].indexOf(detail.statement_status) >= 0"
-                v-permission="[0]"
-                type="primary"
-                icon="el-icon-warning-outline"
-                size="mini"
-                @click.stop="handleRejectReason()"
-              >
-                驳回原因
-              </el-button>
-            </div>
+            <div class="actions" />
           </div>
           <div
             v-if="detail.files.length > 0 || detail.supplier_files.length"
@@ -671,9 +693,10 @@ import {
   uploadBillData,
   uploadInvoiceData,
   submitStatement,
-  rejectStatement
+  rejectStatement,
+  applySeal,
+  packZip
 } from '@/api/order/index'
-import { applySeal } from '@/api/order/index'
 import { downloadFile } from '@/api/system/file'
 import { previewFile, downloadFileStream, baseName } from '@/utils/index'
 import ElImageViewer from 'element-ui/packages/image/src/image-viewer'
@@ -1303,6 +1326,18 @@ export default {
       }
       this.$nextTick(() => {
         this.dialogRejectReasonVisible = true
+      })
+    },
+    /**
+     * 打包所有文件
+     */
+    handlePackZip() {
+      this.zipPacking = true
+      packZip({ statement_id: this.detail.statement_id }).then(response => {
+        console.log(1111111, response)
+      }).catch(_error => {
+        this.$message.error('哎呀，打包出错啦')
+        this.zipPacking = false
       })
     }
   }

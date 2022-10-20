@@ -215,7 +215,24 @@
                 </template>
               </el-table-column>
             </el-table>
-            <div class="actions" />
+            <div class="actions">
+              <el-button
+                v-permission="[1, 2]"
+                icon="el-icon-check"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleVerify(true, false)"
+              >通过</el-button>
+              <el-button
+                v-permission="[1, 2]"
+                icon="el-icon-jinzhi"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleVerify(false, false)"
+              >驳回</el-button>
+            </div>
           </div>
           <el-divider />
           <div
@@ -361,22 +378,7 @@
               </el-table-column>
             </el-table>
             <div class="actions">
-              <el-button
-                v-permission="[1, 2]"
-                icon="el-icon-check"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleVerify(true, false)"
-              >通过</el-button>
-              <el-button
-                v-permission="[1, 2]"
-                icon="el-icon-jinzhi"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleVerify(false, false)"
-              >驳回</el-button>
+
               <el-button
                 v-permission="[1, 3]"
                 type="primary"

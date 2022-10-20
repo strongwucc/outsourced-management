@@ -167,3 +167,19 @@ export function applySeal(data) {
     data
   })
 }
+
+export function uploadWorkFile(data) {
+  return request({
+    url: '/api/order/upWorks',
+    method: 'post',
+    data
+  })
+}
+
+export function packZip(data) {
+  return request({
+    url: '/api/statement/packZip',
+    method: 'post',
+    data
+  })
+}

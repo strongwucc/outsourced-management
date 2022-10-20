@@ -343,6 +343,24 @@
                 驳回
               </el-button>
               <el-button
+                v-if="detail.status === 5"
+                v-permission="[1]"
+                icon="el-icon-check"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleResolveTask(true, false)"
+              >通过</el-button>
+              <el-button
+                v-if="detail.status === 5"
+                v-permission="[1]"
+                icon="el-icon-jinzhi"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleResolveTask(false, false)"
+              >驳回</el-button>
+              <el-button
                 v-if="detail.status === 3"
                 v-permission="[3]"
                 type="primary"
@@ -353,6 +371,44 @@
                 @click.stop="handleProvider()"
               >
                 分配供应商
+              </el-button>
+              <el-button
+                v-if="detail.status === 5"
+                v-permission="[1]"
+                icon="el-icon-download"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleDownloadTask()"
+              >下载物件</el-button>
+              <el-button
+                v-if="[7, 9].indexOf(detail.status) >= 0"
+                v-permission="[3]"
+                icon="el-icon-download"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleDownloadTask()"
+              >下载物件</el-button>
+              <el-button
+                v-if="detail.can_add_task === 1"
+                icon="el-icon-document-add"
+                type="primary"
+                size="mini"
+                plain
+                @click.stop="handleCreateTask()"
+              >
+                新增物件
+              </el-button>
+              <el-button
+                v-if="detail.can_add_task === 1"
+                icon="el-icon-download"
+                type="primary"
+                size="mini"
+                plain
+                @click.stop="handleImportTask()"
+              >
+                导入物件
               </el-button>
               <el-button
                 v-if="detail.status === 3"
@@ -369,6 +425,107 @@
               <!-- <el-button type="primary" icon="el-icon-jinzhi" size="mini" plain>
                 驳回
               </el-button> -->
+              <el-button
+                v-if="[6].indexOf(detail.status) >= 0"
+                v-permission="[0]"
+                type="primary"
+                icon="el-icon-warning-outline"
+                size="mini"
+                plain
+                @click.stop="handleRejectReason()"
+              >
+                驳回原因
+              </el-button>
+              <el-upload
+                v-if="[4, 6].indexOf(detail.status) >= 0"
+                v-permission="[0]"
+                class="upload-box"
+                :action="`${$baseUrl}/api/tools/upfile`"
+                :file-list="detail.supplier_files"
+                :show-file-list="false"
+                multiple
+                :on-success="
+                  (response, file, fileList) =>
+                    handleUploadWorkSuccess(response, file, fileList)
+                "
+                :on-error="handleUploadWorkError"
+              >
+                <el-button
+                  size="mini"
+                  type="primary"
+                  icon="el-icon-paperclip"
+                  style="margin: 0 10px"
+                  plain
+                >上传附件</el-button>
+              </el-upload>
+              <el-button
+                v-if="detail.status === 4 && detail.tasks.length <= 0"
+                v-permission="[0]"
+                icon="el-icon-remove"
+                type="primary"
+                size="mini"
+                plain
+                :loading="detail.finishLoading"
+                @click="handleRefuseDemand()"
+              >
+                拒绝
+              </el-button>
+              <el-button
+                v-if="[7, 9].indexOf(detail.status) >= 0"
+                v-permission="[3]"
+                icon="el-icon-jinzhi"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleGongGuanResolveTask(false)"
+              >
+                驳回
+              </el-button>
+              <el-button
+                v-if="[7, 9].indexOf(detail.status) >= 0"
+                v-permission="[3]"
+                :loading="orderCreating"
+                icon="el-icon-box"
+                size="mini"
+                type="primary"
+                plain
+                @click="handleCreateOrder(false)"
+              >
+                生成订单
+              </el-button>
+              <el-button
+                v-if="[7, 9].indexOf(detail.status) >= 0"
+                v-permission="[3]"
+                icon="el-icon-remove"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleFinish(false)"
+              >
+                终止
+              </el-button>
+              <el-button
+                v-if="detail.status === 8"
+                v-permission="[4]"
+                icon="el-icon-check"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleResolveOrder(true, false)"
+              >
+                通过
+              </el-button>
+              <el-button
+                v-if="detail.status === 8"
+                v-permission="[4]"
+                type="primary"
+                icon="el-icon-jinzhi"
+                size="mini"
+                plain
+                @click="handleResolveOrder(false, false)"
+              >
+                驳回
+              </el-button>
               <el-button
                 v-if="[9].indexOf(detail.status) >= 0"
                 v-permission="[3]"
@@ -579,62 +736,6 @@
                 生成订单
               </el-button> -->
               <el-button
-                v-if="detail.status === 5"
-                v-permission="[1]"
-                icon="el-icon-check"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleResolveTask(true, false)"
-              >通过</el-button>
-              <el-button
-                v-if="detail.status === 5"
-                v-permission="[1]"
-                icon="el-icon-jinzhi"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleResolveTask(false, false)"
-              >驳回</el-button>
-              <el-button
-                v-if="detail.status === 5"
-                v-permission="[1]"
-                icon="el-icon-download"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleDownloadTask()"
-              >下载物件</el-button>
-              <el-button
-                v-if="[7, 9].indexOf(detail.status) >= 0"
-                v-permission="[3]"
-                icon="el-icon-download"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleDownloadTask()"
-              >下载物件</el-button>
-              <el-button
-                v-if="detail.can_add_task === 1"
-                icon="el-icon-document-add"
-                type="primary"
-                size="mini"
-                plain
-                @click.stop="handleCreateTask()"
-              >
-                新增物件
-              </el-button>
-              <el-button
-                v-if="detail.can_add_task === 1"
-                icon="el-icon-download"
-                type="primary"
-                size="mini"
-                plain
-                @click.stop="handleImportTask()"
-              >
-                导入物件
-              </el-button>
-              <el-button
                 v-if="[4, 6].indexOf(detail.status) >= 0"
                 v-permission="[0]"
                 icon="el-icon-circle-check"
@@ -644,107 +745,6 @@
                 @click="handleToVerifyTask(false)"
               >
                 提交审核
-              </el-button>
-              <el-button
-                v-if="[6].indexOf(detail.status) >= 0"
-                v-permission="[0]"
-                type="primary"
-                icon="el-icon-warning-outline"
-                size="mini"
-                plain
-                @click.stop="handleRejectReason()"
-              >
-                驳回原因
-              </el-button>
-              <el-upload
-                v-if="[4, 6].indexOf(detail.status) >= 0"
-                v-permission="[0]"
-                class="upload-box"
-                :action="`${$baseUrl}/api/tools/upfile`"
-                :file-list="detail.supplier_files"
-                :show-file-list="false"
-                multiple
-                :on-success="
-                  (response, file, fileList) =>
-                    handleUploadWorkSuccess(response, file, fileList)
-                "
-                :on-error="handleUploadWorkError"
-              >
-                <el-button
-                  size="mini"
-                  type="primary"
-                  icon="el-icon-paperclip"
-                  style="margin: 0 10px"
-                  plain
-                >上传附件</el-button>
-              </el-upload>
-              <el-button
-                v-if="detail.status === 4 && detail.tasks.length <= 0"
-                v-permission="[0]"
-                icon="el-icon-remove"
-                type="primary"
-                size="mini"
-                plain
-                :loading="detail.finishLoading"
-                @click="handleRefuseDemand()"
-              >
-                拒绝
-              </el-button>
-              <el-button
-                v-if="[7, 9].indexOf(detail.status) >= 0"
-                v-permission="[3]"
-                icon="el-icon-jinzhi"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleGongGuanResolveTask(false)"
-              >
-                驳回
-              </el-button>
-              <el-button
-                v-if="[7, 9].indexOf(detail.status) >= 0"
-                v-permission="[3]"
-                :loading="orderCreating"
-                icon="el-icon-box"
-                size="mini"
-                type="primary"
-                plain
-                @click="handleCreateOrder(false)"
-              >
-                生成订单
-              </el-button>
-              <el-button
-                v-if="[7, 9].indexOf(detail.status) >= 0"
-                v-permission="[3]"
-                icon="el-icon-remove"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleFinish(false)"
-              >
-                终止
-              </el-button>
-              <el-button
-                v-if="detail.status === 8"
-                v-permission="[4]"
-                icon="el-icon-check"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleResolveOrder(true, false)"
-              >
-                通过
-              </el-button>
-              <el-button
-                v-if="detail.status === 8"
-                v-permission="[4]"
-                type="primary"
-                icon="el-icon-jinzhi"
-                size="mini"
-                plain
-                @click="handleResolveOrder(false, false)"
-              >
-                驳回
               </el-button>
               <!-- <el-button
                 type="primary"
@@ -3488,9 +3488,6 @@ export default {
       }
       .actions {
         margin-top: 20px;
-        .upload-box {
-          display: inline-block;
-        }
       }
     }
     .download-content {
@@ -3628,5 +3625,8 @@ export default {
     justify-content: space-between;
     align-items: center;
   }
+}
+.upload-box {
+  display: inline-block;
 }
 </style>
