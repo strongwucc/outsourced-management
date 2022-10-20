@@ -100,7 +100,11 @@
           {{ row.pact_id }}
         </template>
       </el-table-column>
-
+      <el-table-column label="合同名称" align="center" min-width="150px">
+        <template slot-scope="{ row }">
+          {{ row.pact_name }}
+        </template>
+      </el-table-column>
       <el-table-column label="供应商名称" align="center" min-width="150px">
         <template slot-scope="{ row }">
           {{ row.supplier_name }}
@@ -111,27 +115,37 @@
           {{ row.sub_name }}
         </template>
       </el-table-column>
-      <el-table-column label="区域" align="center" min-width="150px">
+      <!-- <el-table-column label="区域" align="center" min-width="150px">
         <template slot-scope="{ row }">
           {{ row.area }}
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column label="合同号" align="center" min-width="150px">
         <template slot-scope="{ row }">
           {{ row.bn }}
         </template>
       </el-table-column>
-      <el-table-column label="合同开始时间" align="center" min-width="150px">
+      <el-table-column label="合同开始时间" align="center" min-width="160px">
         <template slot-scope="{ row }">
           {{ row.period_start }}
         </template>
       </el-table-column>
-      <el-table-column label="合同结束时间" align="center" min-width="150px">
+      <el-table-column label="合同结束时间" align="center" min-width="160px">
         <template slot-scope="{ row }">
           {{ row.period_end }}
         </template>
       </el-table-column>
-      <el-table-column label="合同状态" align="center" min-width="150px">
+      <el-table-column label="合同签署日期" align="center" min-width="160px">
+        <template slot-scope="{ row }">
+          {{ row.sign_date }}
+        </template>
+      </el-table-column>
+      <el-table-column label="登记类型" align="center" min-width="150px">
+        <template slot-scope="{ row }">
+          {{ row.pact_type | typeText }}
+        </template>
+      </el-table-column>
+      <el-table-column label="合同状态" align="center" min-width="100px">
         <template slot-scope="{ row }">
           <el-tag :type="row.status | statusFilter">
             {{ row.status | statusText }}
@@ -258,6 +272,23 @@
         <el-form-item label="合同编号" prop="bn">
           <el-input v-model="temp.bn" class="dialog-form-item" />
         </el-form-item>
+        <el-form-item label="合同名称" prop="pact_name">
+          <el-input v-model="temp.pact_name" class="dialog-form-item" />
+        </el-form-item>
+        <el-form-item label="登记类型" prop="pact_type">
+          <el-select
+            v-model="temp.pact_type"
+            placeholder="请选择等级类型"
+            class="dialog-form-item"
+          >
+            <el-option
+              v-for="item in typeList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="合同有效期" prop="period_date">
           <el-date-picker
             v-model="temp.period_date"
@@ -280,6 +311,16 @@
           >
             <el-button size="mini" type="primary">上传</el-button>
           </el-upload>
+        </el-form-item>
+        <el-form-item label="合同签署日期" prop="sign_date">
+          <el-date-picker
+            v-model="temp.sign_date"
+            type="date"
+            class="dialog-form-item"
+            format="yyyy-MM-dd"
+            value-format="yyyy-MM-dd"
+            placeholder="选择合同签署日期"
+          />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input
@@ -326,6 +367,12 @@
         <el-form-item label="合同号:">
           <div>{{ temp.bn }}</div>
         </el-form-item>
+        <el-form-item label="合同名称:">
+          <div>{{ temp.pact_name }}</div>
+        </el-form-item>
+        <el-form-item label="登记类型">
+          <div>{{ temp.pact_type | typeText }}</div>
+        </el-form-item>
         <el-form-item label="合同有效时间:">
           <div>{{ temp.period_start }}至{{ temp.period_end }}</div>
         </el-form-item>
@@ -345,6 +392,9 @@
               >下载</el-button>
             </div>
           </div>
+        </el-form-item>
+        <el-form-item label="合同签署日期:">
+          <div>{{ temp.sign_date }}</div>
         </el-form-item>
         <el-form-item label="备注">
           <div>{{ temp.remark }}</div>
@@ -383,6 +433,12 @@ const statList = [
   { id: 3, name: '已过期' }
 ]
 
+const typeList = [
+  { id: 0, name: '关联合同' },
+  { id: 1, name: '主合同' },
+  { id: 2, name: '补充协议' }
+]
+
 export default {
   name: 'Type',
   components: { Pagination },
@@ -407,6 +463,17 @@ export default {
         return false
       })
       return statusText
+    },
+    typeText(type) {
+      let typeText = ''
+      typeList.some((item) => {
+        if (type === item.id) {
+          typeText = item.name
+          return true
+        }
+        return false
+      })
+      return typeText
     }
   },
   data() {
@@ -420,6 +487,7 @@ export default {
     return {
       areas: [],
       statList: statList,
+      typeList: typeList,
       list: null,
       total: 0,
       listLoading: true,
@@ -445,9 +513,12 @@ export default {
         supplier_id: '',
         sub_id: '',
         bn: '',
+        pact_name: '',
+        pact_type: 0,
         period_date: '',
         period_start: '',
         period_end: '',
+        sign_date: '',
         file: '',
         remark: ''
       },
@@ -464,6 +535,10 @@ export default {
           { required: true, message: '请选择签约主体', trigger: 'change' }
         ],
         bn: [{ required: true, message: '请输入合同号', trigger: 'blur' }],
+        pact_name: [{ required: true, message: '请输入合同名称', trigger: 'blur' }],
+        pact_type: [
+          { required: true, message: '请选择等级类型', trigger: 'change' }
+        ],
         period_date: [
           {
             required: true,
@@ -471,6 +546,9 @@ export default {
             message: '请选择合同有效时间',
             trigger: 'blur'
           }
+        ],
+        sign_date: [
+          { required: true, message: '请选择签署日期', trigger: 'change' }
         ]
       },
       fileList: []
@@ -540,9 +618,12 @@ export default {
         supplier_id: '',
         sub_id: '',
         bn: '',
+        pact_name: '',
+        pact_type: 0,
         period_date: '',
         period_start: '',
         period_end: '',
+        sign_date: '',
         file: '',
         remark: ''
       }

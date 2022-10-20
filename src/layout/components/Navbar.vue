@@ -10,12 +10,15 @@
     </div>
 
     <div v-if="isPending" class="search-box">
-      <el-popover
-        v-model="searchVisible"
-        width="300"
-        :disabled="!popoverVisible"
-      >
+      <el-popover v-model="searchVisible" trigger="manual" width="300">
         <div class="hidden-info">
+          <el-input
+            v-model="listQuery.project_name"
+            placeholder="输入项目名称"
+            style="width: 200px; margin-bottom: 20px"
+            class="filter-item"
+            size="mini"
+          />
           <el-input
             v-model="listQuery.name"
             placeholder="输入需求名称"
@@ -31,6 +34,7 @@
             size="mini"
           />
           <el-input
+            v-if="[1].indexOf(queryType) >= 0"
             v-model="listQuery.category_name"
             placeholder="输入需求品类"
             style="width: 200px; margin-bottom: 20px"
@@ -38,6 +42,7 @@
             size="mini"
           />
           <el-select
+            v-if="[1].indexOf(queryType) >= 0"
             v-model="listQuery.tag"
             placeholder="需求属性"
             clearable
@@ -52,6 +57,46 @@
               :value="item.id"
             />
           </el-select>
+          <el-input
+            v-if="[2, 3, 4, 5].indexOf(queryType) >= 0"
+            v-model="listQuery.supplier_name"
+            placeholder="输入供应商名称"
+            style="width: 200px; margin-bottom: 20px"
+            class="filter-item"
+            size="mini"
+          />
+          <el-input
+            v-if="[2].indexOf(queryType) >= 0"
+            v-model="listQuery.order_id"
+            placeholder="输入订单号"
+            style="width: 200px; margin-bottom: 20px"
+            class="filter-item"
+            size="mini"
+          />
+          <el-input
+            v-if="[3].indexOf(queryType) >= 0"
+            v-model="listQuery.change_id"
+            placeholder="输入变更单号"
+            style="width: 200px; margin-bottom: 20px"
+            class="filter-item"
+            size="mini"
+          />
+          <el-input
+            v-if="[4].indexOf(queryType) >= 0"
+            v-model="listQuery.receipt_id"
+            placeholder="输入验收单号"
+            style="width: 200px; margin-bottom: 20px"
+            class="filter-item"
+            size="mini"
+          />
+          <el-input
+            v-if="[5].indexOf(queryType) >= 0"
+            v-model="listQuery.statement_id"
+            placeholder="输入结算单号"
+            style="width: 200px; margin-bottom: 20px"
+            class="filter-item"
+            size="mini"
+          />
 
           <el-button
             class="filter-item"
@@ -125,6 +170,64 @@ export default {
     ...mapGetters(['sidebar', 'avatar', 'name']),
     isPending() {
       return this.$route.path.startsWith('/pending')
+    },
+    queryType() {
+      const path = this.$route.path
+      if (
+        [
+          '/pending/gys/demand/quote',
+          '/pending/xmz/demand/draft',
+          '/pending/xmz/demand/review',
+          '/pending/xmzfzr/demand/check',
+          '/pending/xmzfzr/demand/review',
+          '/pending/gg/demand/draft',
+          '/pending/gg/assign/vendor',
+          '/pending/gg/order/prepare',
+          '/pending/ggfzr/order/approval'
+        ].indexOf(path) >= 0
+      ) {
+        return 1
+      }
+
+      if (
+        [
+          '/pending/gys/order/deliver'
+        ].indexOf(path) >= 0
+      ) {
+        return 2
+      }
+
+      if (
+        [
+          '/pending/ggfzr/modify/approval',
+          '/pending/gys/order/modify',
+          '/pending/xmz/order/modify',
+          '/pending/gg/order/modify'
+        ].indexOf(path) >= 0
+      ) {
+        return 3
+      }
+
+      if (
+        [
+          '/pending/gys/order/check',
+          '/pending/xmz/accept/confirm',
+          '/pending/xmzfzr/accept/confirm'
+        ].indexOf(path) >= 0
+      ) {
+        return 4
+      }
+
+      if (
+        [
+          '/pending/gys/order/reconcile',
+          '/pending/gg/reconcile/confirm'
+        ].indexOf(path) >= 0
+      ) {
+        return 5
+      }
+
+      return 0
     }
   },
   data() {
@@ -135,14 +238,19 @@ export default {
         { id: 2, name: '外派' },
         { id: 3, name: '动态团队' }
       ],
-      popoverVisible: false,
       searchVisible: false,
       listQuery: {
         keyword: '',
+        project_name: '',
         name: '',
         demand_id: '',
         category_name: '',
-        tag: ''
+        tag: '',
+        supplier_name: '',
+        order_id: '',
+        change_id: '',
+        receipt_id: '',
+        statement_id: ''
       },
       listWidth: '350px'
     }
@@ -151,8 +259,17 @@ export default {
     this.$bus.$on('leftListResize', (listWidth) => {
       this.listWidth = `${listWidth}px`
     })
+    this.$bus.$on('appMainChange', () => {
+      this.searchVisible = false
+      this.resetQuery()
+    })
   },
   methods: {
+    resetQuery() {
+      Object.keys(this.listQuery).forEach((key) => {
+        this.$set(this.listQuery, key, '')
+      })
+    },
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
     },
@@ -173,11 +290,9 @@ export default {
       }
       this.$bus.$emit('navSearch', this.listQuery)
       this.searchVisible = false
-      this.popoverVisible = false
     },
     searchMore() {
       this.searchVisible = !this.searchVisible
-      this.popoverVisible = this.searchVisible
     }
   }
 }

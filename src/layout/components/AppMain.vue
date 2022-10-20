@@ -11,6 +11,7 @@ export default {
   name: 'AppMain',
   computed: {
     key() {
+      this.$bus.$emit('appMainChange')
       return this.$route.path
     }
   }

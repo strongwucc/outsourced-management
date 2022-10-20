@@ -77,13 +77,13 @@
                     ? detail.demand.project.project_name
                     : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="发起部门">{{
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="发起部门">{{
                   detail.demand.flow ? detail.demand.flow.launch_dep.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="核算部门">{{
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="核算部门">{{
                   detail.demand.flow ? detail.demand.flow.account_dep.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="经费使用">
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="经费使用">
                   {{
                     detail.demand.project
                       ? detail.demand.project.budget_used
@@ -135,10 +135,10 @@
                     </div>
                   </div>
                 </el-descriptions-item> -->
-                <el-descriptions-item label="意向供应商" span="4">{{
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="意向供应商" span="4">{{
                   detail.demand.supplier ? detail.demand.supplier.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="备注说明" span="4">{{
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="备注说明" span="4">{{
                   detail.demand.remark
                 }}</el-descriptions-item>
               </el-descriptions>

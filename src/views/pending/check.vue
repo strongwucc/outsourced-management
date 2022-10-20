@@ -98,13 +98,13 @@
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="发起部门">{{
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="发起部门">{{
                   detail.demand.flow ? detail.demand.flow.launch_dep.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="核算部门">{{
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="核算部门">{{
                   detail.demand.flow ? detail.demand.flow.account_dep.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="经费使用">
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="经费使用">
                   {{ detail.project ? detail.project.budget_used : 0 }}/{{
                     detail.project ? detail.project.budget_cost : 0
                   }}
@@ -150,10 +150,10 @@
                     </div>
                   </div>
                 </el-descriptions-item> -->
-                <el-descriptions-item label="供应商" span="4">{{
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="供应商" span="4">{{
                   detail.supplier ? detail.supplier.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="备注说明" span="4">{{
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="备注说明" span="4">{{
                   detail.remark
                 }}</el-descriptions-item>
               </el-descriptions>
@@ -378,7 +378,7 @@
                 @click="handleVerify(false, false)"
               >驳回</el-button>
               <el-button
-                v-permission="[3]"
+                v-permission="[1, 3]"
                 type="primary"
                 icon="el-icon-remove"
                 size="mini"
