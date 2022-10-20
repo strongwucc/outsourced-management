@@ -72,6 +72,7 @@
                 </el-button>
                 <el-button
                   v-permission="[3]"
+                  :loading="orderCreating"
                   size="mini"
                   type="primary"
                   @click="handleCreateOrder(true)"
@@ -703,6 +704,7 @@
               <el-button
                 v-if="[7, 9].indexOf(detail.status) >= 0"
                 v-permission="[3]"
+                :loading="orderCreating"
                 icon="el-icon-box"
                 size="mini"
                 type="primary"
@@ -1176,6 +1178,49 @@
       </div>
     </el-dialog>
 
+    <!--生成订单-->
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogCreateOrderVisible"
+      :close-on-click-modal="false"
+    >
+      <el-form
+        ref="createOrderDataForm"
+        class="dialog-form"
+        :rules="createOrderRules"
+        :model="tempCreateOrder"
+        label-position="left"
+        label-width="150px"
+        style="margin: 0 50px"
+      >
+        <el-form-item label="供应商合同:" prop="pact_id">
+          <el-select
+            v-model="tempCreateOrder.pact_id"
+            style="width: 300px"
+            filterable
+            clearable
+            placeholder="请输入合同名称"
+            class="dialog-form-item"
+          >
+            <el-option
+              v-for="item in pacts"
+              :key="item.id"
+              :label="item.pact_name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogCreateOrderVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="confirmCreateOrder">
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
+
     <!--新增物件-->
     <el-dialog
       :title="textMap[dialogStatus]"
@@ -1490,6 +1535,9 @@ import {
   fetchProcessVerifyMember
 } from '@/api/project/process'
 import { fetchReasonList } from '@/api/system/reason'
+import {
+  fetchAllPact
+} from '@/api/provider/contract'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import TaskDetail from '@/components/TaskDetail'
 import { downloadFile } from '@/api/system/file'
@@ -1596,7 +1644,8 @@ export default {
         provider: '选择供应商',
         create_task: '填写物件',
         update_task: '修改物件',
-        import_task: '导入物件'
+        import_task: '导入物件',
+        create_order: '生成订单'
       },
       rules: {
         process_id: [
@@ -1622,17 +1671,6 @@ export default {
       multipleTaskSelection: [],
       detailLoading: false,
       detailLoaded: false,
-      textMap: {
-        update: '修改需求',
-        copy: '复制需求',
-        create: '新增需求',
-        resolve: '审批',
-        reject: '驳回',
-        provider: '选择供应商',
-        create_task: '填写物件',
-        update_task: '修改物件',
-        import_task: '导入物件'
-      },
       dialogStatus: '',
       dialogVerifyVisible: false,
       confirmVerifyVisible: false,
@@ -1720,7 +1758,19 @@ export default {
         tasks: []
       },
       importTaskRules: {},
-      tempImportTaskFileName: ''
+      tempImportTaskFileName: '',
+      pacts: [],
+      dialogCreateOrderVisible: false,
+      orderCreating: false,
+      tempCreateOrder: {
+        demand_id: [],
+        pact_id: ''
+      },
+      createOrderRules: {
+        pact_id: [
+          { required: true, message: '请选择供应商合同', trigger: 'change' }
+        ]
+      }
     }
   },
   computed: {
@@ -3013,7 +3063,7 @@ export default {
     /**
      * 预制订单弹窗
      */
-    handleCreateOrder(multi) {
+    async handleCreateOrder(multi) {
       const checkeds = []
 
       if (multi) {
@@ -3040,13 +3090,32 @@ export default {
         return false
       }
 
-      createOrder({ demand_id: checkeds })
-        .then(async(response) => {
-          this.$message.success('订单生成成功')
-          await this.$store.dispatch('user/getPending')
-          this.getList(false)
-        })
-        .catch((_error) => {})
+      if (this.pacts.length <= 0) {
+        this.orderCreating = true
+        const pactData = await fetchAllPact({ status: 1 }).catch(_error => {})
+        this.pacts = pactData.data || []
+        this.orderCreating = false
+      }
+
+      this.tempCreateOrder = Object.assign({}, this.tempCreateOrder, { demand_id: checkeds })
+      this.dialogStatus = 'create_order'
+      this.dialogCreateOrderVisible = true
+    },
+    confirmCreateOrder() {
+      this.$refs['createOrderDataForm'].validate((valid) => {
+        if (valid) {
+          const temp = Object.assign({}, this.tempCreateOrder)
+
+          createOrder(temp)
+            .then(async(response) => {
+              this.$message.success('订单生成成功')
+              this.dialogCreateOrderVisible = false
+              await this.$store.dispatch('user/getPending')
+              this.getList(false)
+            })
+            .catch((_error) => {})
+        }
+      })
     },
     /**
      * 终止弹窗

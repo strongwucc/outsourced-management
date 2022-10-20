@@ -8,6 +8,14 @@ export function fetchList(params) {
   })
 }
 
+export function fetchAllPact(params) {
+  return request({
+    url: '/api/supply/queryAllPact',
+    method: 'post',
+    params
+  })
+}
+
 export function createContract(data) {
   return request({
     url: '/api/supply/addPact',
