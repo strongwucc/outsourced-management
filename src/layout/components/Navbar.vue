@@ -150,9 +150,62 @@
           <el-dropdown-item @click.native="logout">
             <span style="display: block">退出登录</span>
           </el-dropdown-item>
+          <el-dropdown-item @click.native="handleEditPass">
+            <span style="display: block">密码修改</span>
+          </el-dropdown-item>
+          <el-dropdown-item v-permission="[0]" @click.native="handleEditUserInfo">
+            <span style="display: block">账户设置</span>
+          </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
+
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogFormVisible"
+      :close-on-click-modal="false"
+      append-to-body
+      width="600px"
+    >
+      <el-form
+        ref="dataForm"
+        class="dialog-form"
+        :rules="rules"
+        :model="temp"
+        label-position="left"
+        label-width="100px"
+        style="margin-left: 50px"
+      >
+        <template v-if="dialogStatus === 'password'">
+          <el-form-item label="原密码:" prop="password">
+            <el-input v-model="temp.password" class="dialog-form-item" show-password />
+          </el-form-item>
+          <el-form-item label="新密码:" prop="new_pass">
+            <el-input v-model="temp.new_pass" class="dialog-form-item" show-password />
+          </el-form-item>
+          <el-form-item label="确认新密码:" prop="confirm_pass">
+            <el-input v-model="temp.confirm_pass" class="dialog-form-item" show-password />
+          </el-form-item>
+        </template>
+        <template v-if="dialogStatus === 'userinfo'">
+          <el-form-item label="抄送邮件:" prop="mail_cc">
+            <el-input v-model="temp.mail_cc" class="dialog-form-item" />
+          </el-form-item>
+        </template>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogFormVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          size="mini"
+          @click="confirmUpdateData()"
+        >
+          确定
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -160,8 +213,12 @@
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
+import permission from '@/directive/permission/index.js' // 权限判断指令
+import { updateSelfData } from '@/api/system/member'
+import { queryInfoByUserId as fetchProviderInfo } from '@/api/provider/index'
 
 export default {
+  directives: { permission },
   components: {
     Breadcrumb,
     Hamburger
@@ -228,6 +285,20 @@ export default {
       }
 
       return 0
+    },
+    rules() {
+      if (this.dialogStatus === 'password') {
+        return {
+          password: [{ required: true, message: '请输入原密码', trigger: 'blur' }],
+          new_pass: [{ required: true, message: '请输入新密码', trigger: 'blur' }],
+          confirm_pass: [{ required: true, message: '请确认新密码', trigger: 'blur' }]
+        }
+      } else if (this.dialogStatus === 'userinfo') {
+        return {
+          mail_cc: [{ required: true, message: '请输入抄送邮件', trigger: 'blur' }]
+        }
+      }
+      return {}
     }
   },
   data() {
@@ -252,7 +323,19 @@ export default {
         receipt_id: '',
         statement_id: ''
       },
-      listWidth: '350px'
+      listWidth: '350px',
+      dialogStatus: '',
+      dialogFormVisible: false,
+      temp: {
+        password: '',
+        new_pass: '',
+        confirm_pass: '',
+        mail_cc: ''
+      },
+      textMap: {
+        password: '密码修改',
+        userinfo: '账户设置'
+      }
     }
   },
   mounted() {
@@ -293,6 +376,46 @@ export default {
     },
     searchMore() {
       this.searchVisible = !this.searchVisible
+    },
+    handleEditPass() {
+      this.dialogStatus = 'password'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
+    async handleEditUserInfo() {
+      const providerData = await fetchProviderInfo().catch(_error => {})
+      this.temp = Object.assign({}, this.temp, { mail_cc: providerData.data.mail_cc })
+
+      this.dialogStatus = 'userinfo'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
+    confirmUpdateData() {
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          let temp
+          if (this.dialogStatus === 'password') {
+            temp = { password: this.temp.password, new_pass: this.temp.new_pass }
+          } else if (this.dialogStatus === 'userinfo') {
+            temp = { mail_cc: this.temp.mail_cc }
+          }
+          updateSelfData(temp)
+            .then(() => {
+              this.dialogFormVisible = false
+              this.$notify({
+                title: '成功',
+                message: '修改成功',
+                type: 'success',
+                duration: 2000
+              })
+            })
+            .catch((_error) => {})
+        }
+      })
     }
   }
 }

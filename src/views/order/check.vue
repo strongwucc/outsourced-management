@@ -54,6 +54,16 @@
         >
           搜索
         </el-button>
+        <el-button
+          v-waves
+          class="filter-btn"
+          type="primary"
+          icon="el-icon-download"
+          size="mini"
+          @click="handleExportOrders"
+        >
+          导出
+        </el-button>
       </div>
       <div class="filter-right">
         <el-button
@@ -76,7 +86,7 @@
         </el-button>
         <!-- <el-popconfirm
           v-permission="[0]"
-          title="确定生成对账单吗？"
+          title="确定生成结算单吗？"
           @confirm="handleReconcile"
         ><el-button
           slot="reference"
@@ -85,7 +95,7 @@
           type="primary"
           size="mini"
         >
-          生成对账单
+          生成结算单
         </el-button></el-popconfirm>
         <el-popconfirm
           v-permission="[1]"
@@ -513,6 +523,7 @@ import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
+import { exportOrders } from '@/api/system/download'
 
 export default {
   components: { Pagination, TaskDetail },
@@ -874,7 +885,7 @@ export default {
       })
     },
     /**
-     * 生成对账单
+     * 生成结算单
      */
     handleReconcile() {
       const taskCheckeds = []
@@ -883,7 +894,7 @@ export default {
           return orderItem.items.some((taskItem, taskIndex) => {
             if (taskItem.checked) {
               if ([2].indexOf(taskItem.task_status) < 0) {
-                const errorName = `[${taskItem.task_id}]: 该物件状态无法生成对账单`
+                const errorName = `[${taskItem.task_id}]: 该物件状态无法生成结算单`
                 this.$message.error(errorName)
                 return true
               }
@@ -923,7 +934,7 @@ export default {
           //   )
           // })
 
-          this.$message.success('生成对账单成功')
+          this.$message.success('生成结算单成功')
           await this.$store.dispatch('user/getPending')
           this.getList(false)
         })
@@ -1149,6 +1160,39 @@ export default {
             .catch((error) => {})
         })
       }
+    },
+    /**
+     * 导出
+     */
+    handleExportOrders() {
+      const { receipt_id, task_id, order_id, project_name, supplier_name } = this.listQuery
+      let filter = {
+        receipt_id,
+        task_id,
+        order_id,
+        project_name,
+        supplier_name,
+        class_name: 'receipt'
+      }
+
+      const checked = []
+      this.list.forEach(item => {
+        if (item.checked) {
+          checked.push(item.receipt_id)
+        }
+      })
+
+      if (checked.length > 0) {
+        filter = Object.assign({}, filter, { receipt_id: checked })
+      }
+
+      exportOrders(filter)
+        .then((response) => {
+          downloadFileStream('验收单列表.xlsx', response)
+        })
+        .catch((error) => {
+          console.log(error)
+        })
     }
   }
 }

@@ -46,6 +46,16 @@
         >
           搜索
         </el-button>
+        <el-button
+          v-waves
+          class="filter-item"
+          type="primary"
+          icon="el-icon-download"
+          size="mini"
+          @click="handleExportOrders"
+        >
+          导出
+        </el-button>
       </div>
       <div class="filter-right">
         <el-button
@@ -764,6 +774,7 @@ import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
+import { exportOrders } from '@/api/system/download'
 
 export default {
   components: { Pagination, TaskDetail },
@@ -1431,6 +1442,38 @@ export default {
           downloadFileStream(fileName, response)
         })
         .catch((error) => {})
+    },
+    /**
+     * 导出
+     */
+    handleExportOrders() {
+      const { order_id, task_id, project_name, supplier_name } = this.listQuery
+      let filter = {
+        order_id,
+        task_id,
+        project_name,
+        supplier_name,
+        class_name: 'order'
+      }
+
+      const checked = []
+      this.list.forEach(item => {
+        if (item.checked) {
+          checked.push(item.order_id)
+        }
+      })
+
+      if (checked.length > 0) {
+        filter = Object.assign({}, filter, { order_id: checked })
+      }
+
+      exportOrders(filter)
+        .then((response) => {
+          downloadFileStream('订单列表.xlsx', response)
+        })
+        .catch((error) => {
+          console.log(error)
+        })
     }
   }
 }

@@ -380,7 +380,7 @@
           <el-input
             v-model="temp.email_cc"
             class="dialog-form-item"
-            placeholder="请输入邮件抄送人"
+            placeholder="请输入邮件抄送人，多个用“,”隔开"
           />
         </el-form-item>
         <el-form-item label="法务收件人:" prop="legal_email">

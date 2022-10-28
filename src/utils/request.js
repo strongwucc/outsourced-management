@@ -56,11 +56,12 @@ service.interceptors.response.use(
     const res = response.data
 
     if (response.status !== 200) {
-      Message({
-        message: res.message || '哎呀，系统开小差啦',
-        type: 'error',
-        duration: 5 * 1000
-      })
+      // Message({
+      //   message: res.message || '哎呀，系统开小差啦',
+      //   type: 'error',
+      //   duration: 5 * 1000
+      // })
+      MessageBox.alert(res.message || '哎呀，系统开小差啦', '提示')
       return Promise.reject(new Error(res.message || 'Error'))
     } else {
       return res
@@ -102,11 +103,12 @@ service.interceptors.response.use(
         router.push('/login?redirect=' + backtoUrl)
       }
     } else {
-      Message({
-        message: '哎呀，系统出错啦',
-        type: 'error',
-        duration: 5 * 1000
-      })
+      // Message({
+      //   message: '哎呀，系统出错啦',
+      //   type: 'error',
+      //   duration: 5 * 1000
+      // })
+      MessageBox.alert('哎呀，系统出错啦', '提示')
     }
 
     return Promise.reject(error)

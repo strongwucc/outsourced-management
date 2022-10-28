@@ -278,7 +278,7 @@
         <el-form-item label="登记类型" prop="pact_type">
           <el-select
             v-model="temp.pact_type"
-            placeholder="请选择等级类型"
+            placeholder="请选择合同类型"
             class="dialog-form-item"
           >
             <el-option
@@ -435,8 +435,7 @@ const statList = [
 
 const typeList = [
   { id: 0, name: '关联合同' },
-  { id: 1, name: '主合同' },
-  { id: 2, name: '补充协议' }
+  { id: 1, name: '单一主体合同' }
 ]
 
 export default {

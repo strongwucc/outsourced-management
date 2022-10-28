@@ -144,51 +144,16 @@
         label-width="120px"
         style="margin: 0 50px"
         class="dialog-form"
-        size="mini"
       >
-        <div class="form-title">基本信息</div>
-        <el-form-item label="公司标识码:" prop="company_code">
-          <el-input v-model="temp.company_code" class="dialog-form-item" placeholder="请输入公司标识码/机构代码/身份证号码" />
+        <el-form-item label="供应商名称:" prop="name">
+          <el-input v-model="temp.name" class="dialog-form-item" />
         </el-form-item>
-        <el-form-item label="营业执照号:" prop="company_license_no">
-          <el-input v-model="temp.company_license_no" class="dialog-form-item" />
+
+        <el-form-item label="是否为短名单:" prop="is_short_roster">
+          <el-radio v-model="temp.is_short_roster" :label="1">是</el-radio>
+          <el-radio v-model="temp.is_short_roster" :label="0">否</el-radio>
         </el-form-item>
-        <el-form-item label="注册时间:" prop="register_time">
-          <el-date-picker
-            v-model="temp.register_time"
-            class="dialog-form-item"
-            type="datetime"
-            placeholder="选择注册时间"
-          />
-        </el-form-item>
-        <el-form-item label="有效期至:" prop="validite_date">
-          <el-date-picker
-            v-model="temp.validite_date"
-            class="dialog-form-item"
-            type="date"
-            placeholder="选择有效期"
-          />
-        </el-form-item>
-        <el-form-item label="法人:" prop="legal_person">
-          <el-input v-model="temp.legal_person" class="dialog-form-item" />
-        </el-form-item>
-        <el-form-item label="公司制作人员数:" prop="person_num">
-          <el-input v-model="temp.person_num" class="dialog-form-item" />
-        </el-form-item>
-        <el-form-item label="区域:" prop="area">
-          <el-select
-            v-model="temp.area"
-            class="dialog-form-item"
-            placeholder="请选择"
-          >
-            <el-option
-              v-for="item in areas"
-              :key="item.area_id"
-              :label="item.area_name"
-              :value="item.area_name"
-            />
-          </el-select>
-        </el-form-item>
+
         <el-form-item label="简介:" prop="brief">
           <el-input
             v-model="temp.brief"
@@ -197,7 +162,6 @@
           />
         </el-form-item>
 
-        <div class="form-title">账户信息</div>
         <el-form-item
           v-if="dialogStatus === 'create'"
           label="供应商登录账户:"
@@ -218,77 +182,49 @@
           />
         </el-form-item>
 
-        <div class="form-title">合同信息</div>
-        <el-form-item label="供应商名称:" prop="name">
-          <el-input v-model="temp.name" class="dialog-form-item" />
-        </el-form-item>
-        <el-form-item label="是否为短名单:" prop="is_short_roster">
-          <el-radio v-model="temp.is_short_roster" :label="1">是</el-radio>
-          <el-radio v-model="temp.is_short_roster" :label="0">否</el-radio>
-        </el-form-item>
-        <el-form-item label="联系地址:" prop="contact_addr">
-          <el-input v-model="temp.contact_addr" class="dialog-form-item" />
-        </el-form-item>
-        <el-form-item label="所在城市:" prop="city">
-          <el-input v-model="temp.city" class="dialog-form-item" />
-        </el-form-item>
-        <el-form-item label="联系人:" prop="contact_name">
-          <el-input v-model="temp.contact_name" class="dialog-form-item" />
-        </el-form-item>
-        <el-form-item label="联系电话:" prop="contact_phone">
-          <el-input v-model="temp.contact_phone" class="dialog-form-item" />
-        </el-form-item>
-        <el-form-item label="工作邮箱:" prop="email">
+        <el-form-item label="抄送邮件:" prop="email">
           <el-input
             v-model="temp.email"
             class="dialog-form-item"
+            placeholder="可多个，分号隔开"
           />
         </el-form-item>
-        <el-form-item label="开户行:" prop="bank_name">
-          <el-input
-            v-model="temp.bank_name"
-            class="dialog-form-item"
-          />
-        </el-form-item>
-        <el-form-item label="银行账户:" prop="bank_account">
+        <el-form-item label="银行账号:" prop="bank_account">
           <el-input
             v-model="temp.bank_account"
             class="dialog-form-item"
+            placeholder="请输入银行账号"
+          />
+        </el-form-item>
+        <el-form-item label="银行及开户行:" prop="bank_name">
+          <el-input
+            v-model="temp.bank_name"
+            class="dialog-form-item"
+            placeholder="请输入银行及开户行"
           />
         </el-form-item>
 
-        <div class="form-title">信件邮寄地址</div>
-        <el-form-item label="联系地址:" prop="mail_contact_addr">
-          <el-input
-            v-model="temp.mail_contact_addr"
+        <el-form-item label="区域:" prop="area">
+          <el-select
+            v-model="temp.area"
             class="dialog-form-item"
-          />
-        </el-form-item>
-        <el-form-item label="联系人:" prop="mail_contacts">
-          <el-input
-            v-model="temp.mail_contacts"
-            class="dialog-form-item"
-          />
-        </el-form-item>
-        <el-form-item label="联系电话:" prop="mail_contact_phone">
-          <el-input
-            v-model="temp.mail_contact_phone"
-            class="dialog-form-item"
-          />
-        </el-form-item>
-        <el-form-item label="邮件抄送人:" prop="mail_cc">
-          <el-input
-            v-model="temp.mail_cc"
-            class="dialog-form-item"
-          />
+            placeholder="请选择"
+          >
+            <el-option
+              v-for="item in areas"
+              :key="item.area_id"
+              :label="item.area_name"
+              :value="item.area_name"
+            />
+          </el-select>
         </el-form-item>
 
-        <el-form-item v-if="dialogFormDisabled === true" class="title-label" label="品类单价配置" />
-        <el-form-item v-else class="title-label" label="品类单价配置:">
+        <el-form-item v-if="dialogFormDisabled === true" label="品类单价配置" />
+        <el-form-item v-else label="品类单价配置:" prop="cat_json">
           <div class="add-category-btn" @click="handleCreateCategory">添加</div>
         </el-form-item>
 
-        <div class="category-container" style="margin-bottom: 20px">
+        <div class="category-container">
           <el-table
             class="category-table"
             :data="temp.prices"
@@ -300,7 +236,7 @@
                 <el-form-item
                   label-width="0"
                   :prop="`prices.${scope.$index}.cat_id`"
-                  :rules="rules.prices.cat_id"
+                  :rules="rules.cat_id"
                 >
                   <el-cascader
                     ref="categoryCascader"
@@ -320,7 +256,7 @@
                 <el-form-item
                   label-width="0"
                   :prop="`prices.${scope.$index}.price`"
-                  :rules="rules.prices.price"
+                  :rules="rules.price"
                 >
                   <el-input
                     v-model="scope.row.price"
@@ -350,8 +286,8 @@
           </el-table>
         </div>
 
-        <el-form-item v-if="dialogFormDisabled === true" class="title-label" label="联系人配置" />
-        <el-form-item v-else class="title-label" label="联系人配置:">
+        <el-form-item v-if="dialogFormDisabled === true" label="联系人配置" />
+        <el-form-item v-else label="联系人配置:" prop="contacts">
           <div class="add-contact-btn" @click="handleCreateContact">添加</div>
         </el-form-item>
 
@@ -367,7 +303,7 @@
                 <el-form-item
                   label-width="0"
                   :prop="`contacts.${scope.$index}.contact_name`"
-                  :rules="rules.contacts.contact_name"
+                  :rules="rules.contact_name"
                 >
                   <el-input v-model="scope.row.contact_name" />
                 </el-form-item>
@@ -379,7 +315,7 @@
                 <el-form-item
                   label-width="0"
                   :prop="`contacts.${scope.$index}.contact_mobile`"
-                  :rules="rules.contacts.contact_mobile"
+                  :rules="rules.contact_mobile"
                 >
                   <el-input v-model="scope.row.contact_mobile" />
                 </el-form-item>
@@ -487,101 +423,27 @@
         :column="1"
         :label-style="{ 'font-weight': 'bold', width: '150px' }"
       >
-        <el-descriptions-item label="公司标识码">{{
-          temp.company_code
-        }}</el-descriptions-item>
-        <el-descriptions-item label="营业执照号">{{
-          temp.company_license_no
-        }}</el-descriptions-item>
-        <el-descriptions-item label="注册时间">{{
-          temp.register_time
-        }}</el-descriptions-item>
-        <el-descriptions-item label="有效期至">{{
-          temp.validite_date
-        }}</el-descriptions-item>
-        <el-descriptions-item label="法人">{{
-          temp.legal_person
-        }}</el-descriptions-item>
-        <el-descriptions-item label="公司制作人员数">{{
-          temp.person_num
-        }}</el-descriptions-item>
-        <el-descriptions-item label="区域">{{
-          temp.area
+        <el-descriptions-item label="供应商名称">{{
+          temp.name
         }}</el-descriptions-item>
         <el-descriptions-item label="简介">{{
           temp.brief
         }}</el-descriptions-item>
-
-      </el-descriptions>
-
-      <el-descriptions
-        title="账户信息"
-        class="margin-top"
-        :column="1"
-        :label-style="{ 'font-weight': 'bold', width: '150px' }"
-      >
         <el-descriptions-item label="登录账户">
           {{ temp.login_name }}
         </el-descriptions-item>
-      </el-descriptions>
-
-      <el-descriptions
-        title="合同信息"
-        class="margin-top"
-        :column="1"
-        :label-style="{ 'font-weight': 'bold', width: '150px' }"
-      >
-        <el-descriptions-item label="供应商名称">{{
-          temp.name
-        }}</el-descriptions-item>
-        <el-descriptions-item label="联系地址">{{
-          temp.contact_addr
-        }}</el-descriptions-item>
-        <el-descriptions-item label="所在城市">{{
-          temp.city
-        }}</el-descriptions-item>
-        <el-descriptions-item label="联系人">{{
-          temp.contact_name
-        }}</el-descriptions-item>
-        <el-descriptions-item label="联系电话">{{
-          temp.contact_phone
-        }}</el-descriptions-item>
-        <el-descriptions-item label="工作邮箱">{{
-          temp.email
-        }}</el-descriptions-item>
-        <el-descriptions-item label="开户行">{{
-          temp.bank_name
-        }}</el-descriptions-item>
-        <el-descriptions-item label="银行账户">{{
-          temp.bank_account
+        <el-descriptions-item label="抄送邮件">
+          {{ temp.email }}
+        </el-descriptions-item>
+        <el-descriptions-item label="区域">{{
+          temp.area
         }}</el-descriptions-item>
       </el-descriptions>
-
-      <el-descriptions
-        title="信件邮寄地址"
-        class="margin-top"
-        :column="1"
-        :label-style="{ 'font-weight': 'bold', width: '150px' }"
-      >
-        <el-descriptions-item label="联系地址">
-          {{ temp.mail_contact_addr }}
-        </el-descriptions-item>
-        <el-descriptions-item label="联系人">
-          {{ temp.mail_contacts }}
-        </el-descriptions-item>
-        <el-descriptions-item label="联系电话">
-          {{ temp.mail_contact_phone }}
-        </el-descriptions-item>
-        <el-descriptions-item label="邮件抄送人">
-          {{ temp.mail_cc }}
-        </el-descriptions-item>
-      </el-descriptions>
-
       <el-descriptions
         title="需求品类单价"
         class="margin-top detail-title"
         :column="1"
-        :label-style="{ 'font-weight': 'bold', width: '200px' }"
+        :label-style="{ 'font-weight': 'bold', width: '150px' }"
       >
         <el-descriptions-item
           v-for="(category, categoryIndex) in temp.prices"
@@ -680,25 +542,11 @@ export default {
         login_name: '',
         pass_word: '',
         email: '',
-        area: '',
-        prices: [],
-        contacts: [],
-        contact_name: '',
-        contact_addr: '',
-        city: '',
-        contact_phone: '',
         bank_name: '',
         bank_account: '',
-        mail_contact_addr: '',
-        mail_contacts: '',
-        mail_contact_phone: '',
-        mail_cc: '',
-        company_code: '',
-        company_license_no: '',
-        register_time: '',
-        validite_date: '',
-        legal_person: '',
-        person_num: ''
+        area: '',
+        prices: [],
+        contacts: []
       },
       textMap: {
         update: '修改供应商',
@@ -714,15 +562,6 @@ export default {
         return Object.assign({})
       }
       return {
-        login_name: [
-          { required: true, message: '请输入登录账户', trigger: 'blur' }
-        ],
-        pass_word: [
-          { required: true, message: '请输入密码', trigger: 'blur' }
-        ],
-        company_code: [
-          { required: true, message: '请输入公司标识码/机构代码/身份证号码', trigger: 'blur' }
-        ],
         name: [
           { required: true, message: '请输入供应商名称', trigger: 'blur' }
         ],
@@ -732,49 +571,24 @@ export default {
         brief: [
           { required: true, message: '请输入供应商简介', trigger: 'blur' }
         ],
-        prices: {
-          cat_id: [
-            { required: true, message: '请选择需求品类', trigger: 'change' }
-          ],
-          price: [{ required: true, message: '请输入单价', trigger: 'blur' }]
-        },
-        contacts: {
-          contact_name: [
-            { required: true, message: '请输入姓名', trigger: 'blur' }
-          ],
-          contact_mobile: [
-            {
-              validator: validateMobile,
-              trigger: 'blur'
-            }
-          ]
-        },
-        mail_contact_addr: [
-          { required: true, message: '请输入联系地址', trigger: 'blur' }
-        ],
-        mail_contacts: [
-          { required: true, message: '请输入联系人', trigger: 'blur' }
-        ],
-        mail_contact_phone: [
-          { required: true, message: '请输入联系电话', trigger: 'blur' }
-        ],
-        contact_addr: [
-          { required: true, message: '请输入联系地址', trigger: 'blur' }
-        ],
-        contact_name: [
-          { required: true, message: '请输入联系人', trigger: 'blur' }
-        ],
-        contact_phone: [
-          { required: true, message: '请输入联系电话', trigger: 'blur' }
-        ],
-        email: [
-          { required: true, message: '请输入工作邮箱', trigger: 'blur' }
-        ],
         bank_name: [
-          { required: true, message: '请输入开户行', trigger: 'blur' }
+          { required: true, message: '请输入银行及开户行', trigger: 'blur' }
         ],
         bank_account: [
-          { required: true, message: '请输入银行账号', trigger: 'blur' }
+          { required: true, message: '请输入银行账户', trigger: 'blur' }
+        ],
+        cat_id: [
+          { required: true, message: '请选择需求品类', trigger: 'change' }
+        ],
+        price: [{ required: true, message: '请输入单价', trigger: 'blur' }],
+        contact_name: [
+          { required: true, message: '请输入姓名', trigger: 'blur' }
+        ],
+        contact_mobile: [
+          {
+            validator: validateMobile,
+            trigger: 'blur'
+          }
         ]
       }
     }
@@ -835,6 +649,8 @@ export default {
         login_name: '',
         pass_word: '',
         email: '',
+        bank_name: '',
+        bank_account: '',
         area: '',
         prices: [],
         contacts: []
@@ -986,23 +802,11 @@ export default {
         cursor: pointer;
       }
     }
-    .form-title {
-      font-size: 16px;
-      font-weight: bold;
-      color: #409EFF;
-      margin-bottom: 20px;
-    }
   }
   .detail-dialog {
     .detail-title {
       margin-top: 20px;
     }
-  }
-
-  ::v-deep .title-label .el-form-item__label {
-    font-size: 16px;
-    font-weight: bold;
-    color: #409EFF;
   }
 }
 </style>

@@ -5,7 +5,7 @@
       <div class="filter-left">
         <el-input
           v-model="listQuery.statement_id"
-          placeholder="输入对账单号"
+          placeholder="输入结算单号"
           style="width: 200px"
           class="filter-item"
           size="mini"
@@ -45,6 +45,16 @@
           @click="handleFilter"
         >
           搜索
+        </el-button>
+        <el-button
+          v-waves
+          class="filter-btn"
+          type="primary"
+          icon="el-icon-download"
+          size="mini"
+          @click="handleExportOrders"
+        >
+          导出
         </el-button>
       </div>
       <div class="filter-right">
@@ -218,7 +228,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="对账单号" align="left" min-width="150">
+      <el-table-column label="结算单号" align="left" min-width="150">
         <template slot-scope="{ row }">
           <div class="pending-box">
             <span class="txt">{{ row.statement_id }}</span>
@@ -289,7 +299,7 @@
             plain
             @click.stop="handleUploadReconcile(row)"
           >
-            上传对账单
+            上传结算单
           </el-button>
           <el-button
             v-if="[0].indexOf(row.statement_status) >= 0"
@@ -309,7 +319,7 @@
             plain
             @click.stop="handleShowReconcile(row)"
           >
-            查看对账单
+            查看结算单
           </el-button>
           <el-button
             v-if="row.invoice_file"
@@ -443,7 +453,7 @@
       </div>
     </el-dialog>
 
-    <!--上传对账单-->
+    <!--上传结算单-->
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogReconcileVisible"
@@ -457,7 +467,7 @@
         label-width="150px"
         style="margin: 0 50px"
       >
-        <el-form-item label="对账单" prop="bill_file">
+        <el-form-item label="结算单" prop="bill_file">
           <el-upload
             :action="`${$baseUrl}/api/tools/upfile`"
             :on-success="handleAddReconcileFileSucc"
@@ -592,6 +602,7 @@ import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
+import { exportOrders } from '@/api/system/download'
 
 export default {
   components: { Pagination, ElImageViewer, TaskDetail },
@@ -643,7 +654,7 @@ export default {
       textMap: {
         resolve: '通过',
         reject: '驳回',
-        reconcile: '上传对账单',
+        reconcile: '上传结算单',
         bill: '结算申请',
         bill_show: '查看发票'
       },
@@ -660,7 +671,7 @@ export default {
       dialogReconcileVisible: false,
       reconcileRules: {
         bill_file: [
-          { required: true, message: '请选择对账单文件', trigger: 'blur' }
+          { required: true, message: '请选择结算单文件', trigger: 'blur' }
         ]
       },
       tempReconcile: {
@@ -874,8 +885,8 @@ export default {
             if ([1].indexOf(listItem.statement_status) < 0) {
               const errorName =
                 pass === true
-                  ? `[${listItem.statement_id}] 该对账单的状态，无法提交`
-                  : `[${listItem.statement_id}] 该对账单的状态，无法驳回`
+                  ? `[${listItem.statement_id}] 该结算单的状态，无法提交`
+                  : `[${listItem.statement_id}] 该结算单的状态，无法驳回`
               this.$message.error(errorName)
               return true
             }
@@ -886,7 +897,7 @@ export default {
         })
       ) {
         if (checkeds.length <= 0) {
-          this.$message.error('请先选择对账单')
+          this.$message.error('请先选择结算单')
           return false
         }
       } else {
@@ -979,7 +990,7 @@ export default {
       }
     },
     /**
-     * 上传对账单弹窗
+     * 上传结算单弹窗
      */
     handleUploadReconcile(reconcile) {
       this.tempReconcile = Object.assign({}, this.tempReconcile, {
@@ -1009,7 +1020,7 @@ export default {
       }
     },
     /**
-     * 上传对账单
+     * 上传结算单
      */
     uploadReconcile() {
       this.$refs['reconcileDataForm'].validate((valid) => {
@@ -1129,14 +1140,14 @@ export default {
       })
     },
     /**
-     * 查看对账单
+     * 查看结算单
      */
     handleShowReconcile(row) {
       if (!row.bill_file) {
-        this.$message.error('还未上传对账单')
+        this.$message.error('还未上传结算单')
         return false
       }
-      previewFile('对账单', row.bill_file)
+      previewFile('结算单', row.bill_file)
     },
     /**
      * 查看发票
@@ -1160,10 +1171,42 @@ export default {
       })
       this.dialogStatus = 'bill_show'
       this.dialogBillVisible = true
-    }
+    },
     // closeViewer(index) {
     //   this.$set(this.list[index], 'showViewer', false)
     // }
+    /**
+     * 导出
+     */
+    handleExportOrders() {
+      const { statement_id, task_id, project_name, supplier_name } = this.listQuery
+      let filter = {
+        statement_id,
+        task_id,
+        project_name,
+        supplier_name,
+        class_name: 'statement'
+      }
+
+      const checked = []
+      this.list.forEach(item => {
+        if (item.checked) {
+          checked.push(item.statement_id)
+        }
+      })
+
+      if (checked.length > 0) {
+        filter = Object.assign({}, filter, { statement_id: checked })
+      }
+
+      exportOrders(filter)
+        .then((response) => {
+          downloadFileStream('结算单列表.xlsx', response)
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+    }
   }
 }
 </script>

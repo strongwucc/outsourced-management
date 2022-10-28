@@ -55,3 +55,11 @@ export function deleteProvider(data) {
     data
   })
 }
+
+export function queryInfoByUserId(params) {
+  return request({
+    url: '/api/supply/queryInfoByUserId',
+    method: 'post',
+    params
+  })
+}

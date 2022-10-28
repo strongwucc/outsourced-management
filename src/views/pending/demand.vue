@@ -707,6 +707,20 @@
                 </template>
               </el-table-column>
             </el-table>
+            <div
+              v-if="detail.status === 5"
+              v-permission="[1]"
+              class="tongji"
+            >
+              <div class="tongji-item">
+                <div class="label">总价：</div>
+                <div class="value">{{ tongji.totalAmount }}</div>
+              </div>
+              <div class="tongji-item">
+                <div class="label">最晚交付日期：</div>
+                <div class="value">{{ tongji.deliverDate }}</div>
+              </div>
+            </div>
             <div class="actions">
               <!-- <el-button
                 type="primary"
@@ -763,7 +777,7 @@
                 size="mini"
                 plain
               >
-                上传对账单
+                上传结算单
               </el-button>
               <el-button
                 type="primary"
@@ -1196,7 +1210,7 @@
         <el-form-item label="供应商合同:" prop="pact_id">
           <el-select
             v-model="tempCreateOrder.pact_id"
-            style="width: 300px"
+            style="width: 400px"
             filterable
             clearable
             placeholder="请输入合同名称"
@@ -1207,7 +1221,12 @@
               :key="item.id"
               :label="item.pact_name"
               :value="item.id"
-            />
+            >
+              <div class="pact-box">
+                <div class="name">{{ item.pact_name }}</div>
+                <div class="time">{{ item.period_start }} - {{ item.period_end }}</div>
+              </div>
+            </el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -1837,6 +1856,21 @@ export default {
         return statusMap[this.$route.path]
       }
       return undefined
+    },
+    tongji: function() {
+      const tasks = this.detail.tasks
+      let totalAmount = 0
+      let deliverDate = ''
+      tasks.forEach((task) => {
+        totalAmount += parseFloat(task.work_amount)
+        if (
+          deliverDate === '' ||
+          (deliverDate && new Date(deliverDate) < new Date(task.deliver_date))
+        ) {
+          deliverDate = task.deliver_date
+        }
+      })
+      return { totalAmount, deliverDate }
     }
   },
   created() {
@@ -3628,5 +3662,29 @@ export default {
 }
 .upload-box {
   display: inline-block;
+}
+.pact-box {
+  display: flex;
+  justify-content: space-between;
+  .time {
+    margin-left: 20px;
+  }
+}
+.tongji {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #606266;
+  font-weight: bold;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  .tongji-item {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    &:not(:last-child) {
+      margin-right: 20px;
+    }
+  }
 }
 </style>

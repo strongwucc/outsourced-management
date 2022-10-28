@@ -48,7 +48,7 @@
                   size="mini"
                   @click="handleReconcile(true)"
                 >
-                  生成对账单
+                  生成结算单
                 </el-button>
               </template>
               <template slot-scope="scope">
@@ -98,13 +98,24 @@
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="发起部门">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="发起部门"
+                >{{
                   detail.demand.flow ? detail.demand.flow.launch_dep.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="核算部门">{{
-                  detail.demand.flow ? detail.demand.flow.account_dep.name : ""
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="核算部门"
+                >{{
+                  detail.demand.flow
+                    ? detail.demand.flow.account_dep.name
+                    : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="经费使用">
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="经费使用"
+                >
                   {{ detail.project ? detail.project.budget_used : 0 }}/{{
                     detail.project ? detail.project.budget_cost : 0
                   }}
@@ -150,12 +161,18 @@
                     </div>
                   </div>
                 </el-descriptions-item> -->
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="供应商" span="4">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="供应商"
+                  span="4"
+                >{{
                   detail.supplier ? detail.supplier.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="备注说明" span="4">{{
-                  detail.remark
-                }}</el-descriptions-item>
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="备注说明"
+                  span="4"
+                >{{ detail.remark }}</el-descriptions-item>
               </el-descriptions>
             </div>
             <el-table :data="[detail]" class="table-info" width="100%" border>
@@ -377,8 +394,17 @@
                 </template>
               </el-table-column>
             </el-table>
+            <div class="tongji">
+              <div class="tongji-item">
+                <div class="label">总价：</div>
+                <div class="value">{{ tongji.totalAmount }}</div>
+              </div>
+              <div class="tongji-item">
+                <div class="label">最晚交付日期：</div>
+                <div class="value">{{ tongji.deliverDate }}</div>
+              </div>
+            </div>
             <div class="actions">
-
               <el-button
                 v-permission="[1, 3]"
                 type="primary"
@@ -407,7 +433,7 @@
                 plain
                 @click="handleReconcile(false)"
               >
-                生成对账单
+                生成结算单
               </el-button>
             </div>
           </div>
@@ -529,20 +555,14 @@
         style="margin: 0 50px"
       >
         <template v-if="dialogStatus === 'resolve'">
-          <el-form-item
-            label="资源存放地址:"
-            prop="file_url"
-          >
+          <el-form-item label="资源存放地址:" prop="file_url">
             <el-input
               v-model="tempVerify.file_url"
               placeholder="请输入资源存放地址"
               class="dialog-form-item"
             />
           </el-form-item>
-          <el-form-item
-            label="上传附件:"
-            prop="file_id"
-          >
+          <el-form-item label="上传附件:" prop="file_id">
             <el-upload
               class="upload-demo"
               :action="`${$baseUrl}/api/tools/upfile`"
@@ -842,6 +862,21 @@ export default {
         '/pending/ggfzr/order/approval'
       ]
       return hiddenTaskActionRowPaths.indexOf(this.$route.path) < 0
+    },
+    tongji: function() {
+      const tasks = this.detail.items
+      let totalAmount = 0
+      let deliverDate = ''
+      tasks.forEach((task) => {
+        totalAmount += parseFloat(task.work_amount)
+        if (
+          deliverDate === '' ||
+          (deliverDate && new Date(deliverDate) < new Date(task.deliver_date))
+        ) {
+          deliverDate = task.deliver_date
+        }
+      })
+      return { totalAmount, deliverDate }
     }
   },
   created() {
@@ -998,7 +1033,7 @@ export default {
       })
     },
     /**
-     * 生成对账单
+     * 生成结算单
      */
     handleReconcile(multi = true) {
       const taskCheckeds = []
@@ -1011,7 +1046,7 @@ export default {
         const result = this.multipleSelection.some((listItem) => {
           return listItem.items.some((taskItem) => {
             if ([2].indexOf(taskItem.task_status) < 0) {
-              const errorName = `[${taskItem.task_id}] 该物件状态无法生成对账单`
+              const errorName = `[${taskItem.task_id}] 该物件状态无法生成结算单`
               this.$message.error(errorName)
               return true
             }
@@ -1030,7 +1065,7 @@ export default {
         }
         const result = this.multipleTaskSelection.some((taskItem) => {
           if ([2].indexOf(taskItem.task_status) < 0) {
-            const errorName = `[${taskItem.task_id}] 该物件状态无法生成对账单`
+            const errorName = `[${taskItem.task_id}] 该物件状态无法生成结算单`
             this.$message.error(errorName)
             return true
           }
@@ -1044,7 +1079,7 @@ export default {
 
       generateStatement({ tasks: taskCheckeds })
         .then(async(response) => {
-          this.$message.success('生成对账单成功')
+          this.$message.success('生成结算单成功')
           await this.$store.dispatch('user/getPending')
           this.getList(false)
         })
@@ -1151,7 +1186,11 @@ export default {
     confirmVerify() {
       this.$refs['verifyDataForm'].validate((valid) => {
         if (valid) {
-          if (this.tempVerify.status === 1 && (this.tempVerify.file_url === '' && this.tempVerify.file_id === '')) {
+          if (
+            this.tempVerify.status === 1 &&
+            this.tempVerify.file_url === '' &&
+            this.tempVerify.file_id === ''
+          ) {
             this.$message.error('请输入资源存放地址或者上传附件')
             return false
           }
@@ -1496,7 +1535,7 @@ export default {
     visibility: hidden;
   }
   ::v-deep .el-table__body .danger-row {
-    color: #F56C6C;
+    color: #f56c6c;
   }
 }
 .dialog-form {
@@ -1560,6 +1599,23 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+}
+.tongji {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #606266;
+  font-weight: bold;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  .tongji-item {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    &:not(:last-child) {
+      margin-right: 20px;
+    }
   }
 }
 </style>

@@ -61,6 +61,16 @@
         >
           搜索
         </el-button>
+        <el-button
+          v-waves
+          class="filter-item"
+          type="primary"
+          icon="el-icon-download"
+          size="mini"
+          @click="handleExportOrders"
+        >
+          导出
+        </el-button>
       </div>
       <div class="filter-right">
         <!-- <el-button
@@ -1766,6 +1776,7 @@ import permission from '@/directive/permission/index.js' // 权限判断指令
 import { downloadFile } from '@/api/system/file'
 import { previewFile, downloadFileStream, baseName } from '@/utils/index'
 import TaskDetail from '@/components/TaskDetail'
+import { exportOrders } from '@/api/system/download'
 
 const tagList = [
   { id: 0, name: '正式包' },
@@ -3830,6 +3841,38 @@ export default {
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url
       this.dialogImageVisible = true
+    },
+    /**
+     * 导出
+     */
+    handleExportOrders() {
+      const { name, demand_id, category_name, tag } = this.listQuery
+      let filter = {
+        name,
+        demand_id,
+        category_name,
+        tag,
+        class_name: 'demand'
+      }
+
+      const checked = []
+      this.list.forEach(item => {
+        if (item.checked) {
+          checked.push(item.demand_id)
+        }
+      })
+
+      if (checked.length > 0) {
+        filter = Object.assign({}, filter, { demand_id: checked })
+      }
+
+      exportOrders(filter)
+        .then((response) => {
+          downloadFileStream('需求列表.xlsx', response)
+        })
+        .catch((error) => {
+          console.log(error)
+        })
     }
   }
 }

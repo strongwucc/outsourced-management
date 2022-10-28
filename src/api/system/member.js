@@ -39,3 +39,11 @@ export function deleteMember(data) {
     data
   })
 }
+
+export function updateSelfData(data) {
+  return request({
+    url: '/api/setting/userSelfEdit',
+    method: 'post',
+    data
+  })
+}

@@ -41,6 +41,10 @@ Vue.config.productionTip = false
 
 Vue.prototype.$baseUrl = process.env.VUE_APP_BASE_API
 
+Vue.prototype.$message.error = function(msg) {
+  return ElementUI.MessageBox.alert(msg, '提示')
+}
+
 new Vue({
   el: '#app',
   router,

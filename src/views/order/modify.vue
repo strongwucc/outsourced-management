@@ -94,6 +94,16 @@
         >
           搜索
         </el-button>
+        <el-button
+          v-waves
+          class="filter-btn"
+          type="primary"
+          icon="el-icon-download"
+          size="mini"
+          @click="handleExportOrders"
+        >
+          导出
+        </el-button>
       </div>
       <div class="filter-right">
         <el-button
@@ -461,6 +471,8 @@ import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
+import { exportOrders } from '@/api/system/download'
+import { downloadFileStream } from '@/utils/index'
 
 const initiatorMap = [
   { label: '供应商', value: 0 },
@@ -824,6 +836,41 @@ export default {
         created_at: row.created_at
       })
       this.dialogModifyReasonVisible = true
+    },
+    /**
+     * 导出
+     */
+    handleExportOrders() {
+      const { change_id, task_id, project_name, supplier_name, sponsor, change_type, change_status } = this.listQuery
+      let filter = {
+        change_id,
+        task_id,
+        project_name,
+        supplier_name,
+        sponsor,
+        change_type,
+        change_status,
+        class_name: 'change'
+      }
+
+      const checked = []
+      this.list.forEach(item => {
+        if (item.checked) {
+          checked.push(item.change_id)
+        }
+      })
+
+      if (checked.length > 0) {
+        filter = Object.assign({}, filter, { change_id: checked })
+      }
+
+      exportOrders(filter)
+        .then((response) => {
+          downloadFileStream('变更单列表.xlsx', response)
+        })
+        .catch((error) => {
+          console.log(error)
+        })
     }
   }
 }
