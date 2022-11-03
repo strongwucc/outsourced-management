@@ -97,6 +97,22 @@
             class="filter-item"
             size="mini"
           />
+          <el-select
+            v-if="[5].indexOf(queryType) >= 0"
+            v-model="listQuery.statement_status"
+            placeholder="结算单状态"
+            clearable
+            class="filter-item"
+            style="width: 200px; margin-bottom: 20px"
+            size="mini"
+          >
+            <el-option
+              v-for="(label, key) in statusList"
+              :key="key"
+              :label="label"
+              :value="key"
+            />
+          </el-select>
 
           <el-button
             class="filter-item"
@@ -153,7 +169,10 @@
           <el-dropdown-item @click.native="handleEditPass">
             <span style="display: block">密码修改</span>
           </el-dropdown-item>
-          <el-dropdown-item v-permission="[0]" @click.native="handleEditUserInfo">
+          <el-dropdown-item
+            v-permission="[0]"
+            @click.native="handleEditUserInfo"
+          >
             <span style="display: block">账户设置</span>
           </el-dropdown-item>
         </el-dropdown-menu>
@@ -178,13 +197,25 @@
       >
         <template v-if="dialogStatus === 'password'">
           <el-form-item label="原密码:" prop="password">
-            <el-input v-model="temp.password" class="dialog-form-item" show-password />
+            <el-input
+              v-model="temp.password"
+              class="dialog-form-item"
+              show-password
+            />
           </el-form-item>
           <el-form-item label="新密码:" prop="new_pass">
-            <el-input v-model="temp.new_pass" class="dialog-form-item" show-password />
+            <el-input
+              v-model="temp.new_pass"
+              class="dialog-form-item"
+              show-password
+            />
           </el-form-item>
           <el-form-item label="确认新密码:" prop="confirm_pass">
-            <el-input v-model="temp.confirm_pass" class="dialog-form-item" show-password />
+            <el-input
+              v-model="temp.confirm_pass"
+              class="dialog-form-item"
+              show-password
+            />
           </el-form-item>
         </template>
         <template v-if="dialogStatus === 'userinfo'">
@@ -197,11 +228,7 @@
         <el-button size="mini" @click="dialogFormVisible = false">
           取消
         </el-button>
-        <el-button
-          type="primary"
-          size="mini"
-          @click="confirmUpdateData()"
-        >
+        <el-button type="primary" size="mini" @click="confirmUpdateData()">
           确定
         </el-button>
       </div>
@@ -246,11 +273,7 @@ export default {
         return 1
       }
 
-      if (
-        [
-          '/pending/gys/order/deliver'
-        ].indexOf(path) >= 0
-      ) {
+      if (['/pending/gys/order/deliver'].indexOf(path) >= 0) {
         return 2
       }
 
@@ -289,13 +312,21 @@ export default {
     rules() {
       if (this.dialogStatus === 'password') {
         return {
-          password: [{ required: true, message: '请输入原密码', trigger: 'blur' }],
-          new_pass: [{ required: true, message: '请输入新密码', trigger: 'blur' }],
-          confirm_pass: [{ required: true, message: '请确认新密码', trigger: 'blur' }]
+          password: [
+            { required: true, message: '请输入原密码', trigger: 'blur' }
+          ],
+          new_pass: [
+            { required: true, message: '请输入新密码', trigger: 'blur' }
+          ],
+          confirm_pass: [
+            { required: true, message: '请确认新密码', trigger: 'blur' }
+          ]
         }
       } else if (this.dialogStatus === 'userinfo') {
         return {
-          mail_cc: [{ required: true, message: '请输入抄送邮件', trigger: 'blur' }]
+          mail_cc: [
+            { required: true, message: '请输入抄送邮件', trigger: 'blur' }
+          ]
         }
       }
       return {}
@@ -309,6 +340,14 @@ export default {
         { id: 2, name: '外派' },
         { id: 3, name: '动态团队' }
       ],
+      statusList: {
+        0: '待上传发票',
+        1: '待申请用印',
+        2: '待上传结算单',
+        3: '待提交结算申请',
+        4: '待支付登记',
+        5: '已付款'
+      },
       searchVisible: false,
       listQuery: {
         keyword: '',
@@ -321,7 +360,8 @@ export default {
         order_id: '',
         change_id: '',
         receipt_id: '',
-        statement_id: ''
+        statement_id: '',
+        statement_status: ''
       },
       listWidth: '350px',
       dialogStatus: '',
@@ -345,6 +385,9 @@ export default {
     this.$bus.$on('appMainChange', () => {
       this.searchVisible = false
       this.resetQuery()
+    })
+    this.$bus.$on('closeSearchPopup', () => {
+      this.searchVisible = false
     })
   },
   methods: {
@@ -385,8 +428,10 @@ export default {
       })
     },
     async handleEditUserInfo() {
-      const providerData = await fetchProviderInfo().catch(_error => {})
-      this.temp = Object.assign({}, this.temp, { mail_cc: providerData.data.mail_cc })
+      const providerData = await fetchProviderInfo().catch((_error) => {})
+      this.temp = Object.assign({}, this.temp, {
+        mail_cc: providerData.data.mail_cc
+      })
 
       this.dialogStatus = 'userinfo'
       this.dialogFormVisible = true
@@ -399,7 +444,10 @@ export default {
         if (valid) {
           let temp
           if (this.dialogStatus === 'password') {
-            temp = { password: this.temp.password, new_pass: this.temp.new_pass }
+            temp = {
+              password: this.temp.password,
+              new_pass: this.temp.new_pass
+            }
           } else if (this.dialogStatus === 'userinfo') {
             temp = { mail_cc: this.temp.mail_cc }
           }

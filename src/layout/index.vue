@@ -47,7 +47,7 @@ export default {
       this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
     },
     closeSearchBox() {
-      this.$bus.$emit('appMainChange')
+      this.$bus.$emit('closeSearchPopup')
     }
   }
 }

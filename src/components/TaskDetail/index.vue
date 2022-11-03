@@ -42,10 +42,10 @@
               <el-descriptions-item label="需求单号">
                 {{ tempTaskDetail.demand.demand_id }}
               </el-descriptions-item>
-              <el-descriptions-item label="发起部门">{{
+              <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="发起部门">{{
                 tempTaskDetail.process.launch_dep.name
               }}</el-descriptions-item>
-              <el-descriptions-item label="核算部门">{{
+              <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="核算部门">{{
                 tempTaskDetail.process.account_dep.name
               }}</el-descriptions-item>
               <el-descriptions-item label="需求品类" span="3">{{

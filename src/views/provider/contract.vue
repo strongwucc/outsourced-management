@@ -127,17 +127,17 @@
       </el-table-column>
       <el-table-column label="合同开始时间" align="center" min-width="160px">
         <template slot-scope="{ row }">
-          {{ row.period_start }}
+          {{ row.period_start | dateFormat }}
         </template>
       </el-table-column>
       <el-table-column label="合同结束时间" align="center" min-width="160px">
         <template slot-scope="{ row }">
-          {{ row.period_end }}
+          {{ row.period_end | dateFormat }}
         </template>
       </el-table-column>
       <el-table-column label="合同签署日期" align="center" min-width="160px">
         <template slot-scope="{ row }">
-          {{ row.sign_date }}
+          {{ row.sign_date | dateFormat }}
         </template>
       </el-table-column>
       <el-table-column label="登记类型" align="center" min-width="150px">
@@ -374,7 +374,7 @@
           <div>{{ temp.pact_type | typeText }}</div>
         </el-form-item>
         <el-form-item label="合同有效时间:">
-          <div>{{ temp.period_start }}至{{ temp.period_end }}</div>
+          <div>{{ temp.period_start | dateFormat }}至{{ temp.period_end | dateFormat }}</div>
         </el-form-item>
         <el-form-item label="合同附件">
           <div class="file-box">
@@ -394,7 +394,7 @@
           </div>
         </el-form-item>
         <el-form-item label="合同签署日期:">
-          <div>{{ temp.sign_date }}</div>
+          <div>{{ temp.sign_date | dateFormat }}</div>
         </el-form-item>
         <el-form-item label="备注">
           <div>{{ temp.remark }}</div>
@@ -473,6 +473,10 @@ export default {
         return false
       })
       return typeText
+    },
+    dateFormat(time) {
+      const data = time.split(' ')
+      return data[0] || time
     }
   },
   data() {

@@ -191,3 +191,11 @@ export function receiveRefuse(data) {
     data
   })
 }
+
+export function createExcel(data) {
+  return request({
+    url: '/api/statement/createExcel',
+    method: 'post',
+    data
+  })
+}

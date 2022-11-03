@@ -155,6 +155,20 @@
           </el-option>
         </el-select>
       </el-form-item>
+      <el-form-item label="邮件抄送人:" prop="email_cc">
+        <el-input
+          v-model="detail.email_cc"
+          class="dialog-form-item"
+          placeholder="请输入邮件抄送人，多个用“,”隔开"
+        />
+      </el-form-item>
+      <el-form-item label="法务收件人:" prop="legal_email">
+        <el-input
+          v-model="detail.legal_email"
+          class="dialog-form-item"
+          placeholder="请输入法务收件人"
+        />
+      </el-form-item>
       <el-divider class="form-divider" content-position="left" />
       <el-form-item label="创建需求卡:" prop="needs_create_json">
         <div class="needs-create-add" @click="addNeedsCreateItem">
@@ -769,6 +783,8 @@ export default {
         accounting: '',
         account_dep_id: '',
         project_producer: [],
+        email_cc: '',
+        legal_email: '',
         needs_create_json: [], // 创建需求卡
         needs_verify_json: [{ id: '' }, { id: '' }], // 需求卡审批
         assign_supplier_json: [], // 分配供应商
@@ -830,6 +846,9 @@ export default {
             message: '请选择项目制作人',
             trigger: 'change'
           }
+        ],
+        legal_email: [
+          { required: true, message: '请输入法务收件人', trigger: 'blur' }
         ],
         needs_create_json: [
           {

@@ -475,7 +475,7 @@
                 >上传附件</el-button>
               </el-upload>
               <el-button
-                v-if="detail.status === 4 && detail.tasks.length <= 0"
+                v-if="detail.status === 4"
                 v-permission="[0]"
                 icon="el-icon-remove"
                 type="primary"

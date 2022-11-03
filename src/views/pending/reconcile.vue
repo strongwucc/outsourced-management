@@ -273,9 +273,23 @@
                 icon="el-icon-box"
                 size="mini"
                 plain
+                :loading="zipPacking"
                 @click.stop="handlePackZip()"
               >
                 打包所有文件
+              </el-button>
+              <el-button
+                v-if="detail.invoice_file"
+                v-permission="[3]"
+                style="margin-left: 120px"
+                type="primary"
+                icon="el-icon-download"
+                size="mini"
+                plain
+                :loading="excelCreating"
+                @click.stop="handleDownloadReconcile()"
+              >
+                下载结算单
               </el-button>
               <el-button
                 v-if="detail.invoice_file"
@@ -289,23 +303,12 @@
                 查看合同
               </el-button>
               <el-button
-                v-if="detail.invoice_file"
                 v-permission="[3]"
                 type="primary"
-                icon="el-icon-download"
+                icon="el-icon-jinzhi"
                 size="mini"
                 plain
-                @click.stop="handleDownloadReconcile()"
-              >
-                下载结算单
-              </el-button>
-              <el-button
-                v-permission="[3]"
-                type="primary"
-                icon="el-icon-download"
-                size="mini"
-                plain
-                @click.stop="handleRefuseReconcile()"
+                @click.stop="handleVerify(false, false)"
               >
                 驳回结算单
               </el-button>
@@ -729,7 +732,8 @@ import {
   submitStatement,
   rejectStatement,
   applySeal,
-  packZip
+  packZip,
+  createExcel
 } from '@/api/order/index'
 import { downloadFile } from '@/api/system/file'
 import { previewFile, downloadFileStream, baseName } from '@/utils/index'
@@ -746,6 +750,14 @@ const tagList = [
   { id: 2, name: '外派' },
   { id: 3, name: '动态团队' }
 ]
+const statusMap = {
+  0: '待上传发票',
+  1: '待申请用印',
+  2: '待上传结算单',
+  3: '待提交结算申请',
+  4: '待支付登记',
+  5: '已付款'
+}
 export default {
   components: { Pagination, ElImageViewer, TaskDetail, ResizeBox },
   directives: { waves, permission },
@@ -760,22 +772,6 @@ export default {
         return false
       })
       return text
-    },
-    demandStatusText(status) {
-      const statusMap = {
-        0: '待提报',
-        1: '审核中',
-        2: '审核未通过',
-        3: '待分配供应商',
-        4: '待填写物件',
-        5: '物件审核中',
-        6: '物件审核未通过',
-        7: '待生成订单',
-        8: '订单待审核',
-        9: '订单审核未通过',
-        10: '已生成订单'
-      }
-      return statusMap[status]
     },
     categoryText(category) {
       if (!category) {
@@ -794,12 +790,6 @@ export default {
       return name
     },
     statusText(status) {
-      const statusMap = {
-        0: '待上传发票',
-        1: '待结算',
-        2: '已结算',
-        3: '已驳回'
-      }
       return statusMap[status]
     }
   },
@@ -895,7 +885,9 @@ export default {
         deliver_date: '',
         reason: ''
       },
-      modifyRules: {}
+      modifyRules: {},
+      zipPacking: false,
+      excelCreating: false
     }
   },
   computed: {
@@ -1049,7 +1041,7 @@ export default {
           this.$message.error(errorName)
           return false
         }
-        checkeds.push(listItem.statement_id)
+        checkeds.push(this.detail.statement_id)
       }
 
       this.dialogStatus = pass === true ? 'resolve' : 'reject'
@@ -1370,12 +1362,18 @@ export default {
      */
     handlePackZip() {
       this.zipPacking = true
-      packZip({ statement_id: this.detail.statement_id }).then(response => {
-        console.log(1111111, response)
-      }).catch(_error => {
-        this.$message.error('哎呀，打包出错啦')
-        this.zipPacking = false
-      })
+      packZip({ statement_id: this.detail.statement_id })
+        .then((resp) => {
+          downloadFile({ url: resp.url })
+            .then((response) => {
+              downloadFileStream(baseName(resp.url), response)
+            })
+            .catch((_error) => {})
+        })
+        .catch((_error) => {
+          // this.$message.error('哎呀，打包出错啦')
+          this.zipPacking = false
+        })
     },
     /**
      * 开票文档下载
@@ -1395,13 +1393,19 @@ export default {
      * 下载结算单
      */
     handleDownloadReconcile() {
-
-    },
-    /**
-     * 驳回结算单
-     */
-    handleRefuseReconcile() {
-
+      this.excelCreating = true
+      createExcel({ statement_id: this.detail.statement_id })
+        .then((resp) => {
+          downloadFile({ url: resp.url })
+            .then((response) => {
+              downloadFileStream(baseName(resp.url), response)
+            })
+            .catch((_error) => {})
+        })
+        .catch((_error) => {
+          // this.$message.error('哎呀，下载结算单出错啦')
+          this.excelCreating = false
+        })
     }
   }
 }

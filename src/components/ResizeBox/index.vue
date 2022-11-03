@@ -63,7 +63,7 @@ export default {
   }
   .resize-bar:hover ~ .resize-line,
   .resize-bar:active ~ .resize-line {
-    border-left: 1px dashed skyblue;
+    border-left: 1px dashed #bbb;
   }
   .resize-bar::-webkit-scrollbar {
     width: 350px;
@@ -74,17 +74,18 @@ export default {
   @supports (-moz-user-select: none) {
     .resize-bar:hover ~ .resize-line,
     .resize-bar:active ~ .resize-line {
-      border-left: 1px solid #bbb;
+      border-left: 1px dashed #bbb;
     }
     .resize-bar:hover ~ .resize-line::after,
     .resize-bar:active ~ .resize-line::after {
+      z-index: 99;
       content: "";
       position: absolute;
       width: 16px;
       height: 16px;
       bottom: 0;
-      right: -8px;
-      background: url(../../icons/svg/resize.svg);
+      right: 0px;
+      background: url(../../icons/resize-bottom-right.png);
       background-size: 100% 100%;
     }
   }
