@@ -1,7 +1,8 @@
 <template>
   <div class="app-container">
-    <div class="lucien-row">
+    <resize-box>
       <div
+        slot="left"
         v-loading="listLoading"
         v-resize
         element-loading-text="拼命加载中"
@@ -9,6 +10,8 @@
         element-loading-background="rgba(237, 244, 253, 0.8)"
         class="lucien-col col-left"
       >
+        <div class="resize-bar" />
+        <div class="resize-line" />
         <div class="grid-content list-container">
           <el-table
             ref="listTable"
@@ -118,6 +121,7 @@
         </div>
       </div>
       <div
+        slot="right"
         v-loading="detailLoading"
         class="lucien-col col-right"
         element-loading-text="拼命加载中"
@@ -146,10 +150,16 @@
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="发起部门">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="发起部门"
+                >{{
                   detail.flow ? detail.flow.launch_dep.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="核算部门">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="核算部门"
+                >{{
                   detail.flow ? detail.flow.account_dep.name : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item
@@ -201,12 +211,18 @@
                     </div>
                   </div>
                 </el-descriptions-item> -->
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="意向供应商" span="4">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="意向供应商"
+                  span="4"
+                >{{
                   detail.supplier ? detail.supplier.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="备注说明" span="4">{{
-                  detail.remark
-                }}</el-descriptions-item>
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="备注说明"
+                  span="4"
+                >{{ detail.remark }}</el-descriptions-item>
               </el-descriptions>
             </div>
             <el-table :data="[detail]" class="table-info" width="100%" border>
@@ -707,11 +723,7 @@
                 </template>
               </el-table-column>
             </el-table>
-            <div
-              v-if="detail.status === 5"
-              v-permission="[1]"
-              class="tongji"
-            >
+            <div v-if="detail.status === 5" v-permission="[1]" class="tongji">
               <div class="tongji-item">
                 <div class="label">总价：</div>
                 <div class="value">{{ tongji.totalAmount }}</div>
@@ -847,7 +859,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </resize-box>
 
     <!--新增修改-->
     <el-dialog
@@ -1020,7 +1032,11 @@
           </el-upload>
         </el-form-item>
 
-        <el-form-item label="意向供应商:" prop="supplier" class="custom-unrequired">
+        <el-form-item
+          label="意向供应商:"
+          prop="supplier"
+          class="custom-unrequired"
+        >
           <div class="has-secret-notice">
             <el-select
               v-model="temp.supplier"
@@ -1224,7 +1240,9 @@
             >
               <div class="pact-box">
                 <div class="name">{{ item.pact_name }}</div>
-                <div class="time">{{ item.period_start }} - {{ item.period_end }}</div>
+                <div class="time">
+                  {{ item.period_start }} - {{ item.period_end }}
+                </div>
               </div>
             </el-option>
           </el-select>
@@ -1554,11 +1572,10 @@ import {
   fetchProcessVerifyMember
 } from '@/api/project/process'
 import { fetchReasonList } from '@/api/system/reason'
-import {
-  fetchAllPact
-} from '@/api/provider/contract'
+import { fetchAllPact } from '@/api/provider/contract'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import TaskDetail from '@/components/TaskDetail'
+import ResizeBox from '@/components/ResizeBox'
 import { downloadFile } from '@/api/system/file'
 import { baseName, downloadFileStream } from '@/utils/index'
 import { fetchAllProvider } from '@/api/provider/index'
@@ -1571,7 +1588,7 @@ const tagList = [
 ]
 export default {
   name: 'Demand',
-  components: { TaskDetail },
+  components: { TaskDetail, ResizeBox },
   directives: { permission, waves },
   filters: {
     categoryText(category) {
@@ -3126,12 +3143,16 @@ export default {
 
       if (this.pacts.length <= 0) {
         this.orderCreating = true
-        const pactData = await fetchAllPact({ status: 1 }).catch(_error => {})
+        const pactData = await fetchAllPact({ status: 1 }).catch(
+          (_error) => {}
+        )
         this.pacts = pactData.data || []
         this.orderCreating = false
       }
 
-      this.tempCreateOrder = Object.assign({}, this.tempCreateOrder, { demand_id: checkeds })
+      this.tempCreateOrder = Object.assign({}, this.tempCreateOrder, {
+        demand_id: checkeds
+      })
       this.dialogStatus = 'create_order'
       this.dialogCreateOrderVisible = true
     },
@@ -3453,31 +3474,7 @@ export default {
 }
 .app-container {
   padding: 0;
-  height: calc(100vh - 61px);
-  .lucien-row {
-    height: 100%;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    .lucien-col {
-      height: 100%;
-      &.col-left {
-        min-width: 100px;
-        width: 350px;
-        flex: none;
-        resize: horizontal;
-        overflow: hidden;
-      }
-      &.col-right {
-        flex: auto;
-        width: 500px;
-      }
-    }
-  }
   .list-container {
-    height: 100%;
-    background: #f3f3f3;
-    // margin-top: 3px;
     .item-box {
       display: flex;
       flex-direction: column;

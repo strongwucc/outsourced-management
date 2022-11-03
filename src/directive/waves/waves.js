@@ -58,7 +58,6 @@ function handleClick(el, binding) {
 
 export default {
   bind(el, binding) {
-    console.log(2222222, el)
     el.addEventListener('click', handleClick(el, binding), false)
   },
   update(el, binding) {

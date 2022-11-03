@@ -1,7 +1,8 @@
 <template>
   <div class="app-container">
-    <div class="lucien-row">
+    <resize-box>
       <div
+        slot="left"
         v-resize
         v-loading="listLoading"
         element-loading-text="拼命加载中"
@@ -9,6 +10,8 @@
         element-loading-background="rgba(237, 244, 253, 0.8)"
         class="lucien-col col-left"
       >
+        <div class="resize-bar" />
+        <div class="resize-line" />
         <div class="grid-content list-container">
           <el-table
             ref="listTable"
@@ -70,6 +73,7 @@
         </div>
       </div>
       <div
+        slot="right"
         v-loading="detailLoading"
         class="lucien-col col-right"
         element-loading-text="拼命加载中"
@@ -249,6 +253,14 @@
                 plain
                 @click="handleVerify(false, false)"
               >驳回</el-button>
+              <el-button
+                v-permission="[0]"
+                icon="el-icon-jinzhi"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleRefuseReceipt()"
+              >驳回</el-button>
             </div>
           </div>
           <el-divider />
@@ -288,7 +300,7 @@
                 <template slot-scope="scope">
                   <el-image
                     style="width: 50px; height: 50px"
-                    :src="scope.row.image_url"
+                    :src="scope.row.display_area.length > 0 ? scope.row.display_area[0].url : ''"
                   >
                     <div slot="error" class="image-slot">
                       <i
@@ -480,7 +492,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </resize-box>
     <!--申请变更-->
     <el-dialog
       :title="textMap[dialogStatus]"
@@ -668,7 +680,8 @@ import {
   fetchCheckDetail,
   modifyCheckOrder,
   verifyCheckOrder,
-  generateStatement
+  generateStatement,
+  receiveRefuse
 } from '@/api/order/index'
 import { finishTask } from '@/api/demand/task'
 import { downloadFile } from '@/api/system/file'
@@ -678,6 +691,7 @@ import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
+import ResizeBox from '@/components/ResizeBox'
 const tagList = [
   { id: 0, name: '正式包' },
   { id: 1, name: '测试包' },
@@ -685,7 +699,7 @@ const tagList = [
   { id: 3, name: '动态团队' }
 ]
 export default {
-  components: { Pagination, TaskDetail },
+  components: { Pagination, TaskDetail, ResizeBox },
   directives: { waves, permission },
   filters: {
     demandTagText(tag) {
@@ -822,6 +836,8 @@ export default {
       dialogVerifyVisible: false,
       tempVerify: {
         receipt_id: [],
+        file_url: '',
+        file_id: '',
         status: '',
         reason: ''
       },
@@ -1378,6 +1394,24 @@ export default {
       this.$nextTick(() => {
         this.dialogRejectReasonVisible = true
       })
+    },
+    /**
+     * 供应商验收驳回
+     */
+    handleRefuseReceipt() {
+      this.$confirm('确定驳回验收?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        receiveRefuse({ receipt_id: this.detail.receipt_id })
+          .then(async(response) => {
+            this.$message.success('成功')
+            await this.$store.dispatch('user/getPending')
+            this.getList(false)
+          })
+          .catch((_error) => {})
+      })
     }
   }
 }
@@ -1394,32 +1428,8 @@ export default {
   align-items: center;
 }
 .app-container {
-  height: calc(100vh - 61px);
   padding: 0;
-  .lucien-row {
-    height: 100%;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    .lucien-col {
-      height: 100%;
-      &.col-left {
-        min-width: 100px;
-        width: 350px;
-        flex: none;
-        resize: horizontal;
-        overflow: hidden;
-      }
-      &.col-right {
-        flex: auto;
-        width: 500px;
-      }
-    }
-  }
   .list-container {
-    height: 100%;
-    background: #f3f3f3;
-    // margin-top: 3px;
     .item-box {
       display: flex;
       flex-direction: column;

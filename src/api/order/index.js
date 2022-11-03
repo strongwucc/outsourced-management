@@ -183,3 +183,11 @@ export function packZip(data) {
     data
   })
 }
+
+export function receiveRefuse(data) {
+  return request({
+    url: '/api/order/receiveRefuse',
+    method: 'post',
+    data
+  })
+}

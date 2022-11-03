@@ -1,7 +1,8 @@
 <template>
   <div class="app-container">
-    <div class="lucien-row">
+    <resize-box>
       <div
+        slot="left"
         v-resize
         v-loading="listLoading"
         element-loading-text="拼命加载中"
@@ -9,6 +10,8 @@
         element-loading-background="rgba(237, 244, 253, 0.8)"
         class="lucien-col col-left"
       >
+        <div class="resize-bar" />
+        <div class="resize-line" />
         <div class="grid-content list-container">
           <el-table
             ref="listTable"
@@ -51,6 +54,7 @@
         </div>
       </div>
       <div
+        slot="right"
         v-loading="detailLoading"
         class="lucien-col col-right"
         element-loading-text="拼命加载中"
@@ -358,7 +362,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </resize-box>
     <!--审批驳回-->
     <el-dialog
       :title="textMap[dialogStatus]"
@@ -456,6 +460,7 @@ import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
+import ResizeBox from '@/components/ResizeBox'
 import { downloadFile } from '@/api/system/file'
 import { baseName, downloadFileStream } from '@/utils/index'
 const tagList = [
@@ -481,7 +486,7 @@ const statusMap = [
 ]
 
 export default {
-  components: { Pagination, TaskDetail },
+  components: { Pagination, TaskDetail, ResizeBox },
   directives: { waves, permission },
   filters: {
     tagText(tag) {
@@ -848,32 +853,8 @@ export default {
   align-items: center;
 }
 .app-container {
-  height: calc(100vh - 61px);
   padding: 0;
-  .lucien-row {
-    height: 100%;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    .lucien-col {
-      height: 100%;
-      &.col-left {
-        min-width: 100px;
-        width: 350px;
-        flex: none;
-        resize: horizontal;
-        overflow: hidden;
-      }
-      &.col-right {
-        flex: auto;
-        width: 500px;
-      }
-    }
-  }
   .list-container {
-    height: 100%;
-    background: #f3f3f3;
-    // margin-top: 3px;
     .item-box {
       display: flex;
       flex-direction: column;

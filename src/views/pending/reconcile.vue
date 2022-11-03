@@ -1,7 +1,8 @@
 <template>
   <div class="app-container">
-    <div class="lucien-row">
+    <resize-box>
       <div
+        slot="left"
         v-resize
         v-loading="listLoading"
         element-loading-text="拼命加载中"
@@ -9,6 +10,8 @@
         element-loading-background="rgba(237, 244, 253, 0.8)"
         class="lucien-col col-left"
       >
+        <div class="resize-bar" />
+        <div class="resize-line" />
         <div class="grid-content list-container">
           <el-table
             ref="listTable"
@@ -64,6 +67,7 @@
         </div>
       </div>
       <div
+        slot="right"
         v-loading="detailLoading"
         class="lucien-col col-right"
         element-loading-text="拼命加载中"
@@ -448,7 +452,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </resize-box>
     <!--申请变更-->
     <el-dialog
       :title="textMap[dialogStatus]"
@@ -603,6 +607,7 @@
       :title="textMap[dialogStatus]"
       :visible.sync="dialogBillVisible"
       :close-on-click-modal="false"
+      top="240px"
     >
       <el-form
         ref="billDataForm"
@@ -734,6 +739,7 @@ import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
+import ResizeBox from '@/components/ResizeBox'
 const tagList = [
   { id: 0, name: '正式包' },
   { id: 1, name: '测试包' },
@@ -741,7 +747,7 @@ const tagList = [
   { id: 3, name: '动态团队' }
 ]
 export default {
-  components: { Pagination, ElImageViewer, TaskDetail },
+  components: { Pagination, ElImageViewer, TaskDetail, ResizeBox },
   directives: { waves, permission },
   filters: {
     demandTagText(tag) {
@@ -803,6 +809,7 @@ export default {
       expandRowKeys: [],
       total: 0,
       list: [],
+      invoiceDoc: '',
       multipleSelection: [],
       listLoading: true,
       listQuery: {
@@ -952,6 +959,7 @@ export default {
           this.total = response.data.total
           const list = response.data.list
           this.list = list
+          this.invoiceDoc = response.data.invoice_doc
           this.$nextTick(() => {
             if (list.length > 0) {
               if (!list[this.detailIndex]) {
@@ -1373,7 +1381,15 @@ export default {
      * 开票文档下载
      */
     handleDownloadBillDoc() {
-
+      if (this.invoiceDoc) {
+        downloadFile({ url: this.invoiceDoc })
+          .then((response) => {
+            downloadFileStream(baseName(this.invoiceDoc), response)
+          })
+          .catch((_error) => {})
+      } else {
+        this.$message.error('开票信息文档不存在')
+      }
     },
     /**
      * 下载结算单
@@ -1402,32 +1418,8 @@ export default {
   align-items: center;
 }
 .app-container {
-  height: calc(100vh - 61px);
   padding: 0;
-  .lucien-row {
-    height: 100%;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    .lucien-col {
-      height: 100%;
-      &.col-left {
-        min-width: 100px;
-        width: 350px;
-        flex: none;
-        resize: horizontal;
-        overflow: hidden;
-      }
-      &.col-right {
-        flex: auto;
-        width: 500px;
-      }
-    }
-  }
   .list-container {
-    height: 100%;
-    background: #f3f3f3;
-    // margin-top: 3px;
     .item-box {
       display: flex;
       flex-direction: column;

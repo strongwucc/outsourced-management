@@ -1,7 +1,8 @@
 <template>
   <div class="app-container">
-    <div class="lucien-row">
+    <resize-box>
       <div
+        slot="left"
         v-resize
         v-loading="listLoading"
         element-loading-text="拼命加载中"
@@ -9,6 +10,8 @@
         element-loading-background="rgba(237, 244, 253, 0.8)"
         class="lucien-col col-left"
       >
+        <div class="resize-bar" />
+        <div class="resize-line" />
         <div class="grid-content list-container">
           <el-table
             ref="listTable"
@@ -47,6 +50,7 @@
         </div>
       </div>
       <div
+        slot="right"
         v-loading="detailLoading"
         class="lucien-col col-right"
         element-loading-text="拼命加载中"
@@ -161,12 +165,12 @@
               </el-descriptions>
             </div>
             <el-table :data="[detail]" class="table-info" width="100%" border>
-              <el-table-column label="订单号" align="center">
+              <el-table-column label="订单号" align="center" min-width="150">
                 <template slot-scope="scope">
                   {{ scope.row.order_id }}
                 </template>
               </el-table-column>
-              <el-table-column label="项目名称" align="center">
+              <el-table-column label="项目名称" align="center" min-width="150" show-overflow-tooltip>
                 <template slot-scope="scope">
                   {{ scope.row.demand.project.project_name }}
                 </template>
@@ -201,17 +205,17 @@
                   {{ scope.row.supplier_management }}
                 </template>
               </el-table-column>
-              <el-table-column label="物件数量" align="center" width="80">
+              <el-table-column label="物件数量" align="center" width="120">
                 <template slot-scope="scope">
                   {{ scope.row.nums }}
                 </template>
               </el-table-column>
-              <el-table-column label="工作总量" align="center" width="80">
+              <el-table-column label="工作总量" align="center" width="120">
                 <template slot-scope="scope">
                   {{ scope.row.work_num }}
                 </template>
               </el-table-column>
-              <el-table-column label="总金额" align="center" width="80">
+              <el-table-column label="总金额" align="center" width="120">
                 <template slot-scope="scope">
                   {{ scope.row.work_amount }}
                 </template>
@@ -267,6 +271,16 @@
                   已上传作品截图集
                 </el-button>
               </el-upload>
+              <el-button
+                style="margin-left: 10px"
+                icon="el-icon-xiangmujiaofuziliucheng__xianxing__-01-01"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleDeliver(false)"
+              >
+                申请验收
+              </el-button>
             </div>
           </div>
           <el-divider />
@@ -478,15 +492,6 @@
               >
                 申请变更
               </el-button>
-              <el-button
-                icon="el-icon-xiangmujiaofuziliucheng__xianxing__-01-01"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleDeliver(false)"
-              >
-                申请验收
-              </el-button>
             </div>
           </div>
           <div
@@ -532,7 +537,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </resize-box>
     <!--新增物件-->
     <el-dialog
       :title="textMap[dialogStatus]"
@@ -834,6 +839,7 @@ import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
+import ResizeBox from '@/components/ResizeBox'
 const tagList = [
   { id: 0, name: '正式包' },
   { id: 1, name: '测试包' },
@@ -841,7 +847,7 @@ const tagList = [
   { id: 3, name: '动态团队' }
 ]
 export default {
-  components: { Pagination, TaskDetail },
+  components: { Pagination, TaskDetail, ResizeBox },
   directives: { waves, permission },
   filters: {
     tagText(tag) {
@@ -1260,10 +1266,10 @@ export default {
           return false
         }
       } else {
-        if (this.multipleTaskSelection.length <= 0) {
-          this.$message.error('请先选择物件')
-          return false
-        }
+        // if (this.multipleTaskSelection.length <= 0) {
+        //   this.$message.error('请先选择物件')
+        //   return false
+        // }
 
         if (this.detail.work_file.length === 0) {
           this.$confirm("<p style='color: red'>请上传作品截图集</p>", '提示', {
@@ -1279,7 +1285,8 @@ export default {
           return false
         }
 
-        const result = this.multipleTaskSelection.some((taskItem) => {
+        // const result = this.multipleTaskSelection.some((taskItem) => {
+        const result = this.detail.tasks.some((taskItem) => {
           if ([0, 4].indexOf(taskItem.task_status) < 0) {
             const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
             this.$message.error(errorName)
@@ -1319,7 +1326,7 @@ export default {
         }
       )
         .then(() => {
-          toCheckOrder({ tasks: taskCheckeds })
+          toCheckOrder({ order_id: this.detail.order_id })
             .then(async(response) => {
               this.$message.success('交付验收成功')
               await this.$store.dispatch('user/getPending')
@@ -1589,32 +1596,8 @@ export default {
   align-items: center;
 }
 .app-container {
-  height: calc(100vh - 61px);
   padding: 0;
-  .lucien-row {
-    height: 100%;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    .lucien-col {
-      height: 100%;
-      &.col-left {
-        min-width: 100px;
-        width: 350px;
-        flex: none;
-        resize: horizontal;
-        overflow: hidden;
-      }
-      &.col-right {
-        flex: auto;
-        width: 500px;
-      }
-    }
-  }
   .list-container {
-    height: 100%;
-    background: #f3f3f3;
-    // margin-top: 3px;
     .item-box {
       display: flex;
       flex-direction: column;
