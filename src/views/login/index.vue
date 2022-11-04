@@ -324,6 +324,7 @@ export default {
     startClock() {
       this.timeClock && clearInterval(this.timeClock)
       this.seconding = true
+      this.seconds = 60
       this.timeClock = setInterval(() => {
         if (this.seconds <= 0) {
           clearInterval(this.timeClock)
