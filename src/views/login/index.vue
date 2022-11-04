@@ -154,7 +154,7 @@
         size="mini"
       >
         <el-form-item label="手机号:" prop="mobile">
-          <el-input v-model="verifyForm.mobile" class="dialog-form-item" />
+          {{ verifyForm.mobile | numberHidden }}
         </el-form-item>
 
         <el-form-item label="验证码:" prop="code">
@@ -199,9 +199,18 @@ import { validUsername } from '@/utils/validate'
 import { login, checkCode } from '@/api/user'
 import { setToken } from '@/utils/auth'
 import { sendCode } from '@/api/system/sms'
+import { replaceToHidden } from '@/utils/index'
 
 export default {
   name: 'Login',
+  filters: {
+    numberHidden(value) {
+      if (!value) {
+        return ''
+      }
+      return replaceToHidden(value, 3, 4)
+    }
+  },
   data() {
     const validateUsername = (rule, value, callback) => {
       if (!validUsername(value)) {
@@ -287,6 +296,7 @@ export default {
             password: this.loginForm.password
           })
             .then((response) => {
+              this.loading = false
               const { data } = response
               if (data.is_supplier && data.is_supplier === 1) {
                 this.verifyForm = Object.assign({}, this.verifyForm, {
@@ -542,6 +552,9 @@ $light_gray: #eee;
     .el-button {
       margin-left: 10px;
     }
+  }
+  .dialog-footer {
+    margin-right: 20px;
   }
 }
 </style>

@@ -180,3 +180,39 @@ export function downloadFileUrl(fileName, url) {
 export function baseName(url) {
   return String(url).substring(url.lastIndexOf('/') + 1)
 }
+
+/**
+ * 将传入的字符串中间部分替换为 "*"，以达到隐藏信息的目的
+ * @param { string } originString 需要处理的字符串
+ * @param { number } startRetain 开头保留不更改的字符数量
+ * @param { number } endRetain 结尾保留不更改的字符数量
+ * @param { string } subString 代替字符，用于替换需要被隐藏的字符
+ * @return { string } 返回处理好的字符串，如果传入值不符合要求或者其他问题，则返回空字符串
+ */
+export function replaceToHidden(
+  originString,
+  startRetain = 1,
+  endRetain = 1,
+  subString = '*'
+) {
+  // 类型检测
+  if (
+    !originString ||
+    typeof originString !== 'string' ||
+    typeof startRetain !== 'number' ||
+    typeof endRetain !== 'number' ||
+    typeof subString !== 'string'
+  ) {
+    console.error('请检查传入的参数是否正确 !')
+    return ''
+  }
+
+  const len = originString.length - startRetain - endRetain
+  let midStr = ''
+  for (let i = 0; i < len; i++) {
+    midStr += subString
+  }
+  const leftStr = originString.substring(0, startRetain)
+  const rightStr = originString.substring(originString.length - endRetain)
+  return leftStr + midStr + rightStr
+}
