@@ -136,11 +136,69 @@
         </el-form>
       </div>
     </div>
+
+    <el-dialog
+      title="短信验证"
+      :visible.sync="dialogFormVisible"
+      :close-on-click-modal="false"
+      width="450px"
+    >
+      <el-form
+        ref="verifyForm"
+        class="dialog-form"
+        :rules="verifyRules"
+        :model="verifyForm"
+        label-position="left"
+        label-width="100px"
+        style="margin: 0 20px"
+        size="mini"
+      >
+        <el-form-item label="手机号:" prop="mobile">
+          <el-input v-model="verifyForm.mobile" class="dialog-form-item" />
+        </el-form-item>
+
+        <el-form-item label="验证码:" prop="code">
+          <div class="code-box">
+            <el-input v-model="verifyForm.code" class="dialog-form-item" />
+            <el-button
+              v-if="sending === false && seconding === false"
+              type="primary"
+              size="mini"
+              @click.stop="sendSms"
+            >
+              发送
+            </el-button>
+            <el-button
+              v-else
+              disabled
+              type="primary"
+              size="mini"
+            >{{ seconds }}S</el-button>
+          </div>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogFormVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          size="mini"
+          :loading="verifying"
+          @click="confirmVerify"
+        >
+          确定
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { validUsername } from '@/utils/validate'
+import { login, checkCode } from '@/api/user'
+import { setToken } from '@/utils/auth'
+import { sendCode } from '@/api/system/sms'
 
 export default {
   name: 'Login',
@@ -179,7 +237,23 @@ export default {
       },
       loading: false,
       passwordType: 'password',
-      redirect: undefined
+      redirect: undefined,
+      dialogFormVisible: false,
+      sending: false,
+      seconding: false,
+      seconds: 60,
+      timeClock: null,
+      verifying: false,
+      verifyForm: {
+        mobile: '',
+        code: ''
+      },
+      verifyRules: {
+        mobile: [{ required: true, message: '请输入手机号', trigger: 'blur' }],
+        code: [
+          { required: true, message: '请输入短信验证码', trigger: 'blur' }
+        ]
+      }
     }
   },
   watch: {
@@ -189,6 +263,9 @@ export default {
       },
       immediate: true
     }
+  },
+  beforeDestroy() {
+    this.timeClock && clearInterval(this.timeClock)
   },
   methods: {
     showPwd() {
@@ -205,18 +282,80 @@ export default {
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
           this.loading = true
-          this.$store
-            .dispatch('user/login', this.loginForm)
-            .then(async() => {
-              // const { roles } = await this.$store.dispatch('user/getInfo')
-              // const accessRoutes = await this.$store.dispatch('permission/generateRoutes', roles)
-              // this.$router.addRoutes(accessRoutes)
+          login({
+            login_name: this.loginForm.login_name.trim(),
+            password: this.loginForm.password
+          })
+            .then((response) => {
+              const { data } = response
+              if (data.is_supplier && data.is_supplier === 1) {
+                this.verifyForm = Object.assign({}, this.verifyForm, {
+                  mobile: data.mobile
+                })
+                this.dialogFormVisible = true
+              } else {
+                this.$store.commit(
+                  'user/SET_TOKEN',
+                  `bearer ${data.access_token}`
+                )
+                setToken(`bearer ${data.access_token}`)
+                this.$router.push({ path: '/' })
+              }
+            })
+            .catch((_error) => {
               this.loading = false
-              // this.$router.push({ path: this.redirect || '/' })
+            })
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+    startClock() {
+      this.timeClock && clearInterval(this.timeClock)
+      this.seconding = true
+      this.timeClock = setInterval(() => {
+        if (this.seconds <= 0) {
+          clearInterval(this.timeClock)
+          this.seconds = 60
+          this.seconding = false
+        } else {
+          this.seconds = this.seconds - 1
+        }
+      }, 1000)
+    },
+    sendSms() {
+      if (!this.verifyForm.mobile) {
+        this.$message.error('请先输入手机号')
+        return false
+      }
+      this.sending = true
+      sendCode({ mobile: this.verifyForm.mobile })
+        .then((response) => {
+          this.sending = false
+          this.startClock()
+        })
+        .catch((_error) => {
+          this.sending = false
+        })
+    },
+    confirmVerify() {
+      this.$refs.verifyForm.validate((valid) => {
+        if (valid) {
+          this.verifying = true
+          checkCode(this.verifyForm)
+            .then((response) => {
+              const { data } = response
+              this.$store.commit(
+                'user/SET_TOKEN',
+                `bearer ${data.access_token}`
+              )
+              setToken(`bearer ${data.access_token}`)
+              this.verifying = false
               this.$router.push({ path: '/' })
             })
-            .catch(() => {
-              this.loading = false
+            .catch((_error) => {
+              this.verifying = false
             })
         } else {
           console.log('error submit!!')
@@ -396,6 +535,12 @@ $light_gray: #eee;
           }
         }
       }
+    }
+  }
+  .code-box {
+    display: flex;
+    .el-button {
+      margin-left: 10px;
     }
   }
 }

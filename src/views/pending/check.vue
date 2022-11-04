@@ -261,6 +261,16 @@
                 plain
                 @click="handleRefuseReceipt()"
               >驳回</el-button>
+              <el-button
+                v-permission="[0]"
+                icon="el-icon-document"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleReconcile(false)"
+              >
+                生成结算单
+              </el-button>
             </div>
           </div>
           <el-divider />
@@ -437,16 +447,6 @@
               >
                 申请变更
               </el-button>
-              <el-button
-                v-permission="[0]"
-                icon="el-icon-document"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleReconcile(false)"
-              >
-                生成结算单
-              </el-button>
             </div>
           </div>
           <div
@@ -463,7 +463,7 @@
             </div>
             <div class="files">
               <div
-                v-for="(file, _fileIndex) in detail.demand.files"
+                v-for="(file) in detail.demand.files"
                 :key="file.file_id"
                 class="file-item"
               >
@@ -476,7 +476,7 @@
                 >下载</el-button>
               </div>
               <div
-                v-for="(file, _fileIndex) in detail.demand.supplier_files"
+                v-for="(file) in detail.demand.supplier_files"
                 :key="file.file_id"
                 class="file-item"
               >
@@ -689,7 +689,6 @@ import { downloadFileStream, baseName } from '@/utils/index'
 
 import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
-import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
 import ResizeBox from '@/components/ResizeBox'
 const tagList = [
@@ -699,7 +698,7 @@ const tagList = [
   { id: 3, name: '动态团队' }
 ]
 export default {
-  components: { Pagination, TaskDetail, ResizeBox },
+  components: { TaskDetail, ResizeBox },
   directives: { waves, permission },
   filters: {
     demandTagText(tag) {
@@ -847,8 +846,7 @@ export default {
         receipt_id: '',
         task_id: '',
         task_name: ''
-      },
-      dialogRejectReasonVisible: false
+      }
     }
   },
   computed: {
@@ -1052,7 +1050,46 @@ export default {
      * 生成结算单
      */
     handleReconcile(multi = true) {
-      const taskCheckeds = []
+      const receipt_id = []
+
+      // if (multi) {
+      //   if (this.multipleSelection.length <= 0) {
+      //     this.$message.error('请先选择验收单')
+      //     return false
+      //   }
+      //   const result = this.multipleSelection.some((listItem) => {
+      //     return listItem.items.some((taskItem) => {
+      //       if ([2].indexOf(taskItem.task_status) < 0) {
+      //         const errorName = `[${taskItem.task_id}] 该物件状态无法生成结算单`
+      //         this.$message.error(errorName)
+      //         return true
+      //       }
+      //       taskCheckeds.push(taskItem.task_id)
+      //       return false
+      //     })
+      //   })
+
+      //   if (result) {
+      //     return false
+      //   }
+      // } else {
+      //   if (this.multipleTaskSelection.length <= 0) {
+      //     this.$message.error('请先选择物件')
+      //     return false
+      //   }
+      //   const result = this.multipleTaskSelection.some((taskItem) => {
+      //     if ([2].indexOf(taskItem.task_status) < 0) {
+      //       const errorName = `[${taskItem.task_id}] 该物件状态无法生成结算单`
+      //       this.$message.error(errorName)
+      //       return true
+      //     }
+      //     taskCheckeds.push(taskItem.task_id)
+      //     return false
+      //   })
+      //   if (result) {
+      //     return false
+      //   }
+      // }
 
       if (multi) {
         if (this.multipleSelection.length <= 0) {
@@ -1060,40 +1097,41 @@ export default {
           return false
         }
         const result = this.multipleSelection.some((listItem) => {
-          return listItem.items.some((taskItem) => {
+          const itemResult = listItem.items.some((taskItem) => {
             if ([2].indexOf(taskItem.task_status) < 0) {
               const errorName = `[${taskItem.task_id}] 该物件状态无法生成结算单`
               this.$message.error(errorName)
               return true
             }
-            taskCheckeds.push(taskItem.task_id)
             return false
           })
+
+          if (itemResult) {
+            return true
+          }
+
+          receipt_id.push(listItem.receipt_id)
         })
 
         if (result) {
           return false
         }
       } else {
-        if (this.multipleTaskSelection.length <= 0) {
-          this.$message.error('请先选择物件')
-          return false
-        }
         const result = this.multipleTaskSelection.some((taskItem) => {
           if ([2].indexOf(taskItem.task_status) < 0) {
             const errorName = `[${taskItem.task_id}] 该物件状态无法生成结算单`
             this.$message.error(errorName)
             return true
           }
-          taskCheckeds.push(taskItem.task_id)
           return false
         })
         if (result) {
           return false
         }
+        receipt_id.push(this.detail.receipt_id)
       }
 
-      generateStatement({ tasks: taskCheckeds })
+      generateStatement({ receipt_id })
         .then(async(response) => {
           this.$message.success('生成结算单成功')
           await this.$store.dispatch('user/getPending')

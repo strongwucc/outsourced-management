@@ -214,7 +214,7 @@
               >
                 申请用印
               </el-button>
-              <el-button
+              <!-- <el-button
                 v-if="detail.invoice_file"
                 v-permission="[3]"
                 type="primary"
@@ -224,7 +224,7 @@
                 @click.stop="handleShowBill()"
               >
                 查看发票
-              </el-button>
+              </el-button> -->
               <el-button
                 v-if="[0, 1, 3].indexOf(detail.statement_status) >= 0"
                 v-permission="[3]"
@@ -315,6 +315,57 @@
             </div>
           </div>
           <el-divider />
+          <div
+            v-if="detail.invoice_file"
+            v-permission="[3]"
+            class="info-content"
+          >
+            <div class="title">
+              <i class="el-icon-s-management" />
+              <span>发票信息</span>
+            </div>
+            <el-divider />
+            <div class="description">
+              <el-descriptions
+                class="margin-top"
+                :column="4"
+                :label-style="{
+                  'font-weight': 'bold',
+                  'align-items': 'flex-start',
+                  width: '100px',
+                }"
+              >
+                <el-descriptions-item
+                  label="发票图片"
+                  span="4"
+                ><img
+                  v-if="tempBill.invoice_file_url"
+                  :src="tempBill.invoice_file_url"
+                  style="height: 100px"
+                  class="bill-image"
+                ></el-descriptions-item>
+                <el-descriptions-item label="序号">{{
+                  tempBill.invoice_serial
+                }}</el-descriptions-item>
+                <el-descriptions-item label="发票类型" span="3">
+                  {{ tempBill.invoice_type }}
+                </el-descriptions-item>
+                <el-descriptions-item label="开票日期">{{
+                  tempBill.invoice_date
+                }}</el-descriptions-item>
+                <el-descriptions-item label="发票代码" span="3">{{
+                  tempBill.invoice_code
+                }}</el-descriptions-item>
+                <el-descriptions-item label="发票号码">{{
+                  tempBill.invoice_number
+                }}</el-descriptions-item>
+                <el-descriptions-item label="价格合计" span="3">{{
+                  tempBill.invoice_amount
+                }}</el-descriptions-item>
+              </el-descriptions>
+            </div>
+            <el-divider />
+          </div>
           <div
             v-if="
               (detail.tasks && detail.tasks.length > 0) || detail.status >= 4
@@ -426,7 +477,7 @@
             </div>
             <div class="files">
               <div
-                v-for="(file, _fileIndex) in detail.files"
+                v-for="(file) in detail.files"
                 :key="file.file_id"
                 class="file-item"
               >
@@ -439,7 +490,7 @@
                 >下载</el-button>
               </div>
               <div
-                v-for="(file, _fileIndex) in detail.supplier_files"
+                v-for="(file) in detail.supplier_files"
                 :key="file.file_id"
                 class="file-item"
               >
@@ -610,7 +661,6 @@
       :title="textMap[dialogStatus]"
       :visible.sync="dialogBillVisible"
       :close-on-click-modal="false"
-      top="240px"
     >
       <el-form
         ref="billDataForm"
@@ -737,11 +787,9 @@ import {
 } from '@/api/order/index'
 import { downloadFile } from '@/api/system/file'
 import { previewFile, downloadFileStream, baseName } from '@/utils/index'
-import ElImageViewer from 'element-ui/packages/image/src/image-viewer'
 
 import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
-import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
 import ResizeBox from '@/components/ResizeBox'
 const tagList = [
@@ -759,7 +807,7 @@ const statusMap = {
   5: '已付款'
 }
 export default {
-  components: { Pagination, ElImageViewer, TaskDetail, ResizeBox },
+  components: { TaskDetail, ResizeBox },
   directives: { waves, permission },
   filters: {
     demandTagText(tag) {
@@ -1005,6 +1053,8 @@ export default {
       this.detailLoaded = true
       this.detail = Object.assign({}, this.detail, detailData.data)
       this.multipleTaskSelection = []
+
+      this.handleShowBill()
     },
     /**
      * 通过驳回弹窗
@@ -1093,7 +1143,7 @@ export default {
           await this.$store.dispatch('user/getPending')
           this.getList(false)
         })
-        .catch((error) => {})
+        .catch((_error) => {})
     },
     /**
      * 上传文件成功
@@ -1324,8 +1374,8 @@ export default {
         invoice_number: this.detail.invoice_number || '',
         invoice_amount: this.detail.invoice_amount || ''
       })
-      this.dialogStatus = 'bill_show'
-      this.dialogBillVisible = true
+      // this.dialogStatus = 'bill_show'
+      // this.dialogBillVisible = true
     },
     downLoadContract(fileName, filePath) {
       downloadFile({ url: filePath })
