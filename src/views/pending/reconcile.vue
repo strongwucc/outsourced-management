@@ -336,19 +336,29 @@
                 }"
               >
                 <el-descriptions-item
+                  v-if="tempBill.invoice_detail"
+                  label="发票明细"
+                  span="4"
+                >
+                  {{ tempBill.invoice_detail }}
+                </el-descriptions-item>
+                <el-descriptions-item
                   label="发票图片"
                   span="4"
-                ><img
-                  v-if="tempBill.invoice_file_url"
-                  :src="tempBill.invoice_file_url"
-                  style="height: 100px"
-                  class="bill-image"
-                ></el-descriptions-item>
+                >
+                  <el-image
+                    v-if="tempBill.invoice_file_url"
+                    style="height: 100px"
+                    :src="tempBill.invoice_file_url"
+                    :preview-src-list="[tempBill.invoice_file_url]"
+                  />
+                </el-descriptions-item>
                 <el-descriptions-item label="序号">{{
                   tempBill.invoice_serial
                 }}</el-descriptions-item>
                 <el-descriptions-item label="发票类型" span="3">
-                  {{ tempBill.invoice_type }}
+                  <template v-if="tempBill.invoice_type === 1">增值税发票</template>
+                  <template v-else-if="tempBill.invoice_type === 0">普通发票</template>
                 </el-descriptions-item>
                 <el-descriptions-item label="开票日期">{{
                   tempBill.invoice_date
@@ -743,6 +753,14 @@
             class="dialog-form-item"
           />
         </el-form-item>
+        <el-form-item label="发票明细:" prop="invoice_detail">
+          <el-input
+            v-model="tempBill.invoice_detail"
+            type="textarea"
+            placeholder="请输入发票明细"
+            class="dialog-form-item"
+          />
+        </el-form-item>
         <div class="notice" style="color: red">
           注：实体发票请在结算确认通过后再寄出
         </div>
@@ -923,7 +941,8 @@ export default {
         invoice_date: '',
         invoice_code: '',
         invoice_number: '',
-        invoice_amount: ''
+        invoice_amount: '',
+        invoice_detail: ''
       },
       dialogModifyVisible: false,
       tempModify: {
@@ -1281,7 +1300,8 @@ export default {
         invoice_date: '',
         invoice_code: '',
         invoice_number: '',
-        invoice_amount: ''
+        invoice_amount: '',
+        invoice_detail: ''
       })
       this.dialogStatus = 'bill'
       this.dialogBillVisible = true
@@ -1372,7 +1392,8 @@ export default {
         invoice_date: this.detail.invoice_date || '',
         invoice_code: this.detail.invoice_code || '',
         invoice_number: this.detail.invoice_number || '',
-        invoice_amount: this.detail.invoice_amount || ''
+        invoice_amount: this.detail.invoice_amount || '',
+        invoice_detail: this.detail.invoice_detail || ''
       })
       // this.dialogStatus = 'bill_show'
       // this.dialogBillVisible = true
