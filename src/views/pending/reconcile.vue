@@ -204,7 +204,7 @@
             </el-table>
             <div class="actions">
               <el-button
-                v-if="detail.apply_seal === 0"
+                v-if="[1].indexOf(detail.statement_status) >= 0"
                 v-permission="[3]"
                 type="primary"
                 icon="el-icon-zhihuan"
@@ -226,7 +226,7 @@
                 查看发票
               </el-button> -->
               <el-button
-                v-if="[0, 1, 3].indexOf(detail.statement_status) >= 0"
+                v-if="[2].indexOf(detail.statement_status) >= 0"
                 v-permission="[3]"
                 type="primary"
                 icon="el-icon-document"
@@ -235,6 +235,17 @@
                 @click.stop="handleUploadReconcile()"
               >
                 上传结算单
+              </el-button>
+              <el-button
+                v-if="[4].indexOf(detail.statement_status) >= 0"
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-date"
+                size="mini"
+                plain
+                @click.stop="handlePayRegister()"
+              >
+                支付登记
               </el-button>
               <el-button
                 v-if="[0, 3].indexOf(detail.statement_status) >= 0"
@@ -342,10 +353,7 @@
                 >
                   {{ tempBill.invoice_detail }}
                 </el-descriptions-item>
-                <el-descriptions-item
-                  label="发票图片"
-                  span="4"
-                >
+                <el-descriptions-item label="发票图片" span="4">
                   <el-image
                     v-if="tempBill.invoice_file_url"
                     style="height: 100px"
@@ -357,8 +365,12 @@
                   tempBill.invoice_serial
                 }}</el-descriptions-item>
                 <el-descriptions-item label="发票类型" span="3">
-                  <template v-if="tempBill.invoice_type === 1">增值税发票</template>
-                  <template v-else-if="tempBill.invoice_type === 0">普通发票</template>
+                  <template
+                    v-if="tempBill.invoice_type === 1"
+                  >增值税发票</template>
+                  <template
+                    v-else-if="tempBill.invoice_type === 0"
+                  >普通发票</template>
                 </el-descriptions-item>
                 <el-descriptions-item label="开票日期">{{
                   tempBill.invoice_date
@@ -487,7 +499,7 @@
             </div>
             <div class="files">
               <div
-                v-for="(file) in detail.files"
+                v-for="file in detail.files"
                 :key="file.file_id"
                 class="file-item"
               >
@@ -500,7 +512,7 @@
                 >下载</el-button>
               </div>
               <div
-                v-for="(file) in detail.supplier_files"
+                v-for="file in detail.supplier_files"
                 :key="file.file_id"
                 class="file-item"
               >
@@ -789,6 +801,43 @@
         </div>
       </div>
     </el-dialog>
+
+    <!--支付登记-->
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogPayRegVisible"
+      :close-on-click-modal="false"
+      width="500px"
+    >
+      <el-form
+        ref="payRegDataForm"
+        class="dialog-form"
+        :rules="payRegRules"
+        :model="tempPayReg"
+        label-position="left"
+        label-width="100px"
+        style="margin: 0 50px"
+      >
+        <el-form-item label="支付日期:" prop="pay_date">
+          <el-date-picker
+            v-model="tempPayReg.pay_date"
+            type="datetime"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            placeholder="选择日期"
+            class="dialog-form-item"
+            style="width: 100%"
+          />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogPayRegVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="doPayRegister">
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -801,7 +850,8 @@ import {
   rejectStatement,
   applySeal,
   packZip,
-  createExcel
+  createExcel,
+  fillPayDate
 } from '@/api/order/index'
 import { downloadFile } from '@/api/system/file'
 import { previewFile, downloadFileStream, baseName } from '@/utils/index'
@@ -888,7 +938,8 @@ export default {
         reject: '驳回',
         reconcile: '上传结算单',
         bill: '结算申请',
-        bill_show: '查看发票'
+        bill_show: '查看发票',
+        pay_register: '支付登记'
       },
       dialogStatus: '',
       dialogRejectReasonVisible: false,
@@ -954,7 +1005,17 @@ export default {
       },
       modifyRules: {},
       zipPacking: false,
-      excelCreating: false
+      excelCreating: false,
+      dialogPayRegVisible: false,
+      tempPayReg: {
+        statement_id: '',
+        pay_date: ''
+      },
+      payRegRules: {
+        pay_date: [
+          { required: true, message: '请选择支付日期', trigger: 'blur' }
+        ]
+      }
     }
   },
   computed: {
@@ -1477,6 +1538,31 @@ export default {
           // this.$message.error('哎呀，下载结算单出错啦')
           this.excelCreating = false
         })
+    },
+    /**
+     * 支付登记
+     */
+    handlePayRegister() {
+      this.tempPayReg = Object.assign({}, this.tempPayReg, {
+        statement_id: this.detail.statement_id,
+        pay_date: ''
+      })
+      this.dialogPayRegVisible = true
+    },
+    /**
+     * 上传发票
+     */
+    doPayRegister() {
+      this.$refs['payRegDataForm'].validate((valid) => {
+        if (valid) {
+          fillPayDate(this.tempPayReg).then(async(response) => {
+            this.dialogPayRegVisible = false
+            this.$message.success('登记成功')
+            await this.$store.dispatch('user/getPending')
+            this.getList(false)
+          })
+        }
+      })
     }
   }
 }

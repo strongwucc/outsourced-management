@@ -199,3 +199,11 @@ export function createExcel(data) {
     data
   })
 }
+
+export function fillPayDate(data) {
+  return request({
+    url: '/api/statement/fillPayDate',
+    method: 'post',
+    data
+  })
+}
