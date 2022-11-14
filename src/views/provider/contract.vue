@@ -417,6 +417,7 @@ import {
   changeContractStatus
 } from '@/api/provider/contract'
 import {
+  fetchList as fetchProviders,
   fetchAllProvider,
   fetchSubject,
   fetchRegion
@@ -592,7 +593,7 @@ export default {
     fetchProviderList(query) {
       if (query !== '') {
         this.providerLoading = true
-        fetchAllProvider({ name: query }).then((response) => {
+        fetchProviders({ name: query, page_num: 1000 }).then((response) => {
           this.providerLoading = false
           this.providers = response.data.list
         })
@@ -691,9 +692,9 @@ export default {
     async handleUpdate(row, index) {
       this.temp = JSON.parse(JSON.stringify(row))
       this.$set(this.list[index], 'editLoading', true)
-      const providerData = await fetchAllProvider().catch((error) => {})
+      const providerData = await fetchProviders({ page_num: 1000 }).catch((_error) => {})
       this.providers = providerData.data.list
-      const subData = await fetchSubject().catch((error) => {})
+      const subData = await fetchSubject().catch((_error) => {})
       this.subjects = subData.data.list
 
       this.fileList = this.temp.files.map((file) => {

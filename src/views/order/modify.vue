@@ -83,6 +83,15 @@
             :value="item.value"
           />
         </el-select>
+        <el-date-picker
+          v-model="listQuery.date_range"
+          type="daterange"
+          class="filter-item"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          size="mini"
+        />
 
         <el-button
           v-waves
@@ -551,6 +560,7 @@ export default {
         change_type: '',
         change_status: '',
         tag: '',
+        date_range: [],
         page: 1,
         page_num: 10,
         all: true
@@ -841,7 +851,7 @@ export default {
      * 导出
      */
     handleExportOrders() {
-      const { change_id, task_id, project_name, supplier_name, sponsor, change_type, change_status } = this.listQuery
+      const { change_id, task_id, project_name, supplier_name, sponsor, change_type, change_status, date_range } = this.listQuery
       let filter = {
         change_id,
         task_id,
@@ -850,6 +860,7 @@ export default {
         sponsor,
         change_type,
         change_status,
+        date_range,
         class_name: 'change'
       }
 
@@ -866,7 +877,8 @@ export default {
 
       exportOrders(filter)
         .then((response) => {
-          downloadFileStream('变更单列表.xlsx', response)
+          const fileName = `变更单-${this.$moment().format('YYYYMMD')}.xlsx`
+          downloadFileStream(fileName, response)
         })
         .catch((error) => {
           console.log(error)

@@ -204,6 +204,16 @@
             </el-table>
             <div class="actions">
               <el-button
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-document-copy"
+                size="mini"
+                plain
+                @click.stop="handleCopy()"
+              >
+                快速复制
+              </el-button>
+              <el-button
                 v-if="[1].indexOf(detail.statement_status) >= 0"
                 v-permission="[3]"
                 type="primary"
@@ -854,7 +864,7 @@ import {
   fillPayDate
 } from '@/api/order/index'
 import { downloadFile } from '@/api/system/file'
-import { previewFile, downloadFileStream, baseName } from '@/utils/index'
+import { previewFile, downloadFileStream, baseName, copyText } from '@/utils/index'
 
 import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
@@ -870,7 +880,7 @@ const statusMap = {
   0: '待上传发票',
   1: '待申请用印',
   2: '待上传结算单',
-  3: '待提交结算申请',
+  // 3: '待提交结算申请',
   4: '待支付登记',
   5: '已付款'
 }
@@ -1563,6 +1573,29 @@ export default {
           })
         }
       })
+    },
+    handleCopy() {
+      const data = [this.detail.statement_id]
+      if (this.detail.supplier) {
+        data.push(this.detail.supplier.name)
+      }
+      if (this.detail.project) {
+        data.push(this.detail.project.project_name)
+      }
+      if (this.detail.process && this.detail.process.account_dep) {
+        data.push(this.detail.process.account_dep.name)
+      }
+      if (this.detail.work_amount) {
+        data.push(this.detail.work_amount)
+      }
+      if (this.detail.pay_date) {
+        data.push(this.detail.pay_date)
+      }
+
+      const text = data.join('-')
+      if (copyText(text)) {
+        this.$message.success('已复制')
+      }
     }
   }
 }

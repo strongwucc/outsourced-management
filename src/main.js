@@ -6,6 +6,7 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 // import locale from 'element-ui/lib/locale/lang/en' // lang i18n
 import ElSelectTree from 'el-select-tree'
+import moment from 'moment'
 
 import '@/styles/index.scss' // global css
 import './assets/font/iconfont.css'
@@ -44,6 +45,8 @@ Vue.prototype.$baseUrl = process.env.VUE_APP_BASE_API
 Vue.prototype.$message.error = function(msg) {
   return ElementUI.MessageBox.alert(msg, '提示')
 }
+
+Vue.prototype.$moment = moment
 
 new Vue({
   el: '#app',

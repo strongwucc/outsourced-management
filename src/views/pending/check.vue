@@ -1207,6 +1207,7 @@ export default {
         if (!multi && this.detail.is_first_review === 1) {
           this.tempVerify.file_url = ''
           this.tempVerify.file_id = ''
+          this.checkFileList = []
           this.dialogVerifyVisible = true
           this.$nextTick(() => {
             this.$refs['verifyDataForm'].clearValidate()
@@ -1345,10 +1346,10 @@ export default {
       this.handleCheckFileChange(file, fileList)
     },
     handleCheckFileChange(file, fileList) {
-      this.checkFileList = [file]
-      this.tempVerify = Object.assign({}, this.tempVerify, {
-        file_id: file.response.data.file_id
-      })
+      // this.checkFileList = [file]
+      // this.tempVerify = Object.assign({}, this.tempVerify, {
+      //   file_id: file.response.data.file_id
+      // })
     },
     /**
      * 确认终止

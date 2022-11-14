@@ -21,6 +21,7 @@
     "el-select-tree": "^2.0.9",
     "element-ui": "^2.15.8",
     "js-cookie": "2.2.0",
+    "moment": "^2.29.4",
     "normalize.css": "7.0.0",
     "nprogress": "0.2.0",
     "path-to-regexp": "2.4.0",

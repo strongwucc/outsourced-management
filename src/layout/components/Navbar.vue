@@ -123,6 +123,15 @@
           >
             搜索
           </el-button>
+          <el-button
+            class="filter-item"
+            type="primary"
+            icon="el-icon-refresh-left"
+            size="mini"
+            @click="navSearchReset(true)"
+          >
+            重置
+          </el-button>
         </div>
         <div slot="reference">
           <el-input
@@ -149,6 +158,15 @@
         @click.stop="navSearch(false)"
       >
         搜索
+      </el-button>
+      <el-button
+        class="show-btn"
+        type="primary"
+        icon="el-icon-refresh-left"
+        size="mini"
+        @click.stop="navSearchReset(false)"
+      >
+        重置
       </el-button>
     </div>
 
@@ -344,7 +362,7 @@ export default {
         0: '待上传发票',
         1: '待申请用印',
         2: '待上传结算单',
-        3: '待提交结算申请',
+        // 3: '待提交结算申请',
         4: '待支付登记',
         5: '已付款'
       },
@@ -408,11 +426,36 @@ export default {
         this.listQuery = Object.assign({}, this.listQuery, { keyword: '' })
       } else {
         this.listQuery = Object.assign({}, this.listQuery, {
+          project_name: '',
           name: '',
           demand_id: '',
           category_name: '',
-          tag: ''
+          tag: '',
+          supplier_name: '',
+          order_id: '',
+          change_id: '',
+          receipt_id: '',
+          statement_id: '',
+          statement_status: ''
         })
+      }
+      this.$bus.$emit('navSearch', this.listQuery)
+      this.searchVisible = false
+    },
+    navSearchReset(multi) {
+      this.listQuery = {
+        keyword: '',
+        project_name: '',
+        name: '',
+        demand_id: '',
+        category_name: '',
+        tag: '',
+        supplier_name: '',
+        order_id: '',
+        change_id: '',
+        receipt_id: '',
+        statement_id: '',
+        statement_status: ''
       }
       this.$bus.$emit('navSearch', this.listQuery)
       this.searchVisible = false

@@ -50,6 +50,15 @@
             :value="item.id"
           />
         </el-select>
+        <el-date-picker
+          v-model="listQuery.date_range"
+          type="daterange"
+          class="filter-item"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          size="mini"
+        />
 
         <el-button
           v-waves
@@ -1915,6 +1924,7 @@ export default {
         task_id: '',
         category_name: '',
         tag: '',
+        date_range: [],
         page: 1,
         page_num: 10,
         all: true
@@ -3846,12 +3856,13 @@ export default {
      * 导出
      */
     handleExportOrders() {
-      const { name, demand_id, category_name, tag } = this.listQuery
+      const { name, demand_id, category_name, tag, date_range } = this.listQuery
       let filter = {
         name,
         demand_id,
         category_name,
         tag,
+        date_range,
         class_name: 'demand'
       }
 
@@ -3868,7 +3879,8 @@ export default {
 
       exportOrders(filter)
         .then((response) => {
-          downloadFileStream('需求列表.xlsx', response)
+          const fileName = `需求单-${this.$moment().format('YYYYMMD')}.xlsx`
+          downloadFileStream(fileName, response)
         })
         .catch((error) => {
           console.log(error)

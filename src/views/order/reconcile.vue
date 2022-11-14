@@ -35,6 +35,15 @@
           size="mini"
           @keyup.enter.native="handleFilter"
         />
+        <el-date-picker
+          v-model="listQuery.date_range"
+          type="daterange"
+          class="filter-item"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          size="mini"
+        />
 
         <el-button
           v-waves
@@ -647,6 +656,7 @@ export default {
         project_name: '',
         supplier_name: '',
         tag: '',
+        date_range: [],
         page: 1,
         page_num: 10,
         all: true
@@ -1179,12 +1189,13 @@ export default {
      * 导出
      */
     handleExportOrders() {
-      const { statement_id, task_id, project_name, supplier_name } = this.listQuery
+      const { statement_id, task_id, project_name, supplier_name, date_range } = this.listQuery
       let filter = {
         statement_id,
         task_id,
         project_name,
         supplier_name,
+        date_range,
         class_name: 'statement'
       }
 
@@ -1201,7 +1212,8 @@ export default {
 
       exportOrders(filter)
         .then((response) => {
-          downloadFileStream('结算单列表.xlsx', response)
+          const fileName = `结算单-${this.$moment().format('YYYYMMD')}.xlsx`
+          downloadFileStream(fileName, response)
         })
         .catch((error) => {
           console.log(error)
