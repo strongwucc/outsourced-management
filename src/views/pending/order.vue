@@ -76,6 +76,34 @@
                   'align-items': 'center',
                 }"
               >
+                <el-descriptions-item label="需求名称">
+                  <span>{{ detail.demand.name }}</span>
+                  <el-tag size="mini" style="margin-left: 10px">{{
+                    detail.demand.tag | tagText
+                  }}</el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item label="需求品类">{{
+                  detail.demand.category | categoryText
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求单号">{{
+                  detail.demand.demand_id
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求状态">{{
+                  detail.demand.status | statusText
+                }}</el-descriptions-item>
+
+                <el-descriptions-item
+                  slot-scope=""
+                  label="需求说明"
+                  span="4"
+                  :label-style="{
+                    'margin-bottom': '20px',
+                    'font-weight': 'bold',
+                  }"
+                >{{
+                  detail.demand.introduce
+                }}</el-descriptions-item>
+
                 <el-descriptions-item label="项目名称">{{
                   detail.demand.project
                     ? detail.demand.project.project_name
@@ -109,30 +137,14 @@
                       : 0
                   }}
                 </el-descriptions-item>
+
                 <el-descriptions-item label="需求创建人">{{
                   detail.demand.creator ? detail.demand.creator.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="创建时间" span="3">{{
+                <el-descriptions-item label="创建时间">{{
                   detail.demand.created_at
                 }}</el-descriptions-item>
-                <el-descriptions-item label="需求名称">
-                  <span>{{ detail.demand.name }}</span>
-                  <el-tag size="mini" style="margin-left: 10px">{{
-                    detail.demand.tag | tagText
-                  }}</el-tag>
-                </el-descriptions-item>
-                <el-descriptions-item label="需求单号">{{
-                  detail.demand.demand_id
-                }}</el-descriptions-item>
-                <el-descriptions-item label="需求状态" span="4">{{
-                  detail.demand.status | statusText
-                }}</el-descriptions-item>
-                <el-descriptions-item label="需求说明" span="4">{{
-                  detail.demand.introduce
-                }}</el-descriptions-item>
-                <el-descriptions-item label="需求品类" span="4">{{
-                  detail.demand.category | categoryText
-                }}</el-descriptions-item>
+
                 <!-- <el-descriptions-item label="需求附件" span="6">
                   <div class="file-box" style="width: 50%">
                     <div
@@ -153,7 +165,7 @@
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="意向供应商"
-                  span="4"
+                  span="2"
                 >{{
                   detail.demand.supplier ? detail.demand.supplier.name : ""
                 }}</el-descriptions-item>
@@ -170,7 +182,12 @@
                   {{ scope.row.order_id }}
                 </template>
               </el-table-column>
-              <el-table-column label="项目名称" align="center" min-width="150" show-overflow-tooltip>
+              <el-table-column
+                label="项目名称"
+                align="center"
+                min-width="150"
+                show-overflow-tooltip
+              >
                 <template slot-scope="scope">
                   {{ scope.row.demand.project.project_name }}
                 </template>
@@ -232,7 +249,7 @@
               >
                 新增物件
               </el-button>
-              <el-upload
+              <!-- <el-upload
                 v-permission="[0]"
                 class="upload-box"
                 style="margin-left: 10px"
@@ -270,17 +287,7 @@
                 >
                   已上传作品截图集
                 </el-button>
-              </el-upload>
-              <el-button
-                style="margin-left: 10px"
-                icon="el-icon-xiangmujiaofuziliucheng__xianxing__-01-01"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleDeliver(false)"
-              >
-                申请验收
-              </el-button>
+              </el-upload> -->
             </div>
           </div>
           <el-divider />
@@ -294,6 +301,19 @@
               <i class="el-icon-s-management" />
               <span>物件明细</span>
             </div>
+            <el-descriptions
+              v-if="detail.demand.supplier"
+              class="supplier-box"
+              :column="4"
+              :label-style="{
+                'font-weight': 'bold',
+                'align-items': 'center',
+              }"
+            >
+              <el-descriptions-item label="供应商">{{
+                detail.demand.supplier ? detail.demand.supplier.name : ""
+              }}</el-descriptions-item>
+            </el-descriptions>
             <el-table
               :data="detail.tasks"
               class="task-table"
@@ -325,11 +345,15 @@
                   />
                 </template>
               </el-table-column>
-              <el-table-column prop="task_image" label="缩略图" align="center">
+              <el-table-column label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
                     style="width: 50px; height: 50px"
-                    :src="scope.row.image_url"
+                    :src="
+                      scope.row.display_area.length > 0
+                        ? scope.row.display_area[0].url
+                        : scope.row.image_url
+                    "
                   >
                     <div slot="error" class="image-slot">
                       <i
@@ -343,6 +367,7 @@
               <el-table-column
                 prop="task_name"
                 label="物件名称"
+                width="205"
                 align="center"
                 :show-overflow-tooltip="true"
               />
@@ -382,7 +407,7 @@
                 class-name="small-padding fixed-width need-flex"
               >
                 <template slot-scope="scope">
-                  <el-upload
+                  <!-- <el-upload
                     v-if="[0, 4].indexOf(scope.row.task_status) >= 0"
                     v-permission="[0]"
                     class="upload-box"
@@ -426,7 +451,7 @@
                     @click="handleDownloadWork(scope.row, scope.$index)"
                   >
                     下载作品
-                  </el-button>
+                  </el-button> -->
                   <el-upload
                     v-if="[0, 4].indexOf(scope.row.task_status) >= 0"
                     v-permission="[0]"
@@ -491,6 +516,16 @@
                 @click="handleModify"
               >
                 申请变更
+              </el-button>
+              <el-button
+                style="margin-left: 10px"
+                icon="el-icon-xiangmujiaofuziliucheng__xianxing__-01-01"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleDeliver(false)"
+              >
+                申请验收
               </el-button>
             </div>
           </div>
@@ -579,7 +614,7 @@
               >
                 <el-option
                   v-for="(item, itemIndex) in [
-                    '人日',
+                    '人天',
                     '套',
                     '件',
                     '小时',
@@ -774,6 +809,50 @@
       </div>
     </el-dialog>
 
+    <!--交付验收-->
+    <el-dialog
+      title="交付验收"
+      :visible.sync="dialogDeliverVisible"
+      :close-on-click-modal="false"
+      width="600px"
+      @close="closeDeliverDialog"
+    >
+      <el-form
+        ref="deliverDataForm"
+        class="dialog-form"
+        :rules="deliverRules"
+        :model="tempDeliver"
+        label-position="left"
+        label-width="100px"
+        style="margin: 0 20px"
+      >
+        <p style="color: red">
+          如无特殊情况，请完成整个需求卡中的任务后再申请验收
+        </p>
+        <p>特殊情况请联系供应商管理部对接人</p>
+        <el-form-item label="作品附件" prop="work_file">
+          <el-upload
+            ref="deliverUploader"
+            class="upload-demo"
+            :action="`${$baseUrl}/api/tools/upfile`"
+            :on-success="handleUploadWorkFileSuccess"
+            :on-remove="handleUploadWorkFileChange"
+            :on-error="handleUploadWorkError"
+          >
+            <el-button size="mini" type="primary">上传附件</el-button>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogDeliverVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="confirmDeliver">
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
+
     <!--驳回原因-->
     <el-dialog
       title="驳回原因"
@@ -929,7 +1008,7 @@ export default {
         supplier_name: '',
         tag: '',
         page: 1,
-        page_num: 10,
+        page_num: 9999999,
         keyword: ''
       },
       detail: {},
@@ -999,10 +1078,22 @@ export default {
         reason: ''
       },
       modifyRules: {},
+      dialogDeliverVisible: false,
+      tempDeliver: {
+        order_id: '',
+        tasks: [],
+        work_file: ''
+      },
+      deliverRules: {
+        work_file: [
+          { required: true, message: '请添加作品集', trigger: 'blur' }
+        ]
+      },
       dialogRejectReasonVisible: false,
       dialogStopReasonVisible: false,
       fileList: [],
-      posting: false
+      posting: false,
+      deliverWorkFile: []
     }
   },
   computed: {
@@ -1036,11 +1127,11 @@ export default {
       let width = 100
       const status = this.detail.tasks.map((task) => task.task_status)
       if (status.indexOf(4) >= 0) {
-        width = 440
-      } else if (status.indexOf(0) >= 0) {
-        width = 340
-      } else if (status.indexOf(5) >= 0) {
         width = 240
+      } else if (status.indexOf(0) >= 0) {
+        width = 140
+      } else if (status.indexOf(5) >= 0) {
+        width = 140
       }
       return width
     }
@@ -1133,9 +1224,12 @@ export default {
         order_id: this.list[this.detailIndex].order_id
       }).catch((_error) => {})
 
+      const { data } = detailData
+      data.tasks = data.tasks.filter(task => [0, 4].indexOf(task.task_status) >= 0)
+
       this.detailLoading = false
       this.detailLoaded = true
-      this.detail = Object.assign({}, this.detail, detailData.data)
+      this.detail = Object.assign({}, this.detail, data)
       this.multipleTaskSelection = []
     },
     /**
@@ -1224,20 +1318,19 @@ export default {
           return false
         }
 
-        const order = this.multipleSelection[0]
-        if (order.work_file.length === 0) {
-          this.$confirm("<p style='color: red'>请上传作品截图集</p>", '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            dangerouslyUseHTMLString: true
-            // type: 'warning'
-          })
-            .then(() => {
-              this.$refs.uploadWorkFileElement.$el.click()
-            })
-            .catch(() => {})
-          return false
-        }
+        // const order = this.multipleSelection[0]
+        // if (order.work_file.length === 0) {
+        //   this.$confirm("<p style='color: red'>请上传作品截图集</p>", '提示', {
+        //     confirmButtonText: '确定',
+        //     cancelButtonText: '取消',
+        //     dangerouslyUseHTMLString: true
+        //   })
+        //     .then(() => {
+        //       this.$refs.uploadWorkFileElement.$el.click()
+        //     })
+        //     .catch(() => {})
+        //   return false
+        // }
 
         const result = this.multipleSelection.some((orderItem) => {
           return orderItem.tasks.some((taskItem) => {
@@ -1246,8 +1339,8 @@ export default {
               this.$message.error(errorName)
               return true
             }
-            if (taskItem.finished_product.length <= 0) {
-              const errorName = `[${taskItem.task_id}]: 请上传该物件的作品`
+            if (taskItem.display_area.length <= 0) {
+              const errorName = `[${taskItem.task_id}]: 请上传该物件的展示图`
               this.$message.error(errorName)
               return true
             }
@@ -1266,34 +1359,33 @@ export default {
           return false
         }
       } else {
-        // if (this.multipleTaskSelection.length <= 0) {
-        //   this.$message.error('请先选择物件')
-        //   return false
-        // }
-
-        if (this.detail.work_file.length === 0) {
-          this.$confirm("<p style='color: red'>请上传作品截图集</p>", '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            dangerouslyUseHTMLString: true
-            // type: 'warning'
-          })
-            .then(() => {
-              this.$refs.uploadWorkFileElement.$el.click()
-            })
-            .catch(() => {})
+        if (this.multipleTaskSelection.length <= 0) {
+          this.$message.error('请先选择物件')
           return false
         }
 
-        // const result = this.multipleTaskSelection.some((taskItem) => {
-        const result = this.detail.tasks.some((taskItem) => {
+        // if (this.detail.work_file.length === 0) {
+        //   this.$confirm("<p style='color: red'>请上传作品截图集</p>", '提示', {
+        //     confirmButtonText: '确定',
+        //     cancelButtonText: '取消',
+        //     dangerouslyUseHTMLString: true
+        //   })
+        //     .then(() => {
+        //       this.$refs.uploadWorkFileElement.$el.click()
+        //     })
+        //     .catch(() => {})
+        //   return false
+        // }
+
+        const result = this.multipleTaskSelection.some((taskItem) => {
+          // const result = this.detail.tasks.some((taskItem) => {
           if ([0, 4].indexOf(taskItem.task_status) < 0) {
             const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
             this.$message.error(errorName)
             return true
           }
-          if (taskItem.finished_product.length <= 0) {
-            const errorName = `[${taskItem.task_id}]: 请上传该物件的作品`
+          if (taskItem.display_area.length <= 0) {
+            const errorName = `[${taskItem.task_id}]: 请上传该物件的展示图`
             this.$message.error(errorName)
             return true
           }
@@ -1315,26 +1407,70 @@ export default {
         return false
       }
 
-      this.$confirm(
-        "<p style='color: red'>如无特殊情况，请完成整个需求卡中的任务后再申请验收</p><p>特殊情况请联系供应商管理部对接人</p>",
-        '提示',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          dangerouslyUseHTMLString: true
-          // type: 'warning'
-        }
-      )
-        .then(() => {
-          toCheckOrder({ order_id: this.detail.order_id })
+      // const workFile = this.detail.work_file
+      //   .map((fileItem) => {
+      //     return fileItem.file_id
+      //   })
+      //   .join(',')
+
+      this.tempDeliver = Object.assign({}, this.tempDeliver, {
+        order_id: this.detail.order_id,
+        tasks: taskCheckeds,
+        work_file: ''
+      })
+
+      this.dialogDeliverVisible = true
+      this.$nextTick(() => {
+        this.$refs['deliverDataForm'].clearValidate()
+      })
+
+      // this.$confirm(
+      //   "<p style='color: red'>如无特殊情况，请完成整个需求卡中的任务后再申请验收</p><p>特殊情况请联系供应商管理部对接人</p>",
+      //   '提示',
+      //   {
+      //     confirmButtonText: '确定',
+      //     cancelButtonText: '取消',
+      //     dangerouslyUseHTMLString: true
+      //   }
+      // )
+      //   .then(() => {
+      //     toCheckOrder({ order_id: this.detail.order_id })
+      //       .then(async(response) => {
+      //         this.$message.success('交付验收成功')
+      //         await this.$store.dispatch('user/getPending')
+      //         this.getList(false)
+      //       })
+      //       .catch((_error) => {})
+      //   })
+      //   .catch(() => {})
+    },
+    closeDeliverDialog() {
+      this.$refs.deliverUploader && this.$refs.deliverUploader.clearFiles()
+    },
+    /**
+     * 确认变更
+     */
+    confirmDeliver() {
+      if (this.posting) {
+        return false
+      }
+      this.$refs['deliverDataForm'].validate((valid) => {
+        if (valid) {
+          const tempData = JSON.parse(JSON.stringify(this.tempDeliver))
+          this.posting = true
+          toCheckOrder(tempData)
             .then(async(response) => {
+              this.posting = false
               this.$message.success('交付验收成功')
+              this.dialogDeliverVisible = false
               await this.$store.dispatch('user/getPending')
               this.getList(false)
             })
-            .catch((_error) => {})
-        })
-        .catch(() => {})
+            .catch((_error) => {
+              this.posting = false
+            })
+        }
+      })
     },
     /**
      * 上传作品
@@ -1345,17 +1481,28 @@ export default {
         this.$message.error(response.message || '哎呀，出错啦')
         return false
       }
-      const fileArr = fileList.map((fileItem) => {
-        return {
-          name: fileItem.name,
-          url: fileItem.response
-            ? fileItem.response.data.url
-            : fileItem.url || '',
-          file_id: fileItem.response
-            ? fileItem.response.data.file_id
-            : fileItem.file_id || ''
-        }
-      })
+      const fileArr =
+        keyName === 'display_area'
+          ? [
+            {
+              name: file.name,
+              url: file.response ? file.response.data.url : file.url || '',
+              file_id: file.response
+                ? file.response.data.file_id
+                : file.file_id || ''
+            }
+          ]
+          : fileList.map((fileItem) => {
+            return {
+              name: fileItem.name,
+              url: fileItem.response
+                ? fileItem.response.data.url
+                : fileItem.url || '',
+              file_id: fileItem.response
+                ? fileItem.response.data.file_id
+                : fileItem.file_id || ''
+            }
+          })
       const fileStr = fileArr
         .map((fileItem) => {
           return fileItem.file_id
@@ -1548,6 +1695,9 @@ export default {
         this.$message.error(response.message || '哎呀，出错啦')
         return false
       }
+      this.handleUploadWorkFileChange(file, fileList)
+    },
+    handleUploadWorkFileChange(file, fileList) {
       const fileArr = fileList.map((fileItem) => {
         return {
           name: fileItem.name,
@@ -1565,20 +1715,20 @@ export default {
         })
         .join(',')
 
-      uploadWorkFile({
-        order_id: this.detail.order_id,
-        file_id: fileStr
+      this.tempDeliver = Object.assign({}, this.tempDeliver, {
+        work_file: fileStr
       })
-        .then((response) => {
-          this.$set(this.detail, 'work_file', fileArr)
-          this.$set(
-            this.list[this.detailIndex],
-            'work_file',
-            fileArr
-          )
-          this.$message.success('上传成功')
-        })
-        .catch((_error) => {})
+
+      // uploadWorkFile({
+      //   order_id: this.detail.order_id,
+      //   file_id: fileStr
+      // })
+      //   .then((response) => {
+      //     this.$set(this.detail, 'work_file', fileArr)
+      //     this.$set(this.list[this.detailIndex], 'work_file', fileArr)
+      //     this.$message.success('上传成功')
+      //   })
+      //   .catch((_error) => {})
     }
   }
 }
@@ -1659,6 +1809,10 @@ export default {
       }
       .actions {
         margin-top: 20px;
+      }
+      .supplier-box {
+        margin-top: 20px;
+        font-size: 12px;
       }
     }
     .download-content {

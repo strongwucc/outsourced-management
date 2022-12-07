@@ -103,7 +103,7 @@
       <el-table-column
         label="操作"
         align="center"
-        width="150"
+        width="250"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row }">
@@ -114,6 +114,9 @@
             @click="handleCostManage(row)"
           >
             项目预算管理
+          </el-button>
+          <el-button type="primary" size="mini" plain @click="handleEdit(row)">
+            编辑
           </el-button>
         </template>
       </el-table-column>
@@ -148,21 +151,23 @@
           <el-input v-model="temp.bn" />
         </el-form-item>
 
-        <el-form-item label="项目简介" prop="brief">
-          <el-input v-model="temp.brief" type="textarea" />
-        </el-form-item>
+        <template v-if="dialogStatus === 'create'">
+          <el-form-item label="项目简介" prop="brief">
+            <el-input v-model="temp.brief" type="textarea" />
+          </el-form-item>
 
-        <el-form-item label="预算：(元)" prop="budget_cost">
-          <el-input v-model="temp.budget_cost" />
-        </el-form-item>
+          <el-form-item label="预算：(元)" prop="budget_cost">
+            <el-input v-model="temp.budget_cost" />
+          </el-form-item>
 
-        <el-form-item label="预算阙值" prop="warning_cost">
-          <el-input v-model="temp.warning_cost" />
-        </el-form-item>
+          <el-form-item label="预算阙值" prop="warning_cost">
+            <el-input v-model="temp.warning_cost" />
+          </el-form-item>
 
-        <el-form-item label="阙值提醒邮箱" prop="warning_email">
-          <el-input v-model="temp.warning_email" />
-        </el-form-item>
+          <el-form-item label="阙值提醒邮箱" prop="warning_email">
+            <el-input v-model="temp.warning_email" />
+          </el-form-item>
+        </template>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button size="mini" @click="dialogFormVisible = false">
@@ -254,7 +259,7 @@ export default {
         warning_email: ''
       },
       textMap: {
-        update: '修改',
+        update: '编辑',
         create: '新增'
       },
       rules: {
@@ -342,6 +347,34 @@ export default {
         }
       })
     },
+    updateData() {
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          // this.temp.id = parseInt(Math.random() * 100) + 1024
+          const temp = {
+            project_id: this.temp.project_id,
+            project_name: this.temp.project_name,
+            bn: this.temp.bn
+          }
+          updateProject(temp).then((response) => {
+            const index = this.list.findIndex(
+              (item) => item.project_id === this.temp.project_id
+            )
+            if (index >= 0) {
+              this.$set(this.list[index], 'project_name', temp.project_name)
+              this.$set(this.list[index], 'bn', temp.bn)
+            }
+            this.dialogFormVisible = false
+            this.$notify({
+              title: '成功',
+              message: '修改成功',
+              type: 'success',
+              duration: 2000
+            })
+          })
+        }
+      })
+    },
     handleCostManage(row) {
       this.costTemp = Object.assign(
         {},
@@ -392,6 +425,14 @@ export default {
         duration: 2000
       })
       this.list.splice(index, 1)
+    },
+    handleEdit(row, index) {
+      this.temp = Object.assign({}, this.temp, row)
+      this.dialogStatus = 'update'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
     }
   }
 }

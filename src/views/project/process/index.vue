@@ -1123,8 +1123,8 @@ export default {
           { required: true, message: '请输入流程名称', trigger: 'blur' }
         ],
         bn: [
-          { required: true, message: '请输入流程代码', trigger: 'blur' },
-          { pattern: /^[0-9]{6}[A-Za-z]+$/, message: '请输入六位数字加字母' }
+          { required: true, message: '请输入流程代码', trigger: 'blur' }
+          // { pattern: /^[0-9]{6}[A-Za-z]+$/, message: '请输入六位数字加字母' }
         ],
         demand: [
           { required: true, message: '请选择需求方', trigger: 'change' }

@@ -182,6 +182,10 @@
           />
         </el-form-item>
 
+        <el-form-item label="手机号:" prop="contact_phone">
+          <el-input v-model="temp.contact_phone" class="dialog-form-item" />
+        </el-form-item>
+
         <el-form-item label="抄送邮件:" prop="email">
           <el-input
             v-model="temp.email"
@@ -432,6 +436,9 @@
         <el-descriptions-item label="登录账户">
           {{ temp.login_name }}
         </el-descriptions-item>
+        <el-descriptions-item label="手机号">
+          {{ temp.contact_phone }}
+        </el-descriptions-item>
         <el-descriptions-item label="抄送邮件">
           {{ temp.email }}
         </el-descriptions-item>
@@ -537,10 +544,11 @@ export default {
       temp: {
         id: undefined,
         name: '',
-        is_short_roster: '',
+        is_short_roster: 0,
         brief: '',
         login_name: '',
         pass_word: '',
+        contact_phone: '',
         email: '',
         bank_name: '',
         bank_account: '',
@@ -565,11 +573,14 @@ export default {
         name: [
           { required: true, message: '请输入供应商名称', trigger: 'blur' }
         ],
-        is_short_roster: [
-          { required: true, message: '请选择是否为短名单', trigger: 'blur' }
-        ],
-        brief: [
-          { required: true, message: '请输入供应商简介', trigger: 'blur' }
+        // is_short_roster: [
+        //   { required: true, message: '请选择是否为短名单', trigger: 'blur' }
+        // ],
+        // brief: [
+        //   { required: true, message: '请输入供应商简介', trigger: 'blur' }
+        // ],
+        contact_phone: [
+          { required: true, message: '请输入手机号', trigger: 'blur' }
         ],
         bank_name: [
           { required: true, message: '请输入银行及开户行', trigger: 'blur' }
@@ -580,16 +591,16 @@ export default {
         cat_id: [
           { required: true, message: '请选择需求品类', trigger: 'change' }
         ],
-        price: [{ required: true, message: '请输入单价', trigger: 'blur' }],
-        contact_name: [
-          { required: true, message: '请输入姓名', trigger: 'blur' }
-        ],
-        contact_mobile: [
-          {
-            validator: validateMobile,
-            trigger: 'blur'
-          }
-        ]
+        price: [{ required: true, message: '请输入单价', trigger: 'blur' }]
+        // contact_name: [
+        //   { required: true, message: '请输入姓名', trigger: 'blur' }
+        // ],
+        // contact_mobile: [
+        //   {
+        //     validator: validateMobile,
+        //     trigger: 'blur'
+        //   }
+        // ]
       }
     }
   },
@@ -645,9 +656,11 @@ export default {
       this.temp = {
         id: undefined,
         name: '',
+        is_short_roster: 0,
         brief: '',
         login_name: '',
         pass_word: '',
+        contact_phone: '',
         email: '',
         bank_name: '',
         bank_account: '',

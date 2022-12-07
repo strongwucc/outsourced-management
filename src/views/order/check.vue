@@ -64,6 +64,7 @@
           搜索
         </el-button>
         <el-button
+          v-permission="[1, 2, 3, 4, 5]"
           v-waves
           class="filter-btn"
           type="primary"
@@ -342,12 +343,37 @@
           {{ row.work_amount }}
         </template>
       </el-table-column>
-      <el-table-column label="订单状态" align="center">
+      <el-table-column label="订单状态" align="center" width="150">
         <template slot-scope="{ row }">
           <!-- {{ row.receipts_status | statusText }} -->
           <span :style="{ color: statusColor(row.receipts_status) }">
             {{ row.receipts_status | statusText }}
           </span>
+        </template>
+      </el-table-column>
+      <el-table-column width="200" label="作品存放地址及附件" align="center" show-overflow-tooltip>
+        <template slot-scope="{ row }">
+          <span v-if="row.file_url">{{ row.file_url }}</span>
+          <span v-else-if="row.files && row.files.length > 0">{{ row.files[0].url }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        align="center"
+        min-width="200"
+        class-name="small-padding fixed-width"
+      >
+        <template slot-scope="{ row, $index }">
+          <el-button
+            type="primary"
+            size="mini"
+            style="margin-left: 10px"
+            plain
+            :loading="row.downloading"
+            @click.stop="handleDownloadWorkFile(row, $index)"
+          >
+            下载作品
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -1205,6 +1231,34 @@ export default {
         .catch((error) => {
           console.log(error)
         })
+    },
+    /**
+     * 下载作品
+     */
+    handleDownloadWorkFile(order, orderIndex) {
+      if (order.work_file && order.work_file.length > 0) {
+        this.$set(this.list[orderIndex], 'downloading', true)
+        const actions = order.work_file.map((file) => {
+          return downloadFile({ url: file.url })
+        })
+        const results = Promise.all(actions)
+        results
+          .then((data) => {
+            data.forEach((file, fileIndex) => {
+              downloadFileStream(
+                baseName(order.work_file[fileIndex].url),
+                file
+              )
+            })
+            this.$set(this.list[orderIndex], 'downloading', false)
+          })
+          .catch((error) => {
+            this.$set(this.list[orderIndex], 'downloading', false)
+            this.$message.error(error || '哎呀，下载失败啦')
+          })
+      } else {
+        this.$message.error('作品不存在')
+      }
     }
   }
 }

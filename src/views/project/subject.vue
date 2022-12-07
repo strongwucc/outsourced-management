@@ -30,7 +30,7 @@
           size="mini"
           @click="handleCreate"
         >
-          新增项目主体
+          新增甲方合同主体
         </el-button>
       </div>
     </div>
@@ -52,7 +52,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="项目主体名称" align="center" min-width="150px">
+      <el-table-column label="甲方合同主体名称" align="center" min-width="150px">
         <template slot-scope="{ row }">
           {{ row.name }}
         </template>
@@ -113,7 +113,7 @@
         label-width="150px"
         style="width: 500px; margin-left: 50px"
       >
-        <el-form-item label="项目主体名称" prop="name">
+        <el-form-item label="甲方合同主体名称" prop="name">
           <el-input v-model="temp.name" />
         </el-form-item>
         <el-form-item label="编号" prop="bn">
@@ -170,10 +170,10 @@ export default {
       },
       rules: {
         name: [
-          { required: true, message: '请输入项目主体名称', trigger: 'blur' }
+          { required: true, message: '请输入甲方合同主体名称', trigger: 'blur' }
         ],
         bn: [
-          { required: true, message: '请输入项目主体编号', trigger: 'blur' }
+          { required: true, message: '请输入甲方合同主体编号', trigger: 'blur' }
         ]
       }
     }

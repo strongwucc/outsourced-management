@@ -56,6 +56,7 @@
           搜索
         </el-button>
         <el-button
+          v-permission="[1, 2, 3, 4, 5]"
           v-waves
           class="filter-btn"
           type="primary"
@@ -542,8 +543,8 @@
           >
             <el-option
               v-for="(item, itemIndex) in [
-                { label: '普通发票', value: 0 },
-                { label: '增值税发票', value: 1 },
+                { label: '增值税专用发票', value: 1 },
+                { label: '增值税普通发票', value: 0 },
               ]"
               :key="itemIndex"
               :label="item.label"

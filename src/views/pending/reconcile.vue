@@ -96,33 +96,51 @@
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="项目代码">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="项目代码"
+                >{{
                   detail.project ? detail.project.bn : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="经费使用">
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="经费使用"
+                >
                   {{ detail.project ? detail.project.budget_used : 0 }}/{{
                     detail.project ? detail.project.budget_cost : 0
                   }}
                 </el-descriptions-item>
-                <el-descriptions-item label="项目创建时间">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="项目创建时间"
+                >{{
                   detail.project ? detail.project.created_at : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="流程名称">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="流程名称"
+                >{{
                   detail.process ? detail.process.flow_name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="流程代码">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="流程代码"
+                >{{
                   detail.process ? detail.process.bn : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="流程代码">{{
-                  detail.process ? detail.process.bn : ""
-                }}</el-descriptions-item>
-                <el-descriptions-item label="需求方">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="需求方"
+                >{{
                   detail.process ? detail.process.demand : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item label="供应商">{{
                   detail.supplier ? detail.supplier.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="合同备注名">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="合同备注名"
+                >{{
                   detail.pact ? detail.pact.pact_name : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item label="银行及开户行">{{
@@ -130,6 +148,11 @@
                 }}</el-descriptions-item>
                 <el-descriptions-item label="银行账号">{{
                   detail.supplier ? detail.supplier.bank_account : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item label="甲方开票主体">{{
+                  detail.process && detail.process.sub
+                    ? detail.process.sub.name
+                    : ""
                 }}</el-descriptions-item>
               </el-descriptions>
             </div>
@@ -156,7 +179,7 @@
                   {{ row.project.project_name }}
                 </template>
               </el-table-column>
-              <el-table-column label="订单状态" align="center" width="100">
+              <el-table-column label="订单状态" align="center" width="120">
                 <template slot-scope="{ row }">
                   {{ row.statement_status | statusText }}
                 </template>
@@ -191,7 +214,7 @@
                   {{ row.stay_time }}小时
                 </template>
               </el-table-column>
-              <el-table-column
+              <!-- <el-table-column
                 label="当前处理人"
                 align="center"
                 min-width="200"
@@ -200,7 +223,7 @@
                 <template slot-scope="{ row }">
                   {{ row.current_operator }}
                 </template>
-              </el-table-column>
+              </el-table-column> -->
             </el-table>
             <div class="actions">
               <el-button
@@ -214,8 +237,8 @@
                 快速复制
               </el-button>
               <el-button
-                v-if="[1].indexOf(detail.statement_status) >= 0"
                 v-permission="[3]"
+                :disabled="[1].indexOf(detail.statement_status) < 0"
                 type="primary"
                 icon="el-icon-zhihuan"
                 size="mini"
@@ -236,7 +259,18 @@
                 查看发票
               </el-button> -->
               <el-button
-                v-if="[2].indexOf(detail.statement_status) >= 0"
+                v-if="detail.statement_status < 2"
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-document"
+                size="mini"
+                plain
+                disabled
+              >
+                上传结算单
+              </el-button>
+              <el-button
+                v-else-if="detail.statement_status === 2"
                 v-permission="[3]"
                 type="primary"
                 icon="el-icon-document"
@@ -247,8 +281,31 @@
                 上传结算单
               </el-button>
               <el-button
-                v-if="[4].indexOf(detail.statement_status) >= 0"
+                v-else
                 v-permission="[3]"
+                type="primary"
+                icon="el-icon-document"
+                size="mini"
+                plain
+                @click.stop="handleUploadReconcile()"
+              >
+                查看结算单
+              </el-button>
+              <el-button
+                v-permission="[3]"
+                :disabled="[3, 4, 5].indexOf(detail.statement_status) < 0"
+                type="primary"
+                icon="el-icon-box"
+                size="mini"
+                plain
+                :loading="zipPacking"
+                @click.stop="handlePackZip()"
+              >
+                打包所有文件
+              </el-button>
+              <el-button
+                v-permission="[3]"
+                :disabled="[4].indexOf(detail.statement_status) < 0"
                 type="primary"
                 icon="el-icon-date"
                 size="mini"
@@ -290,18 +347,6 @@
               <el-button
                 v-if="detail.invoice_file"
                 v-permission="[3]"
-                type="primary"
-                icon="el-icon-box"
-                size="mini"
-                plain
-                :loading="zipPacking"
-                @click.stop="handlePackZip()"
-              >
-                打包所有文件
-              </el-button>
-              <el-button
-                v-if="detail.invoice_file"
-                v-permission="[3]"
                 style="margin-left: 120px"
                 type="primary"
                 icon="el-icon-download"
@@ -319,12 +364,13 @@
                 icon="el-icon-tickets"
                 size="mini"
                 plain
-                @click.stop="handlePackZip()"
+                @click.stop="handleShowPack()"
               >
                 查看合同
               </el-button>
               <el-button
                 v-permission="[3]"
+                :disabled="[1].indexOf(detail.statement_status) < 0"
                 type="primary"
                 icon="el-icon-jinzhi"
                 size="mini"
@@ -366,9 +412,9 @@
                 <el-descriptions-item label="发票图片" span="4">
                   <el-image
                     v-if="tempBill.invoice_file_url"
-                    style="height: 100px"
+                    style="cursor: pointer; width: s 200px"
                     :src="tempBill.invoice_file_url"
-                    :preview-src-list="[tempBill.invoice_file_url]"
+                    @click.stop="showInvoiceImage"
                   />
                 </el-descriptions-item>
                 <el-descriptions-item label="序号">{{
@@ -377,10 +423,10 @@
                 <el-descriptions-item label="发票类型" span="3">
                   <template
                     v-if="tempBill.invoice_type === 1"
-                  >增值税发票</template>
+                  >增值税专用发票</template>
                   <template
                     v-else-if="tempBill.invoice_type === 0"
-                  >普通发票</template>
+                  >增值税普通发票</template>
                 </el-descriptions-item>
                 <el-descriptions-item label="开票日期">{{
                   tempBill.invoice_date
@@ -408,6 +454,19 @@
               <i class="el-icon-s-management" />
               <span>物件明细</span>
             </div>
+            <el-descriptions
+              v-if="detail.supplier"
+              class="supplier-box"
+              :column="4"
+              :label-style="{
+                'font-weight': 'bold',
+                'align-items': 'center',
+              }"
+            >
+              <el-descriptions-item label="供应商">{{
+                detail.supplier ? detail.supplier.name : ""
+              }}</el-descriptions-item>
+            </el-descriptions>
             <el-table
               :data="detail.tasks"
               class="task-table"
@@ -457,6 +516,7 @@
                 prop="task_name"
                 label="物件名称"
                 align="center"
+                width="205"
               />
               <el-table-column
                 label="物件品类"
@@ -735,8 +795,8 @@
           >
             <el-option
               v-for="(item, itemIndex) in [
-                { label: '普通发票', value: 0 },
-                { label: '增值税发票', value: 1 },
+                { label: '增值税专用发票', value: 1 },
+                { label: '增值税普通发票', value: 0 },
               ]"
               :key="itemIndex"
               :label="item.label"
@@ -779,11 +839,11 @@
           <el-input
             v-model="tempBill.invoice_detail"
             type="textarea"
-            placeholder="请输入发票明细"
+            placeholder="示例：*设计服务*美术设计-￥10000"
             class="dialog-form-item"
           />
         </el-form-item>
-        <div class="notice" style="color: red">
+        <div class="notice" style="color: red;font-size: 16px;">
           注：实体发票请在结算确认通过后再寄出
         </div>
       </el-form>
@@ -848,6 +908,87 @@
         </el-button>
       </div>
     </el-dialog>
+
+    <!--发票预览-->
+    <el-dialog
+      title="发票预览"
+      :visible.sync="dialogInoinceImageVisible"
+      width="1000px"
+    >
+      <el-image
+        style="width: 960px; height: 620px"
+        :src="tempBill.invoice_file_url"
+      />
+    </el-dialog>
+
+    <!--查看合同详情弹窗-->
+    <el-dialog
+      title="合同详情"
+      :visible.sync="dialogPactVisible"
+      :close-on-click-modal="false"
+    >
+      <el-form
+        ref="dataDetail"
+        :model="pact"
+        label-position="left"
+        label-width="150px"
+        style="width: 500px; margin-left: 100px"
+        class="dialog-pact"
+      >
+        <el-form-item label="供应商:">
+          <div v-if="pact.supplier && pact.supplier.name">
+            {{ pact.supplier.name }}
+          </div>
+        </el-form-item>
+        <el-form-item label="签约主体:">
+          <div v-if="pact.sub">{{ pact.sub.name }}</div>
+        </el-form-item>
+        <el-form-item label="合同号:">
+          <div>{{ pact.bn }}</div>
+        </el-form-item>
+        <el-form-item label="合同名称:">
+          <div>{{ pact.pact_name }}</div>
+        </el-form-item>
+        <el-form-item label="登记类型">
+          <div>{{ pact.pact_type | typeText }}</div>
+        </el-form-item>
+        <el-form-item label="合同有效时间:">
+          <div v-if="pact.period_start">
+            {{ pact.period_start | dateFormat }}至{{
+              pact.period_end | dateFormat
+            }}
+          </div>
+        </el-form-item>
+        <el-form-item label="合同附件">
+          <div class="file-box">
+            <div
+              v-for="(file, fileIndex) in pact.file_url"
+              :key="fileIndex"
+              class="file-item"
+            >
+              <div class="file-name">{{ file.name }}</div>
+              <el-button
+                type="primary"
+                size="mini"
+                plain
+                @click="downLoadContract(file.name, file.url)"
+              >下载</el-button>
+            </div>
+          </div>
+        </el-form-item>
+        <el-form-item label="合同签署日期:">
+          <div v-if="pact.sign_date">{{ pact.sign_date | dateFormat }}</div>
+        </el-form-item>
+        <el-form-item label="备注">
+          <div>{{ pact.remark }}</div>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogPactVisible = false">
+          关闭
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -864,7 +1005,13 @@ import {
   fillPayDate
 } from '@/api/order/index'
 import { downloadFile } from '@/api/system/file'
-import { previewFile, downloadFileStream, baseName, copyText } from '@/utils/index'
+import {
+  previewFile,
+  downloadFileStream,
+  baseName,
+  copyText
+} from '@/utils/index'
+import { fetchPactDetail } from '@/api/provider/contract'
 
 import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
@@ -880,10 +1027,14 @@ const statusMap = {
   0: '待上传发票',
   1: '待申请用印',
   2: '待上传结算单',
-  // 3: '待提交结算申请',
+  3: '待提交结算申请',
   4: '待支付登记',
   5: '已付款'
 }
+const typeList = [
+  { id: 0, name: '关联合同' },
+  { id: 1, name: '单一主体合同' }
+]
 export default {
   components: { TaskDetail, ResizeBox },
   directives: { waves, permission },
@@ -917,6 +1068,21 @@ export default {
     },
     statusText(status) {
       return statusMap[status]
+    },
+    typeText(type) {
+      let typeText = ''
+      typeList.some((item) => {
+        if (type === item.id) {
+          typeText = item.name
+          return true
+        }
+        return false
+      })
+      return typeText
+    },
+    dateFormat(time) {
+      const data = time.split(' ')
+      return data[0] || time
     }
   },
   data() {
@@ -935,7 +1101,7 @@ export default {
         supplier_name: '',
         tag: '',
         page: 1,
-        page_num: 10,
+        page_num: 9999999,
         keyword: ''
       },
       detail: {},
@@ -1025,7 +1191,11 @@ export default {
         pay_date: [
           { required: true, message: '请选择支付日期', trigger: 'blur' }
         ]
-      }
+      },
+      dialogInoinceImageVisible: false,
+      pactDetailLoading: false,
+      pact: {},
+      dialogPactVisible: false
     }
   },
   computed: {
@@ -1034,7 +1204,8 @@ export default {
         '/pending/xmz/assign/vendor',
         '/pending/xmz/demand/draft',
         '/pending/gg/demand/draft',
-        '/pending/gys/order/reconcile'
+        '/pending/gys/order/reconcile',
+        '/pending/gg/reconcile/confirm'
       ]
       return hiddenPaths.indexOf(this.$route.path) < 0
     },
@@ -1285,8 +1456,16 @@ export default {
     handleUploadReconcile() {
       this.tempReconcile = Object.assign({}, this.tempReconcile, {
         statement_id: this.detail.statement_id,
-        file: ''
+        bill_file:
+          this.detail.bill_file.length > 0
+            ? this.detail.bill_file
+              .map((file) => {
+                return file.file_id
+              })
+              .join(',')
+            : ''
       })
+      this.reconcileFileList = this.detail.bill_file
       this.dialogStatus = 'reconcile'
       this.dialogReconcileVisible = true
       this.$nextTick(() => {
@@ -1316,7 +1495,7 @@ export default {
       this.$refs['reconcileDataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.tempReconcile))
-          uploadBillData(temp).then(() => {
+          uploadBillData(temp).then(async() => {
             const index = this.list.findIndex(
               (listItem) => listItem.statement_id === temp.statement_id
             )
@@ -1325,6 +1504,8 @@ export default {
             }
             this.dialogReconcileVisible = false
             this.$message.success('上传成功')
+            await this.$store.dispatch('user/getPending')
+            this.getList(false)
           })
         }
       })
@@ -1472,7 +1653,7 @@ export default {
     downLoadContract(fileName, filePath) {
       downloadFile({ url: filePath })
         .then((response) => {
-          downloadFileStream(baseName(filePath), response)
+          downloadFileStream(fileName, response)
         })
         .catch((_error) => {})
     },
@@ -1481,9 +1662,11 @@ export default {
      */
     handleApplySeal() {
       applySeal({ statement_id: this.detail.statement_id })
-        .then(() => {
+        .then(async() => {
           this.$set(this.detail, 'apply_seal', 1)
           this.$message.success('申请成功')
+          await this.$store.dispatch('user/getPending')
+          this.getList(false)
         })
         .catch((_error) => {})
     },
@@ -1540,9 +1723,12 @@ export default {
         .then((resp) => {
           downloadFile({ url: resp.url })
             .then((response) => {
+              this.excelCreating = false
               downloadFileStream(baseName(resp.url), response)
             })
-            .catch((_error) => {})
+            .catch((_error) => {
+              this.excelCreating = false
+            })
         })
         .catch((_error) => {
           // this.$message.error('哎呀，下载结算单出错啦')
@@ -1596,11 +1782,31 @@ export default {
       if (copyText(text)) {
         this.$message.success('已复制')
       }
+    },
+    showInvoiceImage() {
+      this.dialogInoinceImageVisible = true
+    },
+    handleShowPack() {
+      if (this.detail.pact_id > 0) {
+        this.pactDetailLoading = true
+        fetchPactDetail({ pact_id: this.detail.pact_id })
+          .then((response) => {
+            this.pactDetailLoading = false
+            this.pact = Object.assign({}, this.pact, response.data)
+            this.$nextTick(() => {
+              this.dialogPactVisible = true
+            })
+          })
+          .catch((_error) => {
+            this.pactDetailLoading = false
+          })
+      }
     }
   }
 }
 </script>
 <style lang="scss" scoped>
+@import "~@/styles/variables.scss";
 %flex-center {
   display: flex;
   justify-content: center;
@@ -1658,6 +1864,10 @@ export default {
       }
       .actions {
         margin-top: 20px;
+      }
+      .supplier-box {
+        margin-top: 20px;
+        font-size: 12px;
       }
     }
     .download-content {
@@ -1728,6 +1938,11 @@ export default {
     font-size: 10px;
     visibility: hidden;
   }
+  ::v-deep .el-button.is-disabled,
+  .el-button.is-disabled:focus,
+  .el-button.is-disabled:hover {
+    cursor: pointer;
+  }
 }
 .dialog-form {
   .has-secret-notice {
@@ -1785,6 +2000,43 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+}
+.el-image-viewer__wrapper {
+  ::v-deep .el-image-viewer__canvas img {
+    width: 960px;
+    height: 620px;
+  }
+}
+.dialog-pact {
+  .dialog-form-item {
+    width: 400px;
+  }
+  .add-file-btn {
+    color: $themeColor;
+    &:hover {
+      opacity: 0.8;
+      cursor: pointer;
+    }
+  }
+  .file-box {
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .file-name {
+        flex: auto;
+        width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .el-button {
+        flex: none;
+        margin-left: 10px;
+        height: 30px;
+      }
+    }
   }
 }
 </style>

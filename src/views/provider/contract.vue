@@ -426,6 +426,8 @@ import waves from '@/directive/waves'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 import { previewFile } from '@/utils/index'
+import { downloadFile } from '@/api/system/file'
+import { downloadFileStream, baseName } from '@/utils/index'
 
 const statList = [
   { id: 0, name: '未生效' },
@@ -553,7 +555,8 @@ export default {
         ],
         sign_date: [
           { required: true, message: '请选择签署日期', trigger: 'change' }
-        ]
+        ],
+        remark: [{ required: true, message: '请输入备注', trigger: 'blur' }]
       },
       fileList: []
     }
@@ -803,7 +806,12 @@ export default {
       })
     },
     downLoadContract(fileName, filePath) {
-      previewFile(fileName, filePath)
+      // previewFile(fileName, filePath)
+      downloadFile({ url: filePath })
+        .then((response) => {
+          downloadFileStream(fileName, response)
+        })
+        .catch((_error) => {})
     }
   }
 }
@@ -851,6 +859,18 @@ export default {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        .file-name {
+          flex: auto;
+          width: 100px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .el-button {
+          flex: none;
+          margin-left: 10px;
+          height: 30px;
+        }
       }
     }
   }

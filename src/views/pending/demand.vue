@@ -73,7 +73,7 @@
                 >
                   驳回
                 </el-button>
-                <el-button
+                <!-- <el-button
                   v-permission="[3]"
                   :loading="orderCreating"
                   size="mini"
@@ -81,7 +81,7 @@
                   @click="handleCreateOrder(true)"
                 >
                   生成订单
-                </el-button>
+                </el-button> -->
                 <!-- <el-button
                   v-permission="[3]"
                   type="primary"
@@ -147,6 +147,33 @@
                   'align-items': 'center',
                 }"
               >
+                <el-descriptions-item label="需求名称">
+                  <span>{{ detail.name }}</span>
+                  <el-tag size="mini" style="margin-left: 10px">{{
+                    detail.tag | tagText
+                  }}</el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item label="需求品类">{{
+                  detail.category | categoryText
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求单号">{{
+                  detail.demand_id
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求状态">{{
+                  detail.status | statusText
+                }}</el-descriptions-item>
+
+                <el-descriptions-item
+                  label="需求说明"
+                  span="4"
+                  :label-style="{
+                    'margin-bottom': '20px',
+                    'font-weight': 'bold',
+                  }"
+                >{{
+                  detail.introduce
+                }}</el-descriptions-item>
+
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
@@ -170,51 +197,17 @@
                     detail.project ? detail.project.budget_cost : 0
                   }}
                 </el-descriptions-item>
+
                 <el-descriptions-item label="需求创建人">{{
                   detail.creator ? detail.creator.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="创建时间" span="3">{{
+                <el-descriptions-item label="创建时间">{{
                   detail.created_at
                 }}</el-descriptions-item>
-                <el-descriptions-item label="需求名称">
-                  <span>{{ detail.name }}</span>
-                  <el-tag size="mini" style="margin-left: 10px">{{
-                    detail.tag | tagText
-                  }}</el-tag>
-                </el-descriptions-item>
-                <el-descriptions-item label="需求单号">{{
-                  detail.demand_id
-                }}</el-descriptions-item>
-                <el-descriptions-item label="需求状态" span="4">{{
-                  detail.status | statusText
-                }}</el-descriptions-item>
-                <el-descriptions-item label="需求说明" span="4">{{
-                  detail.introduce
-                }}</el-descriptions-item>
-                <el-descriptions-item label="需求品类" span="4">{{
-                  detail.category | categoryText
-                }}</el-descriptions-item>
-                <!-- <el-descriptions-item label="需求附件" span="6">
-                  <div class="file-box" style="width: 50%">
-                    <div
-                      v-for="(file, fileIndex) in detail.files"
-                      :key="fileIndex"
-                      class="file-item"
-                    >
-                      <div class="file-name">{{ file.name }}</div>
-                      <el-button
-                        type="primary"
-                        size="mini"
-                        plain
-                        @click="downLoadContract(file.name, file.url)"
-                      >下载</el-button>
-                    </div>
-                  </div>
-                </el-descriptions-item> -->
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="意向供应商"
-                  span="4"
+                  span="2"
                 >{{
                   detail.supplier ? detail.supplier.name : ""
                 }}</el-descriptions-item>
@@ -427,7 +420,7 @@
                 导入物件
               </el-button>
               <el-button
-                v-if="detail.status === 3"
+                v-if="([0, 1, 2, 3].indexOf(detail.status) >= 0)"
                 v-permission="[3]"
                 icon="el-icon-remove"
                 type="primary"
@@ -441,17 +434,6 @@
               <!-- <el-button type="primary" icon="el-icon-jinzhi" size="mini" plain>
                 驳回
               </el-button> -->
-              <el-button
-                v-if="[6].indexOf(detail.status) >= 0"
-                v-permission="[0]"
-                type="primary"
-                icon="el-icon-warning-outline"
-                size="mini"
-                plain
-                @click.stop="handleRejectReason()"
-              >
-                驳回原因
-              </el-button>
               <el-upload
                 v-if="[4, 6].indexOf(detail.status) >= 0"
                 v-permission="[0]"
@@ -509,7 +491,7 @@
               >
                 生成订单
               </el-button>
-              <el-button
+              <!-- <el-button
                 v-if="[7, 9].indexOf(detail.status) >= 0"
                 v-permission="[3]"
                 icon="el-icon-remove"
@@ -519,7 +501,7 @@
                 @click="handleFinish(false)"
               >
                 终止
-              </el-button>
+              </el-button> -->
               <el-button
                 v-if="detail.status === 8"
                 v-permission="[4]"
@@ -545,7 +527,7 @@
               <el-button
                 v-if="[9].indexOf(detail.status) >= 0"
                 v-permission="[3]"
-                type="primary"
+                type="danger"
                 icon="el-icon-warning-outline"
                 size="mini"
                 plain
@@ -556,7 +538,7 @@
               <el-button
                 v-if="[6].indexOf(detail.status) >= 0"
                 v-permission="[0]"
-                type="primary"
+                type="danger"
                 icon="el-icon-warning-outline"
                 size="mini"
                 plain
@@ -568,7 +550,7 @@
                 v-if="
                   detail.is_creator === 1 && [2].indexOf(detail.status) >= 0
                 "
-                type="primary"
+                type="danger"
                 icon="el-icon-warning-outline"
                 size="mini"
                 plain
@@ -589,6 +571,19 @@
               <i class="el-icon-s-management" />
               <span>物件明细</span>
             </div>
+            <el-descriptions
+              v-if="detail.supplier"
+              class="supplier-box"
+              :column="4"
+              :label-style="{
+                'font-weight': 'bold',
+                'align-items': 'center',
+              }"
+            >
+              <el-descriptions-item label="供应商">{{
+                detail.supplier ? detail.supplier.name : ""
+              }}</el-descriptions-item>
+            </el-descriptions>
             <el-table
               :data="detail.tasks"
               class="task-table"
@@ -631,6 +626,7 @@
                 prop="task_name"
                 label="物件名称"
                 align="center"
+                width="205"
                 :show-overflow-tooltip="true"
               />
               <el-table-column
@@ -1231,17 +1227,19 @@
             clearable
             placeholder="请输入合同名称"
             class="dialog-form-item"
+            popper-class="pact-select"
+            :popper-append-to-body="false"
           >
             <el-option
               v-for="item in pacts"
               :key="item.id"
-              :label="item.pact_name"
+              :label="item.remark"
               :value="item.id"
             >
               <div class="pact-box">
-                <div class="name">{{ item.pact_name }}</div>
+                <div class="name">{{ item.remark }}</div>
                 <div class="time">
-                  {{ item.period_start }} - {{ item.period_end }}
+                  {{ item.period_start | dateFormat }} - {{ item.period_end | dateFormat }}
                 </div>
               </div>
             </el-option>
@@ -1299,7 +1297,7 @@
               >
                 <el-option
                   v-for="(item, itemIndex) in [
-                    '人日',
+                    '人天',
                     '套',
                     '件',
                     '小时',
@@ -1640,13 +1638,17 @@ export default {
         1: '终止'
       }
       return statusMap[status]
+    },
+    dateFormat(time) {
+      const data = time.split(' ')
+      return data[0] || time
     }
   },
   data() {
     return {
       listQuery: {
         page: 1,
-        page_num: 20,
+        page_num: 9999999,
         keyword: '',
         status: undefined
       },
@@ -2894,7 +2896,7 @@ export default {
     downLoadContract(fileName, filePath) {
       downloadFile({ url: filePath })
         .then((response) => {
-          downloadFileStream(baseName(filePath), response)
+          downloadFileStream(fileName, response)
         })
         .catch((_error) => {})
     },
@@ -3143,7 +3145,9 @@ export default {
 
       if (this.pacts.length <= 0) {
         this.orderCreating = true
-        const pactData = await fetchAllPact({ status: 1 }).catch(
+        const sub_id = this.detail.flow ? this.detail.flow.sub_id : 0
+        const supplier_id = this.detail.supplier_id || 0
+        const pactData = await fetchAllPact({ status: 1, sub_id, supplier_id }).catch(
           (_error) => {}
         )
         this.pacts = pactData.data || []
@@ -3151,10 +3155,14 @@ export default {
       }
 
       this.tempCreateOrder = Object.assign({}, this.tempCreateOrder, {
-        demand_id: checkeds
+        demand_id: checkeds,
+        pact_id: ''
       })
       this.dialogStatus = 'create_order'
       this.dialogCreateOrderVisible = true
+      this.$nextTick(() => {
+        this.$refs['createOrderDataForm'].clearValidate()
+      })
     },
     confirmCreateOrder() {
       this.$refs['createOrderDataForm'].validate((valid) => {
@@ -3184,7 +3192,7 @@ export default {
           return false
         }
         const result = this.multipleSelection.some((listItem) => {
-          if (listItem.status !== 7) {
+          if ([7, 9].indexOf(listItem.status) < 0) {
             const errorName = `[${listItem.name}] 该需求并不是待生成订单状态，无法终止`
             this.$message.error(errorName)
             return true
@@ -3206,7 +3214,7 @@ export default {
           return false
         }
       } else {
-        if (this.detail.status !== 7) {
+        if ([7, 9].indexOf(this.detail.status) < 0) {
           const errorName = `[${this.detail.name}] 该需求并不是待生成订单状态，无法终止`
           this.$message.error(errorName)
           return false
@@ -3450,7 +3458,7 @@ export default {
       if (this.detail.demand_id) {
         exportTask(this.detail.demand_id)
           .then((response) => {
-            downloadFileStream('物件.xlsx', response)
+            downloadFileStream(`${this.detail.name}-${this.detail.demand_id}.xlsx`, response)
           })
           .catch((error) => {
             console.log(error)
@@ -3520,6 +3528,10 @@ export default {
       .actions {
         margin-top: 20px;
       }
+      .supplier-box {
+        margin-top: 20px;
+        font-size: 12px;
+      }
     }
     .download-content {
       margin-top: 50px;
@@ -3588,6 +3600,9 @@ export default {
     content: "替";
     font-size: 10px;
     visibility: hidden;
+  }
+  ::v-deep .pact-select .el-select-dropdown__item {
+    height: unset;
   }
 }
 .dialog-form {
@@ -3663,8 +3678,19 @@ export default {
 .pact-box {
   display: flex;
   justify-content: space-between;
+  font-size: 12px;
+  .name {
+    max-width: 390px;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: pre-line;
+    // overflow: hidden;
+  }
   .time {
     margin-left: 20px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
   }
 }
 .tongji {

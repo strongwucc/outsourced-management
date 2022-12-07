@@ -104,6 +104,7 @@
           搜索
         </el-button>
         <el-button
+          v-permission="[1, 2, 3, 4, 5]"
           v-waves
           class="filter-btn"
           type="primary"

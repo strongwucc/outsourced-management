@@ -99,6 +99,31 @@
                   'align-items': 'center',
                 }"
               >
+                <el-descriptions-item label="需求名称">
+                  <span>{{ detail.demand.name }}</span>
+                  <el-tag size="mini" style="margin-left: 10px">{{
+                    detail.demand.tag | demandTagText
+                  }}</el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item label="需求品类">{{
+                  detail.demand.category | categoryText
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求单号">{{
+                  detail.demand.demand_id
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求状态">{{
+                  detail.demand.status | demandStatusText
+                }}</el-descriptions-item>
+                <el-descriptions-item
+                  label="需求说明"
+                  span="4"
+                  :label-style="{
+                    'margin-bottom': '20px',
+                    'font-weight': 'bold',
+                  }"
+                >{{
+                  detail.demand.introduce
+                }}</el-descriptions-item>
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
@@ -127,27 +152,10 @@
                 <el-descriptions-item label="需求创建人">{{
                   detail.demand.creator ? detail.demand.creator.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="创建时间" span="3">{{
+                <el-descriptions-item label="创建时间">{{
                   detail.demand.created_at
                 }}</el-descriptions-item>
-                <el-descriptions-item label="需求名称">
-                  <span>{{ detail.demand.name }}</span>
-                  <el-tag size="mini" style="margin-left: 10px">{{
-                    detail.demand.tag | demandTagText
-                  }}</el-tag>
-                </el-descriptions-item>
-                <el-descriptions-item label="需求单号">{{
-                  detail.demand.demand_id
-                }}</el-descriptions-item>
-                <el-descriptions-item label="需求状态" span="4">{{
-                  detail.demand.status | demandStatusText
-                }}</el-descriptions-item>
-                <el-descriptions-item label="需求说明" span="4">{{
-                  detail.demand.introduce
-                }}</el-descriptions-item>
-                <el-descriptions-item label="需求品类" span="4">{{
-                  detail.demand.category | categoryText
-                }}</el-descriptions-item>
+
                 <!-- <el-descriptions-item label="需求附件" span="6">
                   <div class="file-box" style="width: 50%">
                     <div
@@ -168,7 +176,7 @@
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="供应商"
-                  span="4"
+                  span="2"
                 >{{
                   detail.supplier ? detail.supplier.name : ""
                 }}</el-descriptions-item>
@@ -282,6 +290,19 @@
               <i class="el-icon-s-management" />
               <span>物件明细</span>
             </div>
+            <el-descriptions
+              v-if="detail.supplier"
+              class="supplier-box"
+              :column="4"
+              :label-style="{
+                'font-weight': 'bold',
+                'align-items': 'center',
+              }"
+            >
+              <el-descriptions-item label="供应商">{{
+                detail.supplier ? detail.supplier.name : ""
+              }}</el-descriptions-item>
+            </el-descriptions>
             <el-table
               :data="detail.items"
               class="task-table"
@@ -310,7 +331,7 @@
                 <template slot-scope="scope">
                   <el-image
                     style="width: 50px; height: 50px"
-                    :src="scope.row.display_area.length > 0 ? scope.row.display_area[0].url : ''"
+                    :src="scope.row.display_area.length > 0 ? scope.row.display_area[0].url : scope.row.image_url"
                   >
                     <div slot="error" class="image-slot">
                       <i
@@ -325,6 +346,7 @@
                 prop="task_name"
                 label="物件名称"
                 align="center"
+                width="205"
                 show-overflow-tooltip
               />
               <el-table-column
@@ -792,7 +814,7 @@ export default {
         supplier_name: '',
         tag: '',
         page: 1,
-        page_num: 10,
+        page_num: 9999999,
         keyword: ''
       },
       detail: {},
@@ -865,7 +887,8 @@ export default {
         '/pending/gys/demand/quote',
         '/pending/xmz/demand/review',
         '/pending/gg/order/prepare',
-        '/pending/ggfzr/order/approval'
+        '/pending/ggfzr/order/approval',
+        '/pending/gys/order/check'
       ]
       return hiddenTaskCheckRowPaths.indexOf(this.$route.path) < 0
     },
@@ -1417,7 +1440,7 @@ export default {
     downLoadContract(fileName, filePath) {
       downloadFile({ url: filePath })
         .then((response) => {
-          downloadFileStream(baseName(filePath), response)
+          downloadFileStream(fileName, response)
         })
         .catch((_error) => {})
     },
@@ -1513,6 +1536,10 @@ export default {
       }
       .actions {
         margin-top: 20px;
+      }
+      .supplier-box {
+        margin-top: 20px;
+        font-size: 12px;
       }
     }
     .download-content {

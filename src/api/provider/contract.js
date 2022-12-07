@@ -39,3 +39,11 @@ export function changeContractStatus(data) {
     data
   })
 }
+
+export function fetchPactDetail(params) {
+  return request({
+    url: '/api/supply/pactDetail',
+    method: 'post',
+    params
+  })
+}

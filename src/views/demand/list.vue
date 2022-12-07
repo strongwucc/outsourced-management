@@ -71,6 +71,7 @@
           搜索
         </el-button>
         <el-button
+          v-permission="[1, 2, 3, 4, 5]"
           v-waves
           class="filter-item"
           type="primary"
@@ -377,7 +378,7 @@
       <el-table-column
         label="需求订单号"
         align="left"
-        width="150"
+        min-width="150"
         :show-overflow-tooltip="true"
       >
         <template slot-scope="{ row }">
@@ -391,7 +392,7 @@
       <el-table-column
         label="需求名称"
         align="center"
-        width="150"
+        min-width="150"
         :show-overflow-tooltip="true"
       >
         <template slot-scope="{ row }">
@@ -442,7 +443,7 @@
       <el-table-column
         label="当前处理人"
         align="center"
-        width="120"
+        min-width="120"
         show-overflow-tooltip
       >
         <template slot-scope="{ row }">
@@ -464,6 +465,7 @@
       </el-table-column>
 
       <el-table-column
+        v-if="$store.getters.roles.indexOf(0) < 0"
         label="操作"
         align="center"
         min-width="200"
@@ -481,6 +483,7 @@
             复制
           </el-button> -->
           <el-button
+            v-permission="[1, 2, 3, 4, 5]"
             type="primary"
             size="mini"
             plain
@@ -1147,7 +1150,7 @@
               >
                 <el-option
                   v-for="(item, itemIndex) in [
-                    '人日',
+                    '人天',
                     '套',
                     '件',
                     '小时',

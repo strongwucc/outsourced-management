@@ -80,6 +80,33 @@
                   'align-items': 'center',
                 }"
               >
+                <el-descriptions-item label="需求名称">
+                  <span>{{ detail.demand.name }}</span>
+                  <el-tag size="mini" style="margin-left: 10px">{{
+                    detail.demand.tag | tagText
+                  }}</el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item label="需求品类">{{
+                  detail.demand.category | categoryText
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求单号">{{
+                  detail.demand.demand_id
+                }}</el-descriptions-item>
+                <el-descriptions-item label="需求状态">{{
+                  detail.demand.status | statusText
+                }}</el-descriptions-item>
+
+                <el-descriptions-item
+                  label="需求说明"
+                  span="4"
+                  :label-style="{
+                    'margin-bottom': '20px',
+                    'font-weight': 'bold',
+                  }"
+                >{{
+                  detail.demand.introduce
+                }}</el-descriptions-item>
+
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
@@ -94,31 +121,14 @@
                     detail.project ? detail.project.budget_cost : 0
                   }}
                 </el-descriptions-item>
+
                 <el-descriptions-item label="需求创建人">{{
                   detail.demand.creator ? detail.demand.creator.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item label="创建时间" span="3">{{
+                <el-descriptions-item label="创建时间">{{
                   detail.demand.created_at
                 }}</el-descriptions-item>
-                <el-descriptions-item label="需求名称">
-                  <span>{{ detail.demand.name }}</span>
-                  <el-tag size="mini" style="margin-left: 10px">{{
-                    detail.demand.tag | tagText
-                  }}</el-tag>
-                </el-descriptions-item>
-                <el-descriptions-item label="需求单号">{{
-                  detail.demand.demand_id
-                }}</el-descriptions-item>
-                <el-descriptions-item label="需求状态" span="4">{{
-                  detail.demand.status | statusText
-                }}</el-descriptions-item>
-                <el-descriptions-item label="需求说明" span="4">{{
-                  detail.demand.introduce
-                }}</el-descriptions-item>
-                <el-descriptions-item label="需求品类" span="4">{{
-                  detail.demand.category | categoryText
-                }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="意向供应商" span="4">{{
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="意向供应商" span="2">{{
                   detail.supplier ? detail.supplier.name : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="备注说明" span="4">{{
@@ -240,6 +250,19 @@
               <i class="el-icon-s-management" />
               <span>物件明细</span>
             </div>
+            <el-descriptions
+              v-if="detail.supplier"
+              class="supplier-box"
+              :column="4"
+              :label-style="{
+                'font-weight': 'bold',
+                'align-items': 'center',
+              }"
+            >
+              <el-descriptions-item label="供应商">{{
+                detail.supplier ? detail.supplier.name : ""
+              }}</el-descriptions-item>
+            </el-descriptions>
             <el-table
               class="task-table"
               border
@@ -268,6 +291,7 @@
                 prop="task_name"
                 label="物件名称"
                 align="center"
+                width="205"
               />
               <el-table-column
                 label="物件品类"
@@ -575,7 +599,7 @@ export default {
         change_status: '',
         tag: '',
         page: 1,
-        page_num: 10,
+        page_num: 9999999,
         keyword: ''
       },
       detail: {},
@@ -833,7 +857,7 @@ export default {
     downLoadContract(fileName, filePath) {
       downloadFile({ url: filePath })
         .then((response) => {
-          downloadFileStream(baseName(filePath), response)
+          downloadFileStream(fileName, response)
         })
         .catch((_error) => {})
     }
@@ -899,6 +923,10 @@ export default {
       }
       .actions {
         margin-top: 20px;
+      }
+      .supplier-box {
+        margin-top: 20px;
+        font-size: 12px;
       }
     }
     .modify-color {

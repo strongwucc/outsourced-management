@@ -56,6 +56,7 @@
           搜索
         </el-button>
         <el-button
+          v-permission="[1, 2, 3, 4, 5]"
           v-waves
           class="filter-item"
           type="primary"
@@ -526,7 +527,7 @@
               >
                 <el-option
                   v-for="(item, itemIndex) in [
-                    '人日',
+                    '人天',
                     '套',
                     '件',
                     '小时',
