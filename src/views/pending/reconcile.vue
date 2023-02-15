@@ -106,8 +106,14 @@
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="经费使用"
                 >
-                  {{ detail.project ? detail.project.budget_used : 0 }}/{{
-                    detail.project ? detail.project.budget_cost : 0
+                  {{
+                    detail.process && detail.process.budget_dep
+                      ? detail.process.budget_dep.employ_budget
+                      : 0
+                  }}/{{
+                    detail.process && detail.process.budget_dep
+                      ? detail.process.budget_dep.budget
+                      : 0
                   }}
                 </el-descriptions-item>
                 <el-descriptions-item
@@ -247,6 +253,17 @@
               >
                 申请用印
               </el-button>
+              <el-button
+                v-permission="[3]"
+                :disabled="[1].indexOf(detail.statement_status) < 0"
+                type="primary"
+                icon="el-icon-s-custom"
+                size="mini"
+                plain
+                @click.stop="handleApplyOfflineSeal()"
+              >
+                线下处理
+              </el-button>
               <!-- <el-button
                 v-if="detail.invoice_file"
                 v-permission="[3]"
@@ -293,7 +310,7 @@
               </el-button>
               <el-button
                 v-permission="[3]"
-                :disabled="[3, 4, 5].indexOf(detail.statement_status) < 0"
+                :disabled="[4, 5].indexOf(detail.statement_status) < 0"
                 type="primary"
                 icon="el-icon-box"
                 size="mini"
@@ -325,6 +342,17 @@
                 申请结算
               </el-button>
               <el-button
+                v-if="[0, 1, 2, 3].indexOf(detail.statement_status) >= 0"
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-remove"
+                size="mini"
+                plain
+                @click.stop="handleTerminate()"
+              >
+                终止
+              </el-button>
+              <el-button
                 v-if="[0, 3].indexOf(detail.statement_status) >= 0"
                 v-permission="[0]"
                 type="primary"
@@ -347,7 +375,7 @@
               <el-button
                 v-if="detail.invoice_file"
                 v-permission="[3]"
-                style="margin-left: 120px"
+                style="margin-left: 80px"
                 type="primary"
                 icon="el-icon-download"
                 size="mini"
@@ -412,14 +440,14 @@
                 <el-descriptions-item label="发票图片" span="4">
                   <el-image
                     v-if="tempBill.invoice_file_url"
-                    style="cursor: pointer; width: s 200px"
+                    style="cursor: pointer; width: 640px; height: 420px;"
                     :src="tempBill.invoice_file_url"
                     @click.stop="showInvoiceImage"
                   />
                 </el-descriptions-item>
-                <el-descriptions-item label="序号">{{
+                <!-- <el-descriptions-item label="序号">{{
                   tempBill.invoice_serial
-                }}</el-descriptions-item>
+                }}</el-descriptions-item> -->
                 <el-descriptions-item label="发票类型" span="3">
                   <template
                     v-if="tempBill.invoice_type === 1"
@@ -732,7 +760,6 @@
             :on-remove="handleReconcileFileChange"
             :file-list="reconcileFileList"
             :multiple="false"
-            :limit="1"
           >
             <el-button size="small" type="primary">上传</el-button>
           </el-upload>
@@ -780,13 +807,13 @@
             <i v-else class="el-icon-plus bill-image-uploader-icon" />
           </el-upload>
         </el-form-item>
-        <el-form-item label="序号:" prop="invoice_serial">
+        <!-- <el-form-item label="序号:" prop="invoice_serial">
           <el-input
             v-model="tempBill.invoice_serial"
             placeholder="请输入发票序号"
             class="dialog-form-item"
           />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="发票类型:" prop="invoice_type">
           <el-select
             v-model="tempBill.invoice_type"
@@ -1002,7 +1029,9 @@ import {
   applySeal,
   packZip,
   createExcel,
-  fillPayDate
+  fillPayDate,
+  applyOfflineDeal,
+  statementTerminate
 } from '@/api/order/index'
 import { downloadFile } from '@/api/system/file'
 import {
@@ -1029,7 +1058,8 @@ const statusMap = {
   2: '待上传结算单',
   3: '待提交结算申请',
   4: '待支付登记',
-  5: '已付款'
+  5: '已付款',
+  6: '已终止'
 }
 const typeList = [
   { id: 0, name: '关联合同' },
@@ -1142,9 +1172,9 @@ export default {
         invoice_file: [
           { required: true, message: '请添加发票图片', trigger: 'blur' }
         ],
-        invoice_serial: [
-          { required: true, message: '请输入序号', trigger: 'blur' }
-        ],
+        // invoice_serial: [
+        //   { required: true, message: '请输入序号', trigger: 'blur' }
+        // ],
         invoice_type: [
           { required: true, message: '请输入发票类型', trigger: 'blur' }
         ],
@@ -1159,11 +1189,14 @@ export default {
         ],
         invoice_amount: [
           { required: true, message: '请输入价格合计', trigger: 'blur' }
+        ],
+        invoice_detail: [
+          { required: true, message: '请输入发票明细', trigger: 'blur' }
         ]
       },
       tempBill: {
         invoice_file: '',
-        invoice_serial: '',
+        // invoice_serial: '',
         invoice_type: '',
         invoice_date: '',
         invoice_code: '',
@@ -1482,6 +1515,9 @@ export default {
           bill_file_url: ''
         })
       } else if (file.response) {
+        if (fileList.length > 1) {
+          this.reconcileFileList = [fileList[1]]
+        }
         this.tempReconcile = Object.assign({}, this.tempReconcile, {
           bill_file: file.response.data.file_id,
           bill_file_url: file.response.data.url
@@ -1671,6 +1707,19 @@ export default {
         .catch((_error) => {})
     },
     /**
+     * 线下处理
+     */
+    handleApplyOfflineSeal() {
+      applyOfflineDeal({ statement_id: this.detail.statement_id })
+        .then(async() => {
+          this.$set(this.detail, 'apply_seal', 1)
+          this.$message.success('申请成功')
+          await this.$store.dispatch('user/getPending')
+          this.getList(false)
+        })
+        .catch((_error) => {})
+    },
+    /**
      * 驳回原因
      */
     handleRejectReason() {
@@ -1690,8 +1739,11 @@ export default {
       packZip({ statement_id: this.detail.statement_id })
         .then((resp) => {
           downloadFile({ url: resp.url })
-            .then((response) => {
+            .then(async(response) => {
               downloadFileStream(baseName(resp.url), response)
+              this.zipPacking = false
+              await this.$store.dispatch('user/getPending')
+              this.getList(false)
             })
             .catch((_error) => {})
         })
@@ -1801,6 +1853,18 @@ export default {
             this.pactDetailLoading = false
           })
       }
+    },
+    /**
+     * 终止
+     */
+    handleTerminate() {
+      statementTerminate({ statement_id: this.detail.statement_id })
+        .then(async() => {
+          this.$message.success('终止成功')
+          await this.$store.dispatch('user/getPending')
+          this.getList(false)
+        })
+        .catch((_error) => {})
     }
   }
 }
@@ -1855,6 +1919,14 @@ export default {
       }
       .actions {
         margin-top: 20px;
+        .el-button+.el-button, .el-checkbox.is-bordered+.el-checkbox.is-bordered {
+          // margin-right: 10px;
+          margin-left: unset;
+        }
+        .el-button {
+          margin-right: 10px;
+          margin-bottom: 10px;
+        }
       }
     }
     .task-content {

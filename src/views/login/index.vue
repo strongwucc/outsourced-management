@@ -255,7 +255,8 @@ export default {
       verifying: false,
       verifyForm: {
         mobile: '',
-        code: ''
+        code: '',
+        user_id: ''
       },
       verifyRules: {
         mobile: [{ required: true, message: '请输入手机号', trigger: 'blur' }],
@@ -300,7 +301,8 @@ export default {
               const { data } = response
               if (data.is_supplier && data.is_supplier === 1) {
                 this.verifyForm = Object.assign({}, this.verifyForm, {
-                  mobile: data.mobile
+                  mobile: data.mobile,
+                  user_id: data.user_id
                 })
                 this.dialogFormVisible = true
               } else {

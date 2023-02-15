@@ -168,6 +168,14 @@ export function applySeal(data) {
   })
 }
 
+export function applyOfflineDeal(data) {
+  return request({
+    url: '/api/statement/offlineDeal',
+    method: 'post',
+    data
+  })
+}
+
 export function uploadWorkFile(data) {
   return request({
     url: '/api/order/upWorks',
@@ -203,6 +211,40 @@ export function createExcel(data) {
 export function fillPayDate(data) {
   return request({
     url: '/api/statement/fillPayDate',
+    method: 'post',
+    data
+  })
+}
+
+export function exportChangeTask(change_id) {
+  return request({
+    url: '/api/order/exportChangeTask',
+    method: 'get',
+    params: { change_id },
+    responseType: 'arraybuffer'
+  })
+}
+
+export function exportReceiptTask(receipt_id) {
+  return request({
+    url: '/api/order/exportReceiptTask',
+    method: 'get',
+    params: { receipt_id },
+    responseType: 'arraybuffer'
+  })
+}
+
+export function statementTerminate(data) {
+  return request({
+    url: '/api/statement/stop',
+    method: 'post',
+    data
+  })
+}
+
+export function downloadStatementdMaterial(data) {
+  return request({
+    url: '/api/statement/downloadMaterial',
     method: 'post',
     data
   })

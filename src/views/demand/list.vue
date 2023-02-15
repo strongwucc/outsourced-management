@@ -492,6 +492,18 @@
           >
             详情
           </el-button>
+          <el-button
+            v-if="row.files.length > 0"
+            v-permission="[1, 2, 3, 4, 5]"
+            type="primary"
+            size="mini"
+            style="margin-left: 10px"
+            plain
+            :loading="row.downloading"
+            @click.stop="handleDownloadFiles(row, $index)"
+          >
+            下载需求附件
+          </el-button>
           <!-- <el-button
             v-if="row.is_creator === 1 && [0, 2].indexOf(row.status) >= 0"
             type="primary"
@@ -615,7 +627,7 @@
         label-width="150px"
         style="margin: 0 50px"
       >
-        <el-form-item label="选择项目流程:" prop="process_id">
+        <el-form-item label="需求用途:" prop="process_id">
           <el-select
             v-model="temp.process_id"
             style="width: 260px"
@@ -1962,7 +1974,7 @@ export default {
       },
       rules: {
         process_id: [
-          { required: true, message: '请选择项目流程', trigger: 'change' }
+          { required: true, message: '请选择需求用途', trigger: 'change' }
         ],
         name: [{ required: true, message: '请输入需求名称', trigger: 'blur' }],
         category_id: [
@@ -3887,6 +3899,30 @@ export default {
         })
         .catch((error) => {
           console.log(error)
+        })
+    },
+    /**
+     * 下载需求文件
+     */
+    handleDownloadFiles(row, index) {
+      this.$set(this.list[index], 'downloading', true)
+      const actions = row.files.map((fileItem) => {
+        return downloadFile({ url: fileItem.url })
+      })
+      const results = Promise.all(actions)
+      results
+        .then((data) => {
+          data.forEach((file, fileIndex) => {
+            downloadFileStream(
+              baseName(row.files[fileIndex].url),
+              file
+            )
+          })
+          this.$set(this.list[index], 'downloading', false)
+        })
+        .catch((error) => {
+          this.$set(this.list[index], 'downloading', false)
+          this.$message.error(error || '哎呀，下载失败啦')
         })
     }
   }

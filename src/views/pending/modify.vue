@@ -117,8 +117,14 @@
                   detail.demand.flow ? detail.demand.flow.account_dep.name : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="经费使用">
-                  {{ detail.project ? detail.project.budget_used : 0 }}/{{
-                    detail.project ? detail.project.budget_cost : 0
+                  {{
+                    detail.demand.flow && detail.demand.flow.budget_dep
+                      ? detail.demand.flow.budget_dep.employ_budget
+                      : 0
+                  }}/{{
+                    detail.demand.flow && detail.demand.flow.budget_dep
+                      ? detail.demand.flow.budget_dep.budget
+                      : 0
                   }}
                 </el-descriptions-item>
 
@@ -239,6 +245,14 @@
               >
                 驳回原因
               </el-button>
+              <el-button
+                v-permission="[1, 3]"
+                icon="el-icon-download"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleDownloadTask()"
+              >下载明细</el-button>
             </div>
           </div>
           <el-divider />
@@ -341,6 +355,16 @@
                 </template>
               </el-table-column>
             </el-table>
+            <div v-permission="[1]" class="tongji">
+              <div class="tongji-item">
+                <div class="label">总价：</div>
+                <div class="value">{{ tongji.totalAmount }}</div>
+              </div>
+              <div class="tongji-item">
+                <div class="label">最晚交付日期：</div>
+                <div class="value">{{ tongji.deliverDate }}</div>
+              </div>
+            </div>
             <div class="actions" />
           </div>
           <div
@@ -477,7 +501,8 @@
 import {
   fetchModifyOrderList,
   fetchChangeDetail,
-  changeVerify
+  changeVerify,
+  exportChangeTask
 } from '@/api/order/index'
 
 import waves from '@/directive/waves'
@@ -657,6 +682,21 @@ export default {
         '/pending/ggfzr/order/approval'
       ]
       return hiddenTaskActionRowPaths.indexOf(this.$route.path) < 0
+    },
+    tongji: function() {
+      const tasks = this.detail.tasks
+      let totalAmount = 0
+      let deliverDate = ''
+      tasks.forEach((task) => {
+        totalAmount += parseFloat(task.new_amount)
+        if (
+          deliverDate === '' ||
+          (deliverDate && new Date(deliverDate) < new Date(task.deliver_new_date))
+        ) {
+          deliverDate = task.deliver_new_date
+        }
+      })
+      return { totalAmount, deliverDate }
     }
   },
   created() {
@@ -860,6 +900,20 @@ export default {
           downloadFileStream(fileName, response)
         })
         .catch((_error) => {})
+    },
+    /**
+     * 下载物件
+     */
+    handleDownloadTask() {
+      if (this.detail.change_id) {
+        exportChangeTask(this.detail.change_id)
+          .then((response) => {
+            downloadFileStream(`${this.detail.demand.name}-${this.detail.demand.demand_id}.xlsx`, response)
+          })
+          .catch((error) => {
+            console.log(error)
+          })
+      }
     }
   }
 }
@@ -1057,6 +1111,23 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+}
+.tongji {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #606266;
+  font-weight: bold;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  .tongji-item {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    &:not(:last-child) {
+      margin-right: 20px;
+    }
   }
 }
 </style>

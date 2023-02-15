@@ -353,7 +353,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="项目制作人:" prop="project_producer">
+        <el-form-item label="抄送人:" prop="project_producer">
           <el-select
             v-model="temp.project_producer"
             multiple
@@ -1157,7 +1157,7 @@ export default {
           {
             required: true,
             validator: validateJson,
-            message: '请选择项目制作人',
+            message: '请选择抄送人',
             trigger: 'change'
           }
         ],

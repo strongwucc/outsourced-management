@@ -193,8 +193,8 @@
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="经费使用"
                 >
-                  {{ detail.project ? detail.project.budget_used : 0 }}/{{
-                    detail.project ? detail.project.budget_cost : 0
+                  {{ detail.flow && detail.flow.budget_dep ? detail.flow.budget_dep.employ_budget : 0 }}/{{
+                    detail.flow && detail.flow.budget_dep ? detail.flow.budget_dep.budget : 0
                   }}
                 </el-descriptions-item>
 
@@ -258,17 +258,32 @@
               </el-table-column>
               <el-table-column label="物件数量" align="center" width="80">
                 <template slot-scope="scope">
-                  {{ scope.row.nums }}
+                  <template v-if="scope.row.nums > 0">
+                    {{ scope.row.nums }}
+                  </template>
+                  <template v-else>
+                    --
+                  </template>
                 </template>
               </el-table-column>
               <el-table-column label="工作总量" align="center" width="80">
                 <template slot-scope="scope">
-                  {{ scope.row.work_num }}
+                  <template v-if="scope.row.work_num > 0">
+                    {{ scope.row.work_num }}
+                  </template>
+                  <template v-else>
+                    --
+                  </template>
                 </template>
               </el-table-column>
               <el-table-column label="总金额" align="center" width="80">
                 <template slot-scope="scope">
-                  {{ scope.row.work_amount }}
+                  <template v-if="scope.row.work_amount > 0">
+                    {{ scope.row.work_amount }}
+                  </template>
+                  <template v-else>
+                    --
+                  </template>
                 </template>
               </el-table-column>
               <el-table-column label="停留时间" align="center" width="100">
@@ -288,6 +303,44 @@
               </el-table-column>
             </el-table>
             <div class="actions">
+              <el-button
+                v-if="detail.status === 1"
+                v-permission="[2]"
+                type="primary"
+                size="mini"
+                @click="detailHandleResolve(true)"
+              >
+                通过
+              </el-button>
+              <el-button
+                v-if="detail.status === 5"
+                v-permission="[1]"
+                icon="el-icon-check"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleResolveTask(true, false)"
+              >通过</el-button>
+              <el-button
+                v-if="detail.status === 1"
+                v-permission="[2]"
+                type="primary"
+                size="mini"
+                style="margin-right: 80px"
+                @click="detailHandleResolve(false)"
+              >
+                驳回
+              </el-button>
+              <el-button
+                v-if="detail.status === 5"
+                v-permission="[1]"
+                icon="el-icon-jinzhi"
+                type="primary"
+                size="mini"
+                plain
+                style="margin-right: 80px"
+                @click="handleResolveTask(false, false)"
+              >驳回</el-button>
               <el-button
                 v-permission="[1, 3]"
                 type="primary"
@@ -334,42 +387,6 @@
                 @click.stop="handleToVerify()"
               >提交</el-button>
               <el-button
-                v-if="detail.status === 1"
-                v-permission="[2]"
-                type="primary"
-                size="mini"
-                @click="detailHandleResolve(true)"
-              >
-                通过
-              </el-button>
-              <el-button
-                v-if="detail.status === 1"
-                v-permission="[2]"
-                type="primary"
-                size="mini"
-                @click="detailHandleResolve(false)"
-              >
-                驳回
-              </el-button>
-              <el-button
-                v-if="detail.status === 5"
-                v-permission="[1]"
-                icon="el-icon-check"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleResolveTask(true, false)"
-              >通过</el-button>
-              <el-button
-                v-if="detail.status === 5"
-                v-permission="[1]"
-                icon="el-icon-jinzhi"
-                type="primary"
-                size="mini"
-                plain
-                @click="handleResolveTask(false, false)"
-              >驳回</el-button>
-              <el-button
                 v-if="detail.status === 3"
                 v-permission="[3]"
                 type="primary"
@@ -389,7 +406,7 @@
                 size="mini"
                 plain
                 @click="handleDownloadTask()"
-              >下载物件</el-button>
+              >下载明细</el-button>
               <el-button
                 v-if="[7, 9].indexOf(detail.status) >= 0"
                 v-permission="[3]"
@@ -398,7 +415,7 @@
                 size="mini"
                 plain
                 @click="handleDownloadTask()"
-              >下载物件</el-button>
+              >下载明细</el-button>
               <el-button
                 v-if="detail.can_add_task === 1"
                 icon="el-icon-document-add"
@@ -420,7 +437,7 @@
                 导入物件
               </el-button>
               <el-button
-                v-if="([0, 1, 2, 3].indexOf(detail.status) >= 0)"
+                v-if="([0, 1, 2].indexOf(detail.status) < 0)"
                 v-permission="[3]"
                 icon="el-icon-remove"
                 type="primary"
@@ -457,7 +474,7 @@
                 >上传附件</el-button>
               </el-upload>
               <el-button
-                v-if="detail.status === 4"
+                v-if="([4, 6].indexOf(detail.status) >= 0)"
                 v-permission="[0]"
                 icon="el-icon-remove"
                 type="primary"
@@ -572,7 +589,7 @@
               <span>物件明细</span>
             </div>
             <el-descriptions
-              v-if="detail.supplier"
+              v-if="detail.supplier_info"
               class="supplier-box"
               :column="4"
               :label-style="{
@@ -581,7 +598,7 @@
               }"
             >
               <el-descriptions-item label="供应商">{{
-                detail.supplier ? detail.supplier.name : ""
+                detail.supplier_info ? detail.supplier_info.name : ""
               }}</el-descriptions-item>
             </el-descriptions>
             <el-table
@@ -872,7 +889,7 @@
         label-width="120px"
         style="margin: 0 50px"
       >
-        <el-form-item label="选择项目流程:" prop="process_id">
+        <el-form-item label="需求用途:" prop="process_id">
           <el-select
             v-model="temp.process_id"
             style="width: 260px"
@@ -1177,7 +1194,7 @@
           </el-upload>
         </el-form-item>
 
-        <el-form-item label="选择供应商理由:" prop="supplier_id">
+        <el-form-item label="选择供应商理由:" prop="supplier_reason">
           <el-select
             v-model="tempProvider.supplier_reason"
             style="width: 300px"
@@ -1193,6 +1210,7 @@
             />
           </el-select>
         </el-form-item>
+        <div class="notice" style="color: red;">备注：仅可选择配置了有效合同的供应商</div>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button size="mini" @click="dialogProviderVisible = false">
@@ -1687,7 +1705,7 @@ export default {
       },
       rules: {
         process_id: [
-          { required: true, message: '请选择项目流程', trigger: 'change' }
+          { required: true, message: '请选择需求用途', trigger: 'change' }
         ],
         tag: [{ required: true, message: '请选择需求标记', trigger: 'blur' }],
         name: [{ required: true, message: '请输入需求名称', trigger: 'blur' }],
@@ -1765,6 +1783,9 @@ export default {
       providerRules: {
         supplier_id: [
           { required: true, message: '请选择供应商', trigger: 'change' }
+        ],
+        supplier_reason: [
+          { required: true, message: '请选择理由', trigger: 'change' }
         ]
       },
       tempProvider: {
@@ -2314,8 +2335,8 @@ export default {
           file: this.detail.file || '',
           files: this.detail.files || [],
           remark: this.detail.remark || '',
-          tag: parseInt(this.detail.tag) || '',
-          supplier: parseInt(supplier) || ''
+          tag: parseInt(this.detail.tag) || 0,
+          supplier: ''
         }
       )
       this.demandFileList = this.temp.files.map((file) => {
@@ -3079,7 +3100,7 @@ export default {
 
       if (multi) {
         this.multipleSelection.some((listItem) => {
-          if (listItem.status !== 7) {
+          if ([7, 9].indexOf(listItem.status) < 0) {
             const errorName = `[${listItem.name}] 该需求并不是待生成订单状态，无法驳回`
             this.$message.error(errorName)
             return true
@@ -3088,7 +3109,7 @@ export default {
           return false
         })
       } else {
-        if (this.detail.status !== 7) {
+        if ([7, 9].indexOf(this.detail.status) < 0) {
           const errorName = `[${this.detail.name}] 该需求并不是待生成订单状态，无法驳回`
           this.$message.error(errorName)
           return false

@@ -89,7 +89,7 @@
       <el-table-column
         label="操作"
         align="center"
-        width="230"
+        width="350"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
@@ -104,6 +104,15 @@
             @click="handleUpdate(row)"
           >
             编辑
+          </el-button>
+          <el-button
+            v-permission="[3, 4]"
+            type="primary"
+            size="mini"
+            plain
+            @click="resetPassword(row)"
+          >
+            重置登录密码
           </el-button>
           <el-popconfirm
             v-permission="[3, 4]"
@@ -472,6 +481,48 @@
         <el-table-column prop="contact_position" label="职位" align="center" />
       </el-table>
     </el-dialog>
+
+    <!--密码修改-->
+    <el-dialog
+      title="登录密码重置"
+      :visible.sync="dialogPasswordVisible"
+      :close-on-click-modal="false"
+      append-to-body
+      width="500px"
+    >
+      <el-form
+        ref="passwordForm"
+        class="password-form"
+        :rules="passwordRules"
+        :model="tempPassword"
+        label-position="left"
+        label-width="100px"
+        style="margin-left: 10px"
+      >
+        <el-form-item label="新密码:" prop="new_pass">
+          <el-input
+            v-model="tempPassword.new_pass"
+            class="dialog-form-item"
+            show-password
+          />
+        </el-form-item>
+        <el-form-item label="确认新密码:" prop="confirm_pass">
+          <el-input
+            v-model="tempPassword.confirm_pass"
+            class="dialog-form-item"
+            show-password
+          />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogPasswordVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="confirmResetPassword()">
+          确定
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -483,6 +534,9 @@ import {
   fetchRegion,
   deleteProvider
 } from '@/api/provider/index'
+import {
+  updateMember
+} from '@/api/system/member'
 import { fetchAllCategory } from '@/api/system/category'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
@@ -561,7 +615,17 @@ export default {
         create: '添加供应商',
         view: '供应商详情'
       },
-      dialogDetailVisible: false
+      dialogDetailVisible: false,
+      dialogPasswordVisible: false,
+      tempPassword: {
+        id: '',
+        new_pass: '',
+        confirm_pass: ''
+      },
+      passwordRules: {
+        new_pass: [{ required: true, message: '请输入新密码', trigger: 'blur' }],
+        confirm_pass: [{ required: true, message: '请再次输入新密码', trigger: 'blur' }]
+      }
     }
   },
   computed: {
@@ -581,6 +645,9 @@ export default {
         // ],
         contact_phone: [
           { required: true, message: '请输入手机号', trigger: 'blur' }
+        ],
+        email: [
+          { required: true, message: '请输入抄送邮件', trigger: 'blur' }
         ],
         bank_name: [
           { required: true, message: '请输入银行及开户行', trigger: 'blur' }
@@ -709,6 +776,34 @@ export default {
       this.dialogFormDisabled = false
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
+      })
+    },
+    resetPassword(row) {
+      this.tempPassword = Object.assign({}, this.tempPassword, { id: row.user_id, new_pass: '', confirm_pass: '' })
+      this.dialogPasswordVisible = true
+      this.$nextTick(() => {
+        this.$refs['passwordForm'].clearValidate()
+      })
+    },
+    confirmResetPassword() {
+      this.$refs['passwordForm'].validate((valid) => {
+        if (valid) {
+          if (this.tempPassword.new_pass !== this.tempPassword.confirm_pass) {
+            this.$message.error('两次密码输入不一致')
+            return false
+          }
+          updateMember({ id: this.tempPassword.id, password: this.tempPassword.new_pass })
+            .then(() => {
+              this.dialogPasswordVisible = false
+              this.$notify({
+                title: '成功',
+                message: '修改成功',
+                type: 'success',
+                duration: 2000
+              })
+            })
+            .catch((error) => {})
+        }
       })
     },
     updateData() {

@@ -128,12 +128,12 @@
                   label="经费使用"
                 >
                   {{
-                    detail.demand.project
-                      ? detail.demand.project.budget_used
+                    detail.demand.flow && detail.demand.flow.budget_dep
+                      ? detail.demand.flow.budget_dep.employ_budget
                       : 0
                   }}/{{
-                    detail.demand.project
-                      ? detail.demand.project.budget_cost
+                    detail.demand.flow && detail.demand.flow.budget_dep
+                      ? detail.demand.flow.budget_dep.budget
                       : 0
                   }}
                 </el-descriptions-item>

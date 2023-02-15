@@ -108,7 +108,7 @@ service.interceptors.response.use(
       //   type: 'error',
       //   duration: 5 * 1000
       // })
-      MessageBox.alert('哎呀，系统出错啦', '提示')
+      MessageBox.alert('系统出错，请联系供应商管理部', '提示')
     }
 
     return Promise.reject(error)

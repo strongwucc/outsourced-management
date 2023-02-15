@@ -145,8 +145,14 @@
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="经费使用"
                 >
-                  {{ detail.project ? detail.project.budget_used : 0 }}/{{
-                    detail.project ? detail.project.budget_cost : 0
+                  {{
+                    detail.demand.flow && detail.demand.flow.budget_dep
+                      ? detail.demand.flow.budget_dep.employ_budget
+                      : 0
+                  }}/{{
+                    detail.demand.flow && detail.demand.flow.budget_dep
+                      ? detail.demand.flow.budget_dep.budget
+                      : 0
                   }}
                 </el-descriptions-item>
                 <el-descriptions-item label="需求创建人">{{
@@ -279,6 +285,31 @@
               >
                 生成结算单
               </el-button>
+              <el-button
+                v-permission="[1, 2]"
+                icon="el-icon-view"
+                type="primary"
+                size="mini"
+                plain
+                @click="viewFileUrl()"
+              >查看作品存放地址</el-button>
+              <el-button
+                v-permission="[1, 2]"
+                icon="el-icon-download"
+                type="primary"
+                size="mini"
+                plain
+                :loading="fileDownloading"
+                @click="downloadFiles()"
+              >下载附件</el-button>
+              <el-button
+                v-permission="[1, 3]"
+                icon="el-icon-download"
+                type="primary"
+                size="mini"
+                plain
+                @click="handleDownloadTask()"
+              >下载明细</el-button>
             </div>
           </div>
           <el-divider />
@@ -467,7 +498,7 @@
                 plain
                 @click="handleModify()"
               >
-                申请变更
+                部分验收
               </el-button>
             </div>
           </div>
@@ -694,6 +725,17 @@
         </div>
       </div>
     </el-dialog>
+
+    <!--作品存放地址-->
+    <el-dialog
+      title="作品存放地址"
+      :visible.sync="dialogFileUrlVisible"
+      width="600px"
+    >
+      <div v-if="detail.file_url" class="url-box">
+        {{ detail.file_url }}
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -703,7 +745,8 @@ import {
   modifyCheckOrder,
   verifyCheckOrder,
   generateStatement,
-  receiveRefuse
+  receiveRefuse,
+  exportReceiptTask
 } from '@/api/order/index'
 import { finishTask } from '@/api/demand/task'
 import { downloadFile } from '@/api/system/file'
@@ -868,7 +911,10 @@ export default {
         receipt_id: '',
         task_id: '',
         task_name: ''
-      }
+      },
+      dialogFileUrlVisible: false,
+      fileDownloading: false,
+      posting: false
     }
   },
   computed: {
@@ -1073,6 +1119,9 @@ export default {
      * 生成结算单
      */
     handleReconcile(multi = true) {
+      if (this.posting) {
+        return false
+      }
       const receipt_id = []
 
       // if (multi) {
@@ -1154,13 +1203,18 @@ export default {
         receipt_id.push(this.detail.receipt_id)
       }
 
+      this.posting = true
+
       generateStatement({ receipt_id })
         .then(async(response) => {
+          this.posting = false
           this.$message.success('生成结算单成功')
           await this.$store.dispatch('user/getPending')
           this.getList(false)
         })
-        .catch((_error) => {})
+        .catch((_error) => {
+          this.posting = false
+        })
     },
     /**
      * 通过驳回弹窗
@@ -1369,10 +1423,10 @@ export default {
       this.handleCheckFileChange(file, fileList)
     },
     handleCheckFileChange(file, fileList) {
-      // this.checkFileList = [file]
-      // this.tempVerify = Object.assign({}, this.tempVerify, {
-      //   file_id: file.response.data.file_id
-      // })
+      this.checkFileList = [file]
+      this.tempVerify = Object.assign({}, this.tempVerify, {
+        file_id: file.response.data.file_id
+      })
     },
     /**
      * 确认终止
@@ -1474,6 +1528,59 @@ export default {
           })
           .catch((_error) => {})
       })
+    },
+    /**
+     * 查看作品存放地址
+     */
+    viewFileUrl() {
+      this.dialogFileUrlVisible = true
+    },
+    /**
+     * 下载附件
+     */
+    downloadFiles() {
+      if (this.detail.files.length > 0) {
+        this.fileDownloading = true
+        const actions = this.detail.files.map((file) => {
+          return downloadFile({ url: file.url })
+        })
+        const results = Promise.all(actions)
+        results
+          .then((data) => {
+            data.forEach((file, fileIndex) => {
+              downloadFileStream(
+                `附件-${baseName(this.detail.files[fileIndex].url)}`,
+                file
+              )
+            })
+            this.fileDownloading = false
+          })
+          .catch((error) => {
+            this.fileDownloading = false
+            this.$message.error(error || '哎呀，下载失败啦')
+          })
+        // task.finished_product.forEach((product) => {
+        //   downloadFile({ url: product.url })
+        //     .then((response) => {
+        //       downloadFileStream(baseName(product.url), response);
+        //     })
+        //     .catch((_error) => {});
+        // });
+      }
+    },
+    /**
+     * 下载物件
+     */
+    handleDownloadTask() {
+      if (this.detail.receipt_id) {
+        exportReceiptTask(this.detail.receipt_id)
+          .then((response) => {
+            downloadFileStream(`${this.detail.demand.name}-${this.detail.demand.demand_id}.xlsx`, response)
+          })
+          .catch((error) => {
+            console.log(error)
+          })
+      }
     }
   }
 }

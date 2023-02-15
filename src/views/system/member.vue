@@ -344,7 +344,7 @@ export default {
         login_name: [
           { required: true, message: '请输入登录名', trigger: 'blur' }
         ],
-        password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+        // password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
         mobile: [{ validator: validateMobile, trigger: 'blur' }]
       }
     }

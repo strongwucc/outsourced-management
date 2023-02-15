@@ -458,7 +458,7 @@
           {{ row.order_status | statusText }}
         </template>
       </el-table-column> -->
-      <!-- <el-table-column
+      <el-table-column
         label="操作"
         align="center"
         min-width="150"
@@ -466,16 +466,19 @@
       >
         <template slot-scope="{ row, $index }">
           <el-button
-            v-permission="[0]"
+            v-if="row.demand.supplier_files.length > 0"
+            v-permission="[1, 2, 3, 4, 5]"
             type="primary"
             size="mini"
+            style="margin-left: 10px"
             plain
-            @click.stop="handleCreateTask(row)"
+            :loading="row.downloading"
+            @click.stop="handleDownloadFiles(row, $index)"
           >
-            新增物件
+            下载需求附件
           </el-button>
         </template>
-      </el-table-column> -->
+      </el-table-column>
     </el-table>
 
     <!--分页-->
@@ -1486,6 +1489,30 @@ export default {
         })
         .catch((error) => {
           console.log(error)
+        })
+    },
+    /**
+     * 下载需求文件
+     */
+    handleDownloadFiles(row, index) {
+      this.$set(this.list[index], 'downloading', true)
+      const actions = row.demand.supplier_files.map((fileItem) => {
+        return downloadFile({ url: fileItem.url })
+      })
+      const results = Promise.all(actions)
+      results
+        .then((data) => {
+          data.forEach((file, fileIndex) => {
+            downloadFileStream(
+              baseName(row.demand.supplier_files[fileIndex].url),
+              file
+            )
+          })
+          this.$set(this.list[index], 'downloading', false)
+        })
+        .catch((error) => {
+          this.$set(this.list[index], 'downloading', false)
+          this.$message.error(error || '哎呀，下载失败啦')
         })
     }
   }

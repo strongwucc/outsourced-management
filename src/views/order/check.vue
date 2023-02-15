@@ -351,10 +351,12 @@
           </span>
         </template>
       </el-table-column>
-      <el-table-column width="200" label="作品存放地址及附件" align="center" show-overflow-tooltip>
-        <template slot-scope="{ row }">
-          <span v-if="row.file_url">{{ row.file_url }}</span>
-          <span v-else-if="row.files && row.files.length > 0">{{ row.files[0].url }}</span>
+      <el-table-column v-permission="[1, 2, 3, 4, 5, 'administrator']" width="250" label="作品存放地址及附件" align="center" show-overflow-tooltip>
+        <template slot-scope="{ row, $index }">
+          <!-- <span v-if="row.file_url">{{ row.file_url }}</span>
+          <span v-else-if="row.files && row.files.length > 0">{{ row.files[0].url }}</span> -->
+          <el-button type="primary" size="mini" plain @click.stop="handleViewUrl(row.file_url)">查看地址</el-button>
+          <el-button type="primary" size="mini" plain :loading="row.fileDownloading" @click.stop="handleDownloadFile(row, $index)">下载附件</el-button>
         </template>
       </el-table-column>
       <el-table-column
@@ -540,6 +542,19 @@
         </el-button>
       </div>
     </el-dialog>
+
+    <!--查看地址-->
+    <el-dialog
+      title="作品存放地址"
+      :visible.sync="dialogUrlVisible"
+    >
+      <div class="content">{{ currentFileUrl }}</div>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogUrlVisible = false">
+          关闭
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -669,7 +684,9 @@ export default {
         status: '',
         reason: ''
       },
-      verifyRules: {}
+      verifyRules: {},
+      dialogUrlVisible: false,
+      currentFileUrl: ''
     }
   },
   created() {
@@ -974,7 +991,7 @@ export default {
           await this.$store.dispatch('user/getPending')
           this.getList(false)
         })
-        .catch((error) => {})
+        .catch((_error) => {})
     },
     /**
      * 通过驳回弹窗
@@ -1064,7 +1081,7 @@ export default {
               await this.$store.dispatch('user/getPending')
               this.getList(false)
             })
-            .catch((error) => {})
+            .catch((_error) => {})
         }
       })
     },
@@ -1193,7 +1210,7 @@ export default {
             .then((response) => {
               downloadFileStream(baseName(product.url), response)
             })
-            .catch((error) => {})
+            .catch((_error) => {})
         })
       }
     },
@@ -1242,11 +1259,14 @@ export default {
           return downloadFile({ url: file.url })
         })
         const results = Promise.all(actions)
+        const fileName = `${order.receipt_id}-${order.supplier_name}${order.items.length > 0 && order.items[0].demand ? '-' + order.items[0].demand.name : ''}`
         results
           .then((data) => {
             data.forEach((file, fileIndex) => {
+              const url = order.work_file[fileIndex].url
+              const fullFileName = `${fileName}${url.substring(url.lastIndexOf('.'))}`
               downloadFileStream(
-                baseName(order.work_file[fileIndex].url),
+                fullFileName,
                 file
               )
             })
@@ -1259,6 +1279,44 @@ export default {
       } else {
         this.$message.error('作品不存在')
       }
+    },
+    handleViewUrl(url) {
+      if (!url) {
+        this.$message.error('地址不存在')
+        return false
+      }
+      this.currentFileUrl = url
+      this.$nextTick(() => {
+        this.dialogUrlVisible = true
+      })
+    },
+    handleDownloadFile(row, index) {
+      if (row.file_id.length <= 0) {
+        this.$message.error('附件不存在')
+        return false
+      }
+      this.$set(this.list[index], 'fileDownloading', true)
+      const actions = row.file_id.map((file) => {
+        return downloadFile({ url: file.url })
+      })
+      const results = Promise.all(actions)
+      const fileName = `作品附件-${row.receipt_id}`
+      results
+        .then((data) => {
+          data.forEach((file, fileIndex) => {
+            const url = row.file_id[fileIndex].url
+            const fullFileName = `${fileName}${url.substring(url.lastIndexOf('.'))}`
+            downloadFileStream(
+              fullFileName,
+              file
+            )
+          })
+          this.$set(this.list[index], 'fileDownloading', false)
+        })
+        .catch((error) => {
+          this.$set(this.list[index], 'fileDownloading', false)
+          this.$message.error(error || '哎呀，下载失败啦')
+        })
     }
   }
 }

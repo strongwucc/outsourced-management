@@ -289,19 +289,49 @@
           {{ row.current_operator }}
         </template>
       </el-table-column>
-      <el-table-column label="订单状态" align="center" min-width="100">
+      <el-table-column label="结算状态" align="center" min-width="120">
         <template slot-scope="{ row }">
           {{ row.statement_status | statusText }}
         </template>
       </el-table-column>
-      <!-- <el-table-column
+      <el-table-column
         label="操作"
         align="center"
-        min-width="250"
+        min-width="380"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
           <el-button
+            v-if="row.invoice_file"
+            v-permission="[3]"
+            style="margin-left: 80px"
+            type="primary"
+            size="mini"
+            :loading="row.excelCreating"
+            @click.stop="handleDownloadReconcile(row, $index)"
+          >
+            下载结算单
+          </el-button>
+          <el-button
+            v-if="[4, 5].indexOf(row.statement_status) >= 0"
+            v-permission="[3]"
+            type="primary"
+            size="mini"
+            :loading="row.zipPacking"
+            @click.stop="handlePackZip(row, $index)"
+          >
+            下载结算材料
+          </el-button>
+          <el-button
+            v-if="row.invoice_file"
+            v-permission="[3]"
+            type="primary"
+            size="mini"
+            @click.stop="handleShowPack(row, $index)"
+          >
+            查看合同
+          </el-button>
+          <!-- <el-button
             v-if="[0, 1, 3].indexOf(row.statement_status) >= 0"
             v-permission="[3]"
             type="primary"
@@ -340,9 +370,9 @@
             @click.stop="handleShowBill(row)"
           >
             查看发票
-          </el-button>
+          </el-button> -->
         </template>
-      </el-table-column> -->
+      </el-table-column>
     </el-table>
 
     <!--分页-->
@@ -593,6 +623,75 @@
         </el-button>
       </div>
     </el-dialog>
+
+    <!--查看合同详情弹窗-->
+    <el-dialog
+      title="合同详情"
+      :visible.sync="dialogPactVisible"
+      :close-on-click-modal="false"
+    >
+      <el-form
+        ref="dataDetail"
+        :model="pact"
+        label-position="left"
+        label-width="150px"
+        style="width: 500px; margin-left: 100px"
+        class="dialog-pact"
+      >
+        <el-form-item label="供应商:">
+          <div v-if="pact.supplier && pact.supplier.name">
+            {{ pact.supplier.name }}
+          </div>
+        </el-form-item>
+        <el-form-item label="签约主体:">
+          <div v-if="pact.sub">{{ pact.sub.name }}</div>
+        </el-form-item>
+        <el-form-item label="合同号:">
+          <div>{{ pact.bn }}</div>
+        </el-form-item>
+        <el-form-item label="合同名称:">
+          <div>{{ pact.pact_name }}</div>
+        </el-form-item>
+        <el-form-item label="登记类型">
+          <div>{{ pact.pact_type | typeText }}</div>
+        </el-form-item>
+        <el-form-item label="合同有效时间:">
+          <div v-if="pact.period_start">
+            {{ pact.period_start | dateFormat }}至{{
+              pact.period_end | dateFormat
+            }}
+          </div>
+        </el-form-item>
+        <el-form-item label="合同附件">
+          <div class="file-box">
+            <div
+              v-for="(file, fileIndex) in pact.file_url"
+              :key="fileIndex"
+              class="file-item"
+            >
+              <div class="file-name">{{ file.name }}</div>
+              <el-button
+                type="primary"
+                size="mini"
+                plain
+                @click="downLoadContract(file.name, file.url)"
+              >下载</el-button>
+            </div>
+          </div>
+        </el-form-item>
+        <el-form-item label="合同签署日期:">
+          <div v-if="pact.sign_date">{{ pact.sign_date | dateFormat }}</div>
+        </el-form-item>
+        <el-form-item label="备注">
+          <div>{{ pact.remark }}</div>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogPactVisible = false">
+          关闭
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -602,8 +701,11 @@ import {
   uploadBillData,
   uploadInvoiceData,
   submitStatement,
-  rejectStatement
+  rejectStatement,
+  createExcel,
+  downloadStatementdMaterial
 } from '@/api/order/index'
+import { fetchPactDetail } from '@/api/provider/contract'
 import { downloadFile } from '@/api/system/file'
 import { previewFile, downloadFileStream, baseName } from '@/utils/index'
 import ElImageViewer from 'element-ui/packages/image/src/image-viewer'
@@ -613,6 +715,11 @@ import permission from '@/directive/permission/index.js' // 权限判断指令
 import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
 import { exportOrders } from '@/api/system/download'
+
+const typeList = [
+  { id: 0, name: '关联合同' },
+  { id: 1, name: '单一主体合同' }
+]
 
 export default {
   components: { Pagination, ElImageViewer, TaskDetail },
@@ -637,11 +744,29 @@ export default {
     statusText(status) {
       const statusMap = {
         0: '待上传发票',
-        1: '待结算',
-        2: '已结算',
-        3: '已驳回'
+        1: '待申请用印',
+        2: '待上传结算单',
+        3: '待提交结算申请',
+        4: '待支付登记',
+        5: '已付款',
+        6: '终止'
       }
       return statusMap[status]
+    },
+    typeText(type) {
+      let typeText = ''
+      typeList.some((item) => {
+        if (type === item.id) {
+          typeText = item.name
+          return true
+        }
+        return false
+      })
+      return typeText
+    },
+    dateFormat(time) {
+      const data = time.split(' ')
+      return data[0] || time
     }
   },
   data() {
@@ -730,7 +855,9 @@ export default {
         deliver_date: '',
         reason: ''
       },
-      modifyRules: {}
+      modifyRules: {},
+      pact: {},
+      dialogPactVisible: false
     }
   },
   created() {
@@ -1219,12 +1346,77 @@ export default {
         .catch((error) => {
           console.log(error)
         })
+    },
+    /**
+     * 下载结算单
+     */
+    handleDownloadReconcile(row, index) {
+      this.$set(this.list[index], 'excelCreating', true)
+      createExcel({ statement_id: row.statement_id })
+        .then((resp) => {
+          downloadFile({ url: resp.url })
+            .then((response) => {
+              this.$set(this.list[index], 'excelCreating', false)
+              downloadFileStream(baseName(resp.url), response)
+            })
+            .catch((_error) => {
+              this.$set(this.list[index], 'excelCreating', false)
+            })
+        })
+        .catch((_error) => {
+          // this.$message.error('哎呀，下载结算单出错啦')
+          this.$set(this.list[index], 'excelCreating', false)
+        })
+    },
+    handleShowPack(row, index) {
+      if (row.pact_id > 0) {
+        this.pactDetailLoading = true
+        this.$set(this.list[index], 'pactDetailLoading', true)
+        fetchPactDetail({ pact_id: row.pact_id })
+          .then((response) => {
+            this.$set(this.list[index], 'pactDetailLoading', false)
+            this.pact = Object.assign({}, this.pact, response.data)
+            this.$nextTick(() => {
+              this.dialogPactVisible = true
+            })
+          })
+          .catch((_error) => {
+            this.$set(this.list[index], 'pactDetailLoading', false)
+          })
+      }
+    },
+    downLoadContract(fileName, filePath) {
+      downloadFile({ url: filePath })
+        .then((response) => {
+          downloadFileStream(fileName, response)
+        })
+        .catch((_error) => {})
+    },
+    /**
+     * 打包所有文件
+     */
+    handlePackZip(row, index) {
+      this.$set(this.list[index], 'zipPacking', true)
+      downloadStatementdMaterial({ statement_id: row.statement_id })
+        .then((resp) => {
+          downloadFile({ url: resp.url })
+            .then(async(response) => {
+              downloadFileStream(baseName(resp.url), response)
+              this.$set(this.list[index], 'zipPacking', false)
+            })
+            .catch((_error) => {})
+        })
+        .catch((_error) => {
+          // this.$message.error('哎呀，打包出错啦')
+          this.$set(this.list[index], 'zipPacking', false)
+        })
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+@import "~@/styles/variables.scss";
 %flex-center {
   display: flex;
   justify-content: center;
@@ -1347,6 +1539,37 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+}
+.dialog-pact {
+  .dialog-form-item {
+    width: 400px;
+  }
+  .add-file-btn {
+    color: $themeColor;
+    &:hover {
+      opacity: 0.8;
+      cursor: pointer;
+    }
+  }
+  .file-box {
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .file-name {
+        flex: auto;
+        width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .el-button {
+        flex: none;
+        margin-left: 10px;
+        height: 30px;
+      }
+    }
   }
 }
 </style>
