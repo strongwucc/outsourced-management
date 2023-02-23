@@ -310,7 +310,7 @@
               </el-button>
               <el-button
                 v-permission="[3]"
-                :disabled="[4, 5].indexOf(detail.statement_status) < 0"
+                :disabled="[3, 4, 5].indexOf(detail.statement_status) < 0"
                 type="primary"
                 icon="el-icon-box"
                 size="mini"

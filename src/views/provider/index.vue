@@ -779,7 +779,7 @@ export default {
       })
     },
     resetPassword(row) {
-      this.tempPassword = Object.assign({}, this.tempPassword, { id: row.user_id, new_pass: '', confirm_pass: '' })
+      this.tempPassword = Object.assign({}, this.tempPassword, { id: row.id, new_pass: '', confirm_pass: '' })
       this.dialogPasswordVisible = true
       this.$nextTick(() => {
         this.$refs['passwordForm'].clearValidate()

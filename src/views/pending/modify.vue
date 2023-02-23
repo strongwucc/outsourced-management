@@ -301,6 +301,21 @@
                 align="center"
                 show-overflow-tooltip
               />
+              <el-table-column prop="task_image" label="缩略图" align="center">
+                <template slot-scope="scope">
+                  <el-image
+                    style="width: 50px; height: 50px"
+                    :src="scope.row.image_url"
+                  >
+                    <div slot="error" class="image-slot">
+                      <i
+                        class="el-icon-picture-outline"
+                        style="font-size: 50px"
+                      />
+                    </div>
+                  </el-image>
+                </template>
+              </el-table-column>
               <el-table-column
                 prop="task_name"
                 label="物件名称"
@@ -319,20 +334,24 @@
               </el-table-column>
               <el-table-column label="交付日期" width="200" align="center">
                 <template slot-scope="scope">
-                  <div class="modify-color">
+                  <div v-if="scope.row.deliver_old_date !== scope.row.deliver_new_date" class="modify-color">
                     <span>{{ scope.row.deliver_old_date }}</span>
                     <i class="el-icon-right" />
+                    <span>{{ scope.row.deliver_new_date }}</span>
+                  </div>
+                  <div v-else class="modify-color">
                     <span>{{ scope.row.deliver_new_date }}</span>
                   </div>
                 </template>
               </el-table-column>
               <el-table-column label="数量" align="center">
                 <template slot-scope="scope">
-                  <div class="modify-color">
+                  <div v-if="scope.row.old_nums !== scope.row.new_nums" class="modify-color">
                     <span>{{ scope.row.old_nums }}</span>
                     <i class="el-icon-right" />
                     <span>{{ scope.row.new_nums }}</span>
                   </div>
+                  <div v-else class="modify-color">{{ scope.row.new_nums }}</div>
                 </template>
               </el-table-column>
               <el-table-column label="单位" align="center">

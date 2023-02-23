@@ -344,7 +344,7 @@ export default {
         login_name: [
           { required: true, message: '请输入登录名', trigger: 'blur' }
         ],
-        // password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+        password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
         mobile: [{ validator: validateMobile, trigger: 'blur' }]
       }
     }
@@ -416,6 +416,7 @@ export default {
     handleCreate() {
       this.resetTemp()
       this.dialogStatus = 'create'
+      this.$set(this.rules.password[0], 'required', true)
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
@@ -459,6 +460,7 @@ export default {
     handleUpdate(row) {
       this.temp = JSON.parse(JSON.stringify(row))
       this.dialogStatus = 'update'
+      this.$set(this.rules.password[0], 'required', false)
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()

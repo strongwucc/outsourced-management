@@ -214,10 +214,10 @@
               :column="4"
               :label-style="{ 'font-weight': 'bold' }"
             >
-              <el-descriptions-item label="供应商名称">{{
+              <el-descriptions-item v-if="tempTaskDetail.supplier" label="供应商名称">{{
                 tempTaskDetail.supplier.name
               }}</el-descriptions-item>
-              <el-descriptions-item label="合同号">{{
+              <el-descriptions-item v-if="tempTaskDetail.supplier && tempTaskDetail.supplier.pact" label="合同号">{{
                 tempTaskDetail.supplier.pact.bn
               }}</el-descriptions-item>
             </el-descriptions>

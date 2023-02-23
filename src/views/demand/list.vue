@@ -908,7 +908,7 @@
                     type="primary"
                     size="mini"
                     plain
-                    @click="downLoadContract(file.name, file.url)"
+                    @click="downLoadContract(`需求附件-${tempDetail.name}`, file.url)"
                   >下载</el-button>
                 </div>
               </div>
@@ -947,7 +947,12 @@
               label="操作时间"
               align="center"
             />
-            <el-table-column prop="time" label="耗时" align="center" width="180" />
+            <el-table-column
+              prop="time"
+              label="耗时"
+              align="center"
+              width="180"
+            />
           </el-table>
         </el-tab-pane>
       </el-tabs>
@@ -1269,7 +1274,9 @@
                   class="task-image"
                 >
                 <i v-else class="el-icon-plus task-image-uploader-icon" />
-                <div slot="tip" class="el-upload__tip">只能上传jpg/png/jpeg文件，且不超过2M</div>
+                <div slot="tip" class="el-upload__tip">
+                  只能上传jpg/png/jpeg文件，且不超过2M
+                </div>
               </el-upload>
             </el-form-item>
           </el-col>
@@ -1518,12 +1525,14 @@
               :column="4"
               :label-style="{ 'font-weight': 'bold' }"
             >
-              <el-descriptions-item label="供应商名称">{{
-                tempTaskDetail.supplier.name
-              }}</el-descriptions-item>
-              <el-descriptions-item label="合同号">{{
-                tempTaskDetail.supplier.pact.bn
-              }}</el-descriptions-item>
+              <el-descriptions-item
+                v-if="tempTaskDetail.supplier"
+                label="供应商名称"
+              >{{ tempTaskDetail.supplier.name }}</el-descriptions-item>
+              <el-descriptions-item
+                v-if="tempTaskDetail.supplier.pact"
+                label="合同号"
+              >{{ tempTaskDetail.supplier.pact.bn }}</el-descriptions-item>
             </el-descriptions>
 
             <el-table :data="tempTaskDetail.supplier.contacts" border>
@@ -1715,7 +1724,12 @@
               label="操作时间"
               align="center"
             />
-            <el-table-column prop="time" label="耗时" align="center" width="180" />
+            <el-table-column
+              prop="time"
+              label="耗时"
+              align="center"
+              width="180"
+            />
           </el-table>
         </el-tab-pane>
       </el-tabs>
@@ -3859,7 +3873,10 @@ export default {
     downLoadContract(fileName, filePath) {
       downloadFile({ url: filePath })
         .then((response) => {
-          downloadFileStream(baseName(filePath), response)
+          const fullFileName = `${fileName}${filePath.substring(
+            filePath.lastIndexOf('.')
+          )}`
+          downloadFileStream(fullFileName, response)
         })
         .catch((error) => {})
     },
@@ -3871,7 +3888,8 @@ export default {
      * 导出
      */
     handleExportOrders() {
-      const { name, demand_id, category_name, tag, date_range } = this.listQuery
+      const { name, demand_id, category_name, tag, date_range } =
+        this.listQuery
       let filter = {
         name,
         demand_id,
@@ -3882,7 +3900,7 @@ export default {
       }
 
       const checked = []
-      this.list.forEach(item => {
+      this.list.forEach((item) => {
         if (item.checked) {
           checked.push(item.demand_id)
         }
@@ -3913,10 +3931,11 @@ export default {
       results
         .then((data) => {
           data.forEach((file, fileIndex) => {
-            downloadFileStream(
-              baseName(row.files[fileIndex].url),
-              file
-            )
+            const url = row.files[fileIndex].url
+            const fullFileName = `需求附件-${row.name}${url.substring(
+              url.lastIndexOf('.')
+            )}`
+            downloadFileStream(fullFileName, file)
           })
           this.$set(this.list[index], 'downloading', false)
         })

@@ -286,6 +286,7 @@
                 生成结算单
               </el-button>
               <el-button
+                v-if="detail.file_url"
                 v-permission="[1, 2]"
                 icon="el-icon-view"
                 type="primary"
@@ -294,6 +295,7 @@
                 @click="viewFileUrl()"
               >查看作品存放地址</el-button>
               <el-button
+                v-if="detail.files.length > 0"
                 v-permission="[1, 2]"
                 icon="el-icon-download"
                 type="primary"
@@ -1462,17 +1464,21 @@ export default {
      * 下载作品
      */
     handleDownloadWork(task, taskIndex) {
-      if (task.finished_product.length > 0) {
+      if (task.display_area.length > 0) {
         this.$set(this.detail.items[taskIndex], 'downloading', true)
-        const actions = task.finished_product.map((product) => {
+        const actions = task.display_area.map((product) => {
           return downloadFile({ url: product.url })
         })
         const results = Promise.all(actions)
         results
           .then((data) => {
             data.forEach((file, fileIndex) => {
+              const url = task.display_area[fileIndex].url
+              const fullFileName = `物件展示图-${task.task_id}${url.substring(
+                url.lastIndexOf('.')
+              )}`
               downloadFileStream(
-                baseName(task.finished_product[fileIndex].url),
+                fullFileName,
                 file
               )
             })

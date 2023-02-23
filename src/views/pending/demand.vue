@@ -405,6 +405,7 @@
                 type="primary"
                 size="mini"
                 plain
+                :loading="detail.taskDownloading"
                 @click="handleDownloadTask()"
               >下载明细</el-button>
               <el-button
@@ -414,6 +415,7 @@
                 type="primary"
                 size="mini"
                 plain
+                :loading="detail.taskDownloading"
                 @click="handleDownloadTask()"
               >下载明细</el-button>
               <el-button
@@ -935,7 +937,7 @@
               :content-style="{ 'align-items': 'center' }"
             >
               <div class="text-box" style="flex: none">
-                {{ selectedProcess.budget_dep.budget_used }}/{{
+                {{ selectedProcess.budget_dep.employ_budget }}/{{
                   selectedProcess.budget_dep.budget
                 }}
               </div>
@@ -958,13 +960,13 @@
                   :stroke-width="18"
                   :percentage="
                     Math.round(
-                      (selectedProcess.budget_dep.budget_used /
+                      (selectedProcess.budget_dep.employ_budget /
                         selectedProcess.budget_dep.budget) *
                         100
                     )
                   "
                   :status="
-                    selectedProcess.budget_dep.budget_used >
+                    selectedProcess.budget_dep.employ_budget >
                       selectedProcess.budget_dep.budget_warn
                       ? 'warning'
                       : 'success'
@@ -1829,7 +1831,8 @@ export default {
         pact_id: [
           { required: true, message: '请选择供应商合同', trigger: 'change' }
         ]
-      }
+      },
+      taskDownloading: false
     }
   },
   computed: {
@@ -3477,12 +3480,15 @@ export default {
      */
     handleDownloadTask() {
       if (this.detail.demand_id) {
+        this.detail = Object.assign({}, this.detail, { taskDownloading: true })
         exportTask(this.detail.demand_id)
           .then((response) => {
             downloadFileStream(`${this.detail.name}-${this.detail.demand_id}.xlsx`, response)
+            this.detail = Object.assign({}, this.detail, { taskDownloading: false })
           })
           .catch((error) => {
             console.log(error)
+            this.detail = Object.assign({}, this.detail, { taskDownloading: false })
           })
       }
     }
