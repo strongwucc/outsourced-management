@@ -327,6 +327,7 @@
                 icon="el-icon-date"
                 size="mini"
                 plain
+                style="margin-right: 80px"
                 @click.stop="handlePayRegister()"
               >
                 支付登记
@@ -340,17 +341,6 @@
                 @click.stop="handleUploadBill(false)"
               >
                 申请结算
-              </el-button>
-              <el-button
-                v-if="[0, 1, 2, 3].indexOf(detail.statement_status) >= 0"
-                v-permission="[3]"
-                type="primary"
-                icon="el-icon-remove"
-                size="mini"
-                plain
-                @click.stop="handleTerminate()"
-              >
-                终止
               </el-button>
               <el-button
                 v-if="[0, 3].indexOf(detail.statement_status) >= 0"
@@ -406,6 +396,18 @@
                 @click.stop="handleVerify(false, false)"
               >
                 驳回结算单
+              </el-button>
+              <el-button
+                v-if="[5, 6].indexOf(detail.statement_status) < 0"
+                v-permission="[3]"
+                type="primary"
+                icon="el-icon-remove"
+                size="mini"
+                plain
+                style="margin-left: 80px;"
+                @click.stop="handleTerminate()"
+              >
+                终止
               </el-button>
             </div>
           </div>

@@ -1346,7 +1346,7 @@ export default {
             }
             taskCheckeds.push({
               task_id: taskItem.task_id,
-              file: taskItem.finished_product
+              file: taskItem.display_area
                 .map((product) => {
                   return product.file_id
                 })
@@ -1391,7 +1391,7 @@ export default {
           }
           taskCheckeds.push({
             task_id: taskItem.task_id,
-            file: taskItem.finished_product
+            file: taskItem.display_area
               .map((product) => {
                 return product.file_id
               })

@@ -131,6 +131,9 @@
                   <el-descriptions-item label="物件类别">{{
                     tempTaskDetail.category | categoryText
                   }}</el-descriptions-item>
+                  <el-descriptions-item v-if="tempTaskDetail.remark" label="备注">{{
+                    tempTaskDetail.remark
+                  }}</el-descriptions-item>
                 </el-descriptions>
               </el-col>
               <el-col :span="12">

@@ -1394,6 +1394,9 @@
               <el-descriptions-item label="需求品类">{{
                 tempTaskDetail.category | categoryText
               }}</el-descriptions-item>
+              <el-descriptions-item v-if="tempTaskDetail.remark" label="备注">{{
+                tempTaskDetail.category | categoryText
+              }}</el-descriptions-item>
               <el-descriptions-item
                 label="需求附件"
                 span="4"

@@ -199,7 +199,12 @@
               :key="item.id"
               :label="item.name"
               :value="item.id"
-            />
+            >
+              <span style="float: left">{{ item.name }}</span>
+              <span v-if="item.tag === 0" style="float: right">发起部门</span>
+              <span v-else-if="item.tag === 1" style="float: right">核算部门</span>
+              <span v-else-if="item.tag === 2" style="float: right">预算使用部门</span>
+            </el-option>
           </el-select>
         </el-form-item>
 
@@ -345,7 +350,8 @@ export default {
           { required: true, message: '请输入登录名', trigger: 'blur' }
         ],
         password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-        mobile: [{ validator: validateMobile, trigger: 'blur' }]
+        mobile: [{ validator: validateMobile, trigger: 'blur' }],
+        email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }]
       }
     }
   },

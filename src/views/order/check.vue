@@ -351,7 +351,7 @@
           </span>
         </template>
       </el-table-column>
-      <el-table-column v-permission="[1, 2, 3, 4, 5, 'administrator']" width="250" label="作品存放地址及附件" align="center" show-overflow-tooltip>
+      <el-table-column v-if="$store.getters.roles.indexOf(0) < 0" v-permission="[1, 2, 3, 4, 5, 'administrator']" width="250" label="作品存放地址及附件" align="center" show-overflow-tooltip>
         <template slot-scope="{ row, $index }">
           <!-- <span v-if="row.file_url">{{ row.file_url }}</span>
           <span v-else-if="row.files && row.files.length > 0">{{ row.files[0].url }}</span> -->
