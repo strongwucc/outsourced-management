@@ -696,6 +696,9 @@ export default {
             type: 'success',
             duration: 2000
           })
+          if (row.cat_path < 3) {
+            this.getParents()
+          }
           if (row.cat_path === 1) {
             this.list.splice(index, 1)
             return true
@@ -759,9 +762,6 @@ export default {
               updateSecondIndex
             ].children.splice(updateThirdIndex, 1)
             return true
-          }
-          if (row.cat_path < 3) {
-            this.getParents()
           }
         })
         .catch((error) => {})
