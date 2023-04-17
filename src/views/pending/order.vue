@@ -100,9 +100,7 @@
                     'margin-bottom': '20px',
                     'font-weight': 'bold',
                   }"
-                >{{
-                  detail.demand.introduce
-                }}</el-descriptions-item>
+                >{{ detail.demand.introduce }}</el-descriptions-item>
 
                 <el-descriptions-item label="项目名称">{{
                   detail.demand.project
@@ -631,7 +629,7 @@
 
             <el-form-item label="单位数量:" prop="work_num">
               <el-input
-                v-model.number="tempTask.work_num"
+                v-model="tempTask.work_num"
                 placeholder="请输入单位数量"
                 class="dialog-form-item"
               />
@@ -1054,8 +1052,17 @@ export default {
         work_num: [
           {
             required: true,
-            type: 'integer',
             message: '请输入单位数量',
+            trigger: 'blur'
+          },
+          {
+            validator: (rule, value, callback) => {
+              if (value > 0) {
+                callback()
+              } else {
+                callback(new Error('单位数量必须大于零'))
+              }
+            },
             trigger: 'blur'
           }
         ],
@@ -1225,7 +1232,9 @@ export default {
       }).catch((_error) => {})
 
       const { data } = detailData
-      data.tasks = data.tasks.filter(task => [0, 4].indexOf(task.task_status) >= 0)
+      data.tasks = data.tasks.filter(
+        (task) => [0, 4].indexOf(task.task_status) >= 0
+      )
 
       this.detailLoading = false
       this.detailLoaded = true
