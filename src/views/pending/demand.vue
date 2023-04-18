@@ -1771,7 +1771,7 @@ export default {
         work_num: [
           {
             required: true,
-            message: '请输入单位数量1',
+            message: '请输入单位数量',
             trigger: 'blur'
           },
           {
