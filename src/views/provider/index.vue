@@ -264,7 +264,7 @@
               </template>
             </el-table-column>
 
-            <el-table-column label="单价" align="center">
+            <el-table-column label="单价最大值" align="center">
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
@@ -273,7 +273,7 @@
                 >
                   <el-input
                     v-model="scope.row.price"
-                    placeholder="请输入单价"
+                    placeholder="请输入单价最大值"
                   />
                 </el-form-item>
               </template>

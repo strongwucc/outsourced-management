@@ -424,6 +424,7 @@
                 type="primary"
                 size="mini"
                 plain
+                :loading="addTaskLoading"
                 @click.stop="handleCreateTask()"
               >
                 新增物件
@@ -1340,6 +1341,14 @@
               />
             </el-form-item>
 
+            <el-form-item label="单价:" prop="price">
+              <el-input
+                v-model="tempTask.price"
+                :placeholder="`请输入单价${supplierCategoryPrice > 0 ? '，不能超过'+supplierCategoryPrice : ''}`"
+                class="dialog-form-item"
+              />
+            </el-form-item>
+
             <el-form-item label="完成日期:" prop="deliver_date">
               <el-date-picker
                 v-model="tempTask.deliver_date"
@@ -1596,7 +1605,7 @@ import TaskDetail from '@/components/TaskDetail'
 import ResizeBox from '@/components/ResizeBox'
 import { downloadFile } from '@/api/system/file'
 import { baseName, downloadFileStream } from '@/utils/index'
-import { fetchAllProvider } from '@/api/provider/index'
+import { fetchAllProvider, queryCategoryPrice } from '@/api/provider/index'
 import waves from '@/directive/waves'
 const tagList = [
   { id: 0, name: '正式包' },
@@ -1741,6 +1750,8 @@ export default {
       verifyStatus: false,
       dialogRejectTaskVisible: false,
       dialogTaskVisible: false,
+      addTaskLoading: false,
+      supplierCategoryPrice: 0,
       tempTaskCategory: {
         category_id: '',
         category_name: '',
@@ -1754,6 +1765,7 @@ export default {
         task_image_url: '',
         work_unit: '',
         work_num: '',
+        price: '',
         deliver_date: '',
         remark: '',
         extend: []
@@ -1784,6 +1796,9 @@ export default {
             },
             trigger: 'blur'
           }
+        ],
+        price: [
+          { required: true, message: '请输入单价', trigger: 'blur' }
         ],
         deliver_date: [
           { required: true, message: '请选择日期', trigger: 'blur' }
@@ -2703,7 +2718,14 @@ export default {
     /**
      * 新增物件弹窗
      */
-    handleCreateTask() {
+    async handleCreateTask() {
+      this.addTaskLoading = true
+      const supplier_id = this.detail.supplier_id || 0
+      const cat_id = this.detail.category.cat_id
+      const priceData = await queryCategoryPrice({ supplier_id, cat_id }).catch(_error => {})
+      if (priceData) {
+        this.supplierCategoryPrice = parseFloat(priceData.data.max_price)
+      }
       this.tempTaskCategory = this.detail.category
       this.resetTaskTemp()
       this.tempTask = Object.assign({}, this.tempTask, {
@@ -2718,6 +2740,7 @@ export default {
         })
       })
       this.dialogStatus = 'create_task'
+      this.addTaskLoading = false
       this.dialogTaskVisible = true
       this.$nextTick(() => {
         this.$refs['taskDataForm'].clearValidate()
@@ -2865,7 +2888,8 @@ export default {
 
       this.tempTaskCategory = this.detail.category
       this.tempTask = Object.assign({}, task, {
-        extend
+        extend,
+        price: task.work_price
       })
       this.dialogStatus = 'update_task'
       this.dialogTaskVisible = true
@@ -2902,7 +2926,8 @@ export default {
 
       this.tempTaskCategory = this.detail.category
       this.tempTask = Object.assign({}, task, {
-        extend
+        extend,
+        price: task.work_price
       })
       this.dialogStatus = 'create_task'
       this.dialogTaskVisible = true

@@ -346,6 +346,16 @@
                 v-if="[0, 3].indexOf(detail.statement_status) >= 0"
                 v-permission="[0]"
                 type="primary"
+                icon="el-icon-document"
+                size="mini"
+                @click.stop="handleRejectBill(false)"
+              >
+                驳回结算单
+              </el-button>
+              <el-button
+                v-if="[0, 3].indexOf(detail.statement_status) >= 0"
+                v-permission="[0]"
+                type="primary"
                 icon="el-icon-download"
                 size="mini"
                 @click.stop="handleDownloadBillDoc(false)"
@@ -1033,7 +1043,8 @@ import {
   createExcel,
   fillPayDate,
   applyOfflineDeal,
-  statementTerminate
+  statementTerminate,
+  rejectStatementBySupplier
 } from '@/api/order/index'
 import { downloadFile } from '@/api/system/file'
 import {
@@ -1863,6 +1874,18 @@ export default {
       statementTerminate({ statement_id: this.detail.statement_id })
         .then(async() => {
           this.$message.success('终止成功')
+          await this.$store.dispatch('user/getPending')
+          this.getList(false)
+        })
+        .catch((_error) => {})
+    },
+    /**
+     * 驳回结算单
+     */
+    handleRejectBill() {
+      rejectStatementBySupplier({ statement_id: this.detail.statement_id })
+        .then(async() => {
+          this.$message.success('驳回成功')
           await this.$store.dispatch('user/getPending')
           this.getList(false)
         })

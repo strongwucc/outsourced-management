@@ -243,6 +243,7 @@
                 icon="el-icon-document-add"
                 size="mini"
                 plain
+                :loading="addTaskLoading"
                 @click.stop="handleCreateTask()"
               >
                 新增物件
@@ -635,6 +636,14 @@
               />
             </el-form-item>
 
+            <el-form-item label="单价:" prop="price">
+              <el-input
+                v-model="tempTask.price"
+                :placeholder="`请输入单价${supplierCategoryPrice > 0 ? '，不能超过'+supplierCategoryPrice : ''}`"
+                class="dialog-form-item"
+              />
+            </el-form-item>
+
             <el-form-item label="完成日期:" prop="deliver_date">
               <el-date-picker
                 v-model="tempTask.deliver_date"
@@ -910,6 +919,7 @@ import {
 } from '@/api/order/index'
 import { createTask } from '@/api/demand/task'
 import { downloadFile } from '@/api/system/file'
+import { queryCategoryPrice } from '@/api/provider/index'
 import { downloadFileStream, baseName } from '@/utils/index'
 
 import waves from '@/directive/waves'
@@ -1020,6 +1030,8 @@ export default {
       },
       dialogStatus: '',
       dialogTaskVisible: false,
+      addTaskLoading: false,
+      supplierCategoryPrice: 0,
       tempTaskCategory: {
         category_id: '',
         category_name: '',
@@ -1034,6 +1046,7 @@ export default {
         task_image_url: '',
         work_unit: '',
         work_num: '',
+        price: '',
         deliver_date: '',
         remark: '',
         extend: [],
@@ -1065,6 +1078,9 @@ export default {
             },
             trigger: 'blur'
           }
+        ],
+        price: [
+          { required: true, message: '请输入单价', trigger: 'blur' }
         ],
         deliver_date: [
           { required: true, message: '请选择日期', trigger: 'blur' }
@@ -1635,7 +1651,14 @@ export default {
     /**
      * 新增物件弹窗
      */
-    handleCreateTask() {
+    async handleCreateTask() {
+      this.addTaskLoading = true
+      const supplier_id = this.detail.supplier_id || 0
+      const cat_id = this.detail.demand.cat_id
+      const priceData = await queryCategoryPrice({ supplier_id, cat_id }).catch(_error => {})
+      if (priceData) {
+        this.supplierCategoryPrice = parseFloat(priceData.data.max_price)
+      }
       this.tempTaskCategory = this.detail.demand.category
       this.resetTaskTemp()
       this.tempTask = Object.assign({}, this.tempTask, {
@@ -1651,6 +1674,7 @@ export default {
         })
       })
       this.dialogStatus = 'create_task'
+      this.addTaskLoading = false
       this.dialogTaskVisible = true
       this.$nextTick(() => {
         this.$refs['taskDataForm'].clearValidate()
