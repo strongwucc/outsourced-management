@@ -362,8 +362,13 @@
               <el-table-column prop="price" label="单价" align="center" />
               <el-table-column label="总价" align="center" min-width="200">
                 <template slot-scope="scope">
+                  <span
+                    v-if="scope.row.pay_amount > 0"
+                  >
+                    {{ scope.row.pay_amount }} {{ scope.row.currency }}
+                  </span>
                   <div
-                    v-if="scope.row.new_amount !== scope.row.old_amount"
+                    v-else-if="scope.row.new_amount !== scope.row.old_amount"
                     class="modify-color"
                   >
                     <span>{{ scope.row.old_amount }}</span>
@@ -373,6 +378,7 @@
                   <span v-else>{{ scope.row.old_amount }}</span>
                 </template>
               </el-table-column>
+
             </el-table>
             <div v-permission="[1]" class="tongji">
               <div class="tongji-item">

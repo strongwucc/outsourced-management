@@ -401,7 +401,16 @@
               <el-table-column prop="work_unit" label="单位" align="center" />
               <el-table-column prop="work_num" label="数量" align="center" />
               <el-table-column prop="work_price" label="单价" align="center" />
-              <el-table-column prop="work_amount" label="总价" align="center" />
+              <el-table-column label="总价" align="center">
+                <template slot-scope="scope">
+                  <span
+                    v-if="scope.row.pay_amount > 0"
+                  >
+                    {{ scope.row.pay_amount }} {{ scope.row.currency }}
+                  </span>
+                  <span v-else>{{ scope.row.work_amount }}</span>
+                </template>
+              </el-table-column>
               <el-table-column
                 label="停留时间"
                 align="center"

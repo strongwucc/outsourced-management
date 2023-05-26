@@ -658,7 +658,16 @@
               <el-table-column prop="work_num" label="数量" align="center" />
               <el-table-column prop="work_unit" label="单位" align="center" />
               <el-table-column prop="work_price" label="单价" align="center" />
-              <el-table-column prop="work_amount" label="总价" align="center" />
+              <el-table-column label="总价" align="center">
+                <template slot-scope="scope">
+                  <span
+                    v-if="scope.row.pay_amount > 0"
+                  >
+                    {{ scope.row.pay_amount }} {{ scope.row.currency }}
+                  </span>
+                  <span v-else>{{ scope.row.work_amount }}</span>
+                </template>
+              </el-table-column>
               <el-table-column label="物件状态" align="center">
                 <template slot-scope="scope">
                   <span
@@ -1349,6 +1358,40 @@
               />
             </el-form-item>
 
+            <el-form-item label="支付货币:" prop="currency">
+              <el-select
+                v-model="tempTask.currency"
+                class="dialog-form-item"
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="(item, itemIndex) in [
+                    '人名币',
+                    '美元',
+                    '英镑',
+                    '澳元',
+                    '日元',
+                    '欧元 ',
+                    '加元',
+                    '新元',
+                    '纽元',
+                    '瑞郎',
+                  ]"
+                  :key="itemIndex"
+                  :label="item"
+                  :value="item"
+                />
+              </el-select>
+            </el-form-item>
+
+            <el-form-item v-show="tempTask.currency !== '人民币'" label="支付金额:" prop="pay_amount">
+              <el-input
+                v-model="tempTask.pay_amount"
+                placeholder="请输入支付金额"
+                class="dialog-form-item"
+              />
+            </el-form-item>
+
             <el-form-item label="完成日期:" prop="deliver_date">
               <el-date-picker
                 v-model="tempTask.deliver_date"
@@ -1766,6 +1809,8 @@ export default {
         work_unit: '',
         work_num: '',
         price: '',
+        currency: '人民币',
+        pay_amount: '',
         deliver_date: '',
         remark: '',
         extend: []
@@ -2710,6 +2755,9 @@ export default {
         task_image_url: '',
         work_unit: '',
         work_num: '',
+        price: '',
+        currency: '人民币',
+        pay_amount: '',
         deliver_date: '',
         remark: '',
         extend: []
