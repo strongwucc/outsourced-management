@@ -363,6 +363,7 @@
               <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
+                    v-if="scope.row.display_area.length > 0 || scope.row.image_url"
                     style="width: 50px; height: 50px"
                     :src="scope.row.display_area.length > 0 ? scope.row.display_area[0].url : scope.row.image_url"
                   >
@@ -373,6 +374,7 @@
                       />
                     </div>
                   </el-image>
+                  <span v-else>-</span>
                 </template>
               </el-table-column>
               <el-table-column

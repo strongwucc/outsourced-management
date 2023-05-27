@@ -154,6 +154,14 @@
 
         <el-form-item
           v-if="temp.cat_path === 3"
+          label="是否需要缩略图:"
+          prop="thumbnail"
+        >
+          <el-switch v-model="temp.thumbnail" />
+        </el-form-item>
+
+        <el-form-item
+          v-if="temp.cat_path === 3"
           label="关联属性:"
           prop="property_json"
         >
@@ -368,6 +376,7 @@ export default {
         parent_id: '',
         cat_path: '',
         category_name: '',
+        thumbnail: true,
         property_json: '[]',
         property_array: []
       },
@@ -607,6 +616,7 @@ export default {
         parent_id,
         cat_path,
         category_name: '',
+        thumbnail: true,
         property_json: '[]',
         property_array: []
       }

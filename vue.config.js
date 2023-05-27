@@ -48,7 +48,7 @@ module.exports = {
       //   changeOrigin: true,
       // },
       '/': {
-        target: 'http://pms-test.madainfo.cn', // 目标服务器
+        target: 'http://192.168.1.44:81', // 目标服务器
         changeOrigin: true
       }
       // '/': {
@@ -56,7 +56,7 @@ module.exports = {
       //   changeOrigin: true
       // }
     },
-    host: 'localhost'
+    host: '192.168.1.73'
   },
   configureWebpack: {
     // provide the app's title in webpack's name field, so that

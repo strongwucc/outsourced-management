@@ -170,9 +170,7 @@
                     'margin-bottom': '20px',
                     'font-weight': 'bold',
                   }"
-                >{{
-                  detail.introduce
-                }}</el-descriptions-item>
+                >{{ detail.introduce }}</el-descriptions-item>
 
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
@@ -193,8 +191,14 @@
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="经费使用"
                 >
-                  {{ detail.flow && detail.flow.budget_dep ? detail.flow.budget_dep.employ_budget : 0 }}/{{
-                    detail.flow && detail.flow.budget_dep ? detail.flow.budget_dep.budget : 0
+                  {{
+                    detail.flow && detail.flow.budget_dep
+                      ? detail.flow.budget_dep.employ_budget
+                      : 0
+                  }}/{{
+                    detail.flow && detail.flow.budget_dep
+                      ? detail.flow.budget_dep.budget
+                      : 0
                   }}
                 </el-descriptions-item>
 
@@ -261,9 +265,7 @@
                   <template v-if="scope.row.nums > 0">
                     {{ scope.row.nums }}
                   </template>
-                  <template v-else>
-                    --
-                  </template>
+                  <template v-else> -- </template>
                 </template>
               </el-table-column>
               <el-table-column label="工作总量" align="center" width="80">
@@ -271,9 +273,7 @@
                   <template v-if="scope.row.work_num > 0">
                     {{ scope.row.work_num }}
                   </template>
-                  <template v-else>
-                    --
-                  </template>
+                  <template v-else> -- </template>
                 </template>
               </el-table-column>
               <el-table-column label="总金额" align="center" width="80">
@@ -281,9 +281,7 @@
                   <template v-if="scope.row.work_amount > 0">
                     {{ scope.row.work_amount }}
                   </template>
-                  <template v-else>
-                    --
-                  </template>
+                  <template v-else> -- </template>
                 </template>
               </el-table-column>
               <el-table-column label="停留时间" align="center" width="100">
@@ -440,7 +438,7 @@
                 导入物件
               </el-button>
               <el-button
-                v-if="([0, 1, 2].indexOf(detail.status) < 0)"
+                v-if="[0, 1, 2].indexOf(detail.status) < 0"
                 v-permission="[3]"
                 icon="el-icon-remove"
                 type="primary"
@@ -477,7 +475,7 @@
                 >上传附件</el-button>
               </el-upload>
               <el-button
-                v-if="([4, 6].indexOf(detail.status) >= 0)"
+                v-if="[4, 6].indexOf(detail.status) >= 0"
                 v-permission="[0]"
                 icon="el-icon-remove"
                 type="primary"
@@ -630,6 +628,7 @@
               <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
+                    v-if="scope.row.task_image_url"
                     style="width: 50px; height: 50px"
                     :src="scope.row.task_image_url"
                   >
@@ -640,6 +639,7 @@
                       />
                     </div>
                   </el-image>
+                  <span v-else>-</span>
                 </template>
               </el-table-column>
               <el-table-column
@@ -660,9 +660,7 @@
               <el-table-column prop="work_price" label="单价" align="center" />
               <el-table-column label="总价" align="center">
                 <template slot-scope="scope">
-                  <span
-                    v-if="scope.row.pay_amount > 0"
-                  >
+                  <span v-if="scope.row.pay_amount > 0">
                     {{ scope.row.pay_amount }} {{ scope.row.currency }}
                   </span>
                   <span v-else>{{ scope.row.work_amount }}</span>
@@ -1222,7 +1220,9 @@
             />
           </el-select>
         </el-form-item>
-        <div class="notice" style="color: red;">备注：仅可选择配置了有效合同的供应商</div>
+        <div class="notice" style="color: red">
+          备注：仅可选择配置了有效合同的供应商
+        </div>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button size="mini" @click="dialogProviderVisible = false">
@@ -1269,7 +1269,8 @@
               <div class="pact-box">
                 <div class="name">{{ item.remark }}</div>
                 <div class="time">
-                  {{ item.period_start | dateFormat }} - {{ item.period_end | dateFormat }}
+                  {{ item.period_start | dateFormat }} -
+                  {{ item.period_end | dateFormat }}
                 </div>
               </div>
             </el-option>
@@ -1353,7 +1354,11 @@
             <el-form-item label="单价:" prop="price">
               <el-input
                 v-model="tempTask.price"
-                :placeholder="`请输入单价${supplierCategoryPrice > 0 ? '，不能超过'+supplierCategoryPrice : ''}`"
+                :placeholder="`请输入单价${
+                  supplierCategoryPrice > 0
+                    ? '，不能超过' + supplierCategoryPrice
+                    : ''
+                }`"
                 class="dialog-form-item"
               />
             </el-form-item>
@@ -1384,7 +1389,11 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item v-show="tempTask.currency !== '人民币'" label="支付金额:" prop="pay_amount">
+            <el-form-item
+              v-show="tempTask.currency !== '人民币'"
+              label="支付金额:"
+              prop="pay_amount"
+            >
               <el-input
                 v-model="tempTask.pay_amount"
                 placeholder="请输入支付金额"
@@ -1422,14 +1431,14 @@
                 property.type === 1
                   ? [
                     {
-                      required: true,
+                      required: false,
                       message: `请选择${property.name}`,
                       trigger: 'change',
                     },
                   ]
                   : [
                     {
-                      required: true,
+                      required: false,
                       message: `请输入${property.name}`,
                       trigger: 'blur',
                     },
@@ -1459,28 +1468,30 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item>
-              <div slot="label" class="form-title is-required">缩略图</div>
-            </el-form-item>
-            <el-form-item prop="task_image" label-width="0">
-              <el-upload
-                class="task-image-uploader"
-                :action="`${$baseUrl}/api/tools/upfile`"
-                :show-file-list="false"
-                :on-success="handleTaskImageSuccess"
-                :on-change="handleTaskImageChange"
-              >
-                <img
-                  v-if="tempTask.task_image_url"
-                  :src="tempTask.task_image_url"
-                  class="task-image"
+            <template v-if="tempTaskCategory.thumbnail === 1">
+              <el-form-item>
+                <div slot="label" class="form-title is-required">缩略图</div>
+              </el-form-item>
+              <el-form-item prop="task_image" label-width="0">
+                <el-upload
+                  class="task-image-uploader"
+                  :action="`${$baseUrl}/api/tools/upfile`"
+                  :show-file-list="false"
+                  :on-success="handleTaskImageSuccess"
+                  :on-change="handleTaskImageChange"
                 >
-                <i v-else class="el-icon-plus task-image-uploader-icon" />
-                <div slot="tip" class="el-upload__tip">
-                  只能上传jpg/png/jpeg文件，且不超过2M
-                </div>
-              </el-upload>
-            </el-form-item>
+                  <img
+                    v-if="tempTask.task_image_url"
+                    :src="tempTask.task_image_url"
+                    class="task-image"
+                  >
+                  <i v-else class="el-icon-plus task-image-uploader-icon" />
+                  <div slot="tip" class="el-upload__tip">
+                    只能上传jpg/png/jpeg文件，且不超过2M
+                  </div>
+                </el-upload>
+              </el-form-item>
+            </template>
           </el-col>
         </el-row>
       </el-form>
@@ -1842,9 +1853,7 @@ export default {
             trigger: 'blur'
           }
         ],
-        price: [
-          { required: true, message: '请输入单价', trigger: 'blur' }
-        ],
+        price: [{ required: true, message: '请输入单价', trigger: 'blur' }],
         deliver_date: [
           { required: true, message: '请选择日期', trigger: 'blur' }
         ],
@@ -2770,7 +2779,9 @@ export default {
       this.addTaskLoading = true
       const supplier_id = this.detail.supplier_id || 0
       const cat_id = this.detail.category.cat_id
-      const priceData = await queryCategoryPrice({ supplier_id, cat_id }).catch(_error => {})
+      const priceData = await queryCategoryPrice({ supplier_id, cat_id }).catch(
+        (_error) => {}
+      )
       if (priceData) {
         this.supplierCategoryPrice = parseFloat(priceData.data.max_price)
       }
@@ -3253,9 +3264,11 @@ export default {
         this.orderCreating = true
         const sub_id = this.detail.flow ? this.detail.flow.sub_id : 0
         const supplier_id = this.detail.supplier_id || 0
-        const pactData = await fetchAllPact({ status: 1, sub_id, supplier_id }).catch(
-          (_error) => {}
-        )
+        const pactData = await fetchAllPact({
+          status: 1,
+          sub_id,
+          supplier_id
+        }).catch((_error) => {})
         this.pacts = pactData.data || []
         this.orderCreating = false
       }
@@ -3565,12 +3578,19 @@ export default {
         this.detail = Object.assign({}, this.detail, { taskDownloading: true })
         exportTask(this.detail.demand_id)
           .then((response) => {
-            downloadFileStream(`${this.detail.name}-${this.detail.demand_id}.xlsx`, response)
-            this.detail = Object.assign({}, this.detail, { taskDownloading: false })
+            downloadFileStream(
+              `${this.detail.name}-${this.detail.demand_id}.xlsx`,
+              response
+            )
+            this.detail = Object.assign({}, this.detail, {
+              taskDownloading: false
+            })
           })
           .catch((error) => {
             console.log(error)
-            this.detail = Object.assign({}, this.detail, { taskDownloading: false })
+            this.detail = Object.assign({}, this.detail, {
+              taskDownloading: false
+            })
           })
       }
     }

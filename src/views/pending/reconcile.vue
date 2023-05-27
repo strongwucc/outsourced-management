@@ -449,13 +449,22 @@
                 >
                   {{ tempBill.invoice_detail }}
                 </el-descriptions-item>
-                <el-descriptions-item label="发票图片" span="4">
-                  <el-image
+                <el-descriptions-item label="发票文件" span="4">
+                  <!-- <el-image
                     v-if="tempBill.invoice_file_url"
                     style="cursor: pointer; width: 640px; height: 420px;"
                     :src="tempBill.invoice_file_url"
                     @click.stop="showInvoiceImage"
-                  />
+                  /> -->
+                  <div style="display: flex;">
+                    <el-link class="el-button el-button--primary el-button--mini is-plain" :href="tempBill.invoice_file_url" target="_blank">查看</el-link>
+                    <el-button
+                      type="primary"
+                      size="mini"
+                      plain
+                      @click="downLoadContract('发票-'+tempBill.invoice_detail+'.pdf', tempBill.invoice_file_url)"
+                    >下载</el-button>
+                  </div>
                 </el-descriptions-item>
                 <!-- <el-descriptions-item label="序号">{{
                   tempBill.invoice_serial
@@ -540,6 +549,7 @@
               <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
+                    v-if="scope.row.image"
                     style="width: 50px; height: 50px"
                     :src="scope.row.image"
                   >
@@ -550,6 +560,7 @@
                       />
                     </div>
                   </el-image>
+                  <span v-else>-</span>
                 </template>
               </el-table-column>
               <el-table-column
@@ -816,17 +827,22 @@
           <el-upload
             class="bill-image-uploader"
             :action="`${$baseUrl}/api/tools/upfile`"
-            :show-file-list="false"
+            :file-list="invoiceFileList"
             :on-success="handleInvoiceImageSuccess"
-            :on-change="handleInvoiceImageChange"
+            :on-remove="handleInvoiceImageRemove"
+            accept=".pdf"
           >
-            <img
+            <el-button size="mini" type="primary">上传发票</el-button>
+            <!-- <img
               v-if="tempBill.invoice_file_url"
               :src="tempBill.invoice_file_url"
               class="bill-image"
             >
-            <i v-else class="el-icon-plus bill-image-uploader-icon" />
+            <i v-else class="el-icon-plus bill-image-uploader-icon" /> -->
           </el-upload>
+          <div class="notice" style="color: red;font-size: 12px;">
+            注：请上传PDF文件
+          </div>
         </el-form-item>
         <!-- <el-form-item label="序号:" prop="invoice_serial">
           <el-input
@@ -1189,10 +1205,11 @@ export default {
         bill_file: ''
       },
       reconcileFileList: [],
+      invoiceFileList: [],
       dialogBillVisible: false,
       billRules: {
         invoice_file: [
-          { required: true, message: '请添加发票图片', trigger: 'blur' }
+          { required: true, message: '请添加发票文件', trigger: 'blur' }
         ],
         // invoice_serial: [
         //   { required: true, message: '请输入序号', trigger: 'blur' }
@@ -1622,19 +1639,28 @@ export default {
     /**
      * 上传发票图片成功回调
      */
-    handleInvoiceImageSuccess(response, file) {
-      this.handleInvoiceImageChange(file)
+    handleInvoiceImageSuccess(response, file, fileList) {
+      this.handleInvoiceImageChange(file, fileList)
     },
     /**
      * 上传发票图片变化回调
      */
-    handleInvoiceImageChange(file) {
-      if (file.response) {
-        this.tempBill = Object.assign({}, this.tempBill, {
-          invoice_file: file.response.data.file_id,
-          invoice_file_url: file.response.data.url
-        })
-      }
+    handleInvoiceImageChange(file, fileList) {
+      this.invoiceFileList = [file]
+      this.tempBill = Object.assign({}, this.tempBill, {
+        invoice_file: file.response.data.file_id,
+        invoice_file_url: file.response.data.url
+      })
+    },
+    /**
+     * 上传发票图片变化回调
+     */
+    handleInvoiceImageRemove(file, fileList) {
+      this.invoiceFileList = []
+      this.tempBill = Object.assign({}, this.tempBill, {
+        invoice_file: '',
+        invoice_file_url: ''
+      })
     },
     /**
      * 上传发票

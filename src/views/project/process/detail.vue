@@ -282,7 +282,7 @@
         </div>
       </el-form-item>
 
-      <el-form-item label="物件审核（项目组）:" prop="wj_verify_json">
+      <el-form-item label="物件审核（项目组/项目组负责人）:" prop="wj_verify_json">
         <div class="wj-verify-box json-normal-box">
           <div
             v-for="(item, itemIndex) in detail.wj_verify_json"
@@ -1072,7 +1072,7 @@ export default {
         if (member.group && [3].indexOf(member.group.type) >= 0) {
           this.filterAssignSupplier.push(member)
         }
-        if (member.group && member.group.type === 1) {
+        if (member.group && [1, 2].indexOf(member.group.type) >= 0) {
           this.filterWjVerify.push(member)
         }
         if (member.group && member.group.type === 3) {
