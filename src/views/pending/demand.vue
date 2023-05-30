@@ -191,6 +191,7 @@
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="经费使用"
                 >
+                  <span style="margin-right: 10px;">%</span>
                   {{
                     detail.flow && detail.flow.budget_dep
                       ? detail.flow.budget_dep.employ_budget
@@ -1067,6 +1068,7 @@
               clearable
               placeholder="非必填"
               class="dialog-form-item"
+              @change="intentProviderChange"
             >
               <el-option
                 v-for="item in providers"
@@ -1077,6 +1079,26 @@
             </el-select>
             <div class="secret-notice">仅内部可见</div>
           </div>
+        </el-form-item>
+
+        <el-form-item v-show="temp.supplier !== ''" label="选择理由:" prop="supplier_reason" class="custom-unrequired">
+          <div class="has-secret-notice">
+            <el-select
+              v-model="temp.supplier_reason"
+              clearable
+              placeholder="请选择理由"
+              class="dialog-form-item"
+            >
+              <el-option
+                v-for="item in intentProviderReasons"
+                :key="item.id"
+                :label="item.content"
+                :value="item.content"
+              />
+            </el-select>
+            <div class="secret-notice">仅内部可见</div>
+          </div>
+
         </el-form-item>
 
         <el-form-item label="备注说明:" prop="remark" class="custom-unrequired">
@@ -1652,7 +1674,7 @@ import {
   fetchProcessCategory,
   fetchProcessVerifyMember
 } from '@/api/project/process'
-import { fetchReasonList } from '@/api/system/reason'
+import { fetchReasonList, fetchIntentReasonList } from '@/api/system/reason'
 import { fetchAllPact } from '@/api/provider/contract'
 import permission from '@/directive/permission/index.js' // 权限判断指令
 import TaskDetail from '@/components/TaskDetail'
@@ -1728,6 +1750,13 @@ export default {
     }
   },
   data() {
+    const validateReason = (rule, value, callback) => {
+      if (this.temp.supplier !== '' && !value) {
+        callback(new Error('请选择理由'))
+      } else {
+        callback()
+      }
+    }
     return {
       listQuery: {
         page: 1,
@@ -1741,6 +1770,7 @@ export default {
       multipleSelection: [],
       dialogStatus: '',
       dialogFormVisible: false,
+      intentProviderReasons: [],
       temp: {
         id: undefined,
         process_id: '',
@@ -1751,6 +1781,7 @@ export default {
         cat_id: '',
         file: '',
         supplier: '',
+        supplier_reason: '',
         remark: '',
         status: 0
       },
@@ -1776,6 +1807,9 @@ export default {
         name: [{ required: true, message: '请输入需求名称', trigger: 'blur' }],
         cat_id: [
           { required: true, message: '请选择需求品类', trigger: 'change' }
+        ],
+        supplier_reason: [
+          { validator: validateReason, trigger: 'change' }
         ]
       },
       posting: false,
@@ -2094,6 +2128,9 @@ export default {
         .catch((_error) => {})
     },
     /**
+     * 获取
+     */
+    /**
      * 流程变化
      * @param {*} process
      */
@@ -2200,6 +2237,7 @@ export default {
         cat_id: '',
         file: '',
         supplier: '',
+        supplier_reason: '',
         remark: '',
         status: 0
       }
@@ -3592,6 +3630,17 @@ export default {
               taskDownloading: false
             })
           })
+      }
+    },
+    /**
+     * 意向供应商选择
+     * @param {*} supplier
+     */
+    intentProviderChange(supplier) {
+      if (supplier && this.intentProviderReasons.length <= 0) {
+        fetchIntentReasonList().then(response => {
+          this.intentProviderReasons = response.data.list
+        }).catch(_error => {})
       }
     }
   }

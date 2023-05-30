@@ -117,6 +117,7 @@
                   detail.demand.flow ? detail.demand.flow.account_dep.name : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="经费使用">
+                  <span style="margin-right: 10px;">%</span>
                   {{
                     detail.demand.flow && detail.demand.flow.budget_dep
                       ? detail.demand.flow.budget_dep.employ_budget

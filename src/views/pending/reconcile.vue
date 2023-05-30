@@ -87,14 +87,38 @@
             <div class="description">
               <el-descriptions
                 class="margin-top"
-                :column="4"
+                :column="6"
                 :label-style="{
                   'font-weight': 'bold',
                   'align-items': 'center',
                 }"
               >
+                <el-descriptions-item span="6" label="甲方开票主体">{{
+                  detail.process && detail.process.sub ? detail.process.sub.name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item label="供应商">{{
+                  detail.supplier ? detail.supplier.name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item label="银行及开户行">{{
+                  detail.supplier ? detail.supplier.bank_name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item span="4" label="银行账号">{{
+                  detail.supplier ? detail.supplier.bank_account : ""
+                }}</el-descriptions-item>
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="流程名称"
+                >{{
+                  detail.process ? detail.process.flow_name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="需求方"
+                >{{
+                  detail.process ? detail.process.demand : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
@@ -104,8 +128,15 @@
                 }}</el-descriptions-item>
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="流程代码"
+                >{{
+                  detail.process ? detail.process.bn : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
                   label="经费使用"
                 >
+                  <span style="margin-right: 10px;">%</span>
                   {{
                     detail.process && detail.process.budget_dep
                       ? detail.process.budget_dep.employ_budget
@@ -118,47 +149,10 @@
                 </el-descriptions-item>
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
-                  label="项目创建时间"
-                >{{
-                  detail.project ? detail.project.created_at : ""
-                }}</el-descriptions-item>
-                <el-descriptions-item
-                  v-if="$store.getters.roles.indexOf(0) < 0"
-                  label="流程名称"
-                >{{
-                  detail.process ? detail.process.flow_name : ""
-                }}</el-descriptions-item>
-                <el-descriptions-item
-                  v-if="$store.getters.roles.indexOf(0) < 0"
-                  label="流程代码"
-                >{{
-                  detail.process ? detail.process.bn : ""
-                }}</el-descriptions-item>
-                <el-descriptions-item
-                  v-if="$store.getters.roles.indexOf(0) < 0"
-                  label="需求方"
-                >{{
-                  detail.process ? detail.process.demand : ""
-                }}</el-descriptions-item>
-                <el-descriptions-item label="供应商">{{
-                  detail.supplier ? detail.supplier.name : ""
-                }}</el-descriptions-item>
-                <el-descriptions-item
-                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  span="6"
                   label="合同备注名"
                 >{{
                   detail.pact ? detail.pact.pact_name : ""
-                }}</el-descriptions-item>
-                <el-descriptions-item label="银行及开户行">{{
-                  detail.supplier ? detail.supplier.bank_name : ""
-                }}</el-descriptions-item>
-                <el-descriptions-item label="银行账号">{{
-                  detail.supplier ? detail.supplier.bank_account : ""
-                }}</el-descriptions-item>
-                <el-descriptions-item label="甲方开票主体">{{
-                  detail.process && detail.process.sub
-                    ? detail.process.sub.name
-                    : ""
                 }}</el-descriptions-item>
               </el-descriptions>
             </div>

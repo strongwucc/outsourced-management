@@ -870,6 +870,7 @@
               tempDetail.flow ? tempDetail.flow.account_dep.name : ""
             }}</el-descriptions-item>
             <el-descriptions-item label="经费使用">
+              <span style="margin-right: 10px;">%</span>
               {{ tempDetail.project ? tempDetail.project.budget_used : 0 }}/{{
                 tempDetail.project ? tempDetail.project.budget_cost : 0
               }}
@@ -1446,6 +1447,9 @@
                   }}</el-descriptions-item>
                   <el-descriptions-item label="物件类别">{{
                     tempTaskDetail.category | categoryText
+                  }}</el-descriptions-item>
+                  <el-descriptions-item v-if="tempTaskDetail.remark" label="备注">{{
+                    tempTaskDetail.remark
                   }}</el-descriptions-item>
                 </el-descriptions>
               </el-col>
