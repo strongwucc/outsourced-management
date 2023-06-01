@@ -77,6 +77,7 @@
           type="primary"
           icon="el-icon-download"
           size="mini"
+          :loading="exporting"
           @click="handleExportOrders"
         >
           导出
@@ -2105,7 +2106,8 @@ export default {
       demandFileList: [],
       demandSupplierFileList: [],
       dialogImageUrl: '',
-      dialogImageVisible: false
+      dialogImageVisible: false,
+      exporting: false
     }
   },
   computed: {
@@ -3897,6 +3899,9 @@ export default {
      * 导出
      */
     handleExportOrders() {
+      if (this.exporting) {
+        return false
+      }
       const { name, demand_id, category_name, tag, date_range } =
         this.listQuery
       let filter = {
@@ -3918,13 +3923,15 @@ export default {
       if (checked.length > 0) {
         filter = Object.assign({}, filter, { demand_id: checked })
       }
-
+      this.exporting = true
       exportOrders(filter)
         .then((response) => {
+          this.exporting = false
           const fileName = `需求单-${this.$moment().format('YYYYMMD')}.xlsx`
           downloadFileStream(fileName, response)
         })
         .catch((error) => {
+          this.exporting = false
           console.log(error)
         })
     },

@@ -70,6 +70,7 @@
           type="primary"
           icon="el-icon-download"
           size="mini"
+          :loading="exporting"
           @click="handleExportOrders"
         >
           导出
@@ -688,7 +689,8 @@ export default {
       },
       verifyRules: {},
       dialogUrlVisible: false,
-      currentFileUrl: ''
+      currentFileUrl: '',
+      exporting: false
     }
   },
   created() {
@@ -1220,6 +1222,9 @@ export default {
      * 导出
      */
     handleExportOrders() {
+      if (this.exporting) {
+        return false
+      }
       const { receipt_id, task_id, order_id, project_name, supplier_name, date_range } = this.listQuery
       let filter = {
         receipt_id,
@@ -1241,13 +1246,15 @@ export default {
       if (checked.length > 0) {
         filter = Object.assign({}, filter, { receipt_id: checked })
       }
-
+      this.exporting = true
       exportOrders(filter)
         .then((response) => {
+          this.exporting = false
           const fileName = `验收单-${this.$moment().format('YYYYMMD')}.xlsx`
           downloadFileStream(fileName, response)
         })
         .catch((error) => {
+          this.exporting = false
           console.log(error)
         })
     },
@@ -1356,6 +1363,7 @@ export default {
     .filter-right {
       display: flex;
       flex-wrap: nowrap;
+      margin-bottom: 10px;
     }
   }
   .list-container {

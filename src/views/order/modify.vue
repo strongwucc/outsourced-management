@@ -110,6 +110,7 @@
           type="primary"
           icon="el-icon-download"
           size="mini"
+          :loading="exporting"
           @click="handleExportOrders"
         >
           导出
@@ -587,7 +588,8 @@ export default {
         change_reason: '',
         initiator: undefined,
         created_at: ''
-      }
+      },
+      exporting: false
     }
   },
   created() {
@@ -852,6 +854,9 @@ export default {
      * 导出
      */
     handleExportOrders() {
+      if (this.exporting) {
+        return false
+      }
       const { change_id, task_id, project_name, supplier_name, sponsor, change_type, change_status, date_range } = this.listQuery
       let filter = {
         change_id,
@@ -875,13 +880,15 @@ export default {
       if (checked.length > 0) {
         filter = Object.assign({}, filter, { change_id: checked })
       }
-
+      this.exporting = true
       exportOrders(filter)
         .then((response) => {
+          this.exporting = false
           const fileName = `变更单-${this.$moment().format('YYYYMMD')}.xlsx`
           downloadFileStream(fileName, response)
         })
         .catch((error) => {
+          this.exporting = false
           console.log(error)
         })
     }
@@ -921,6 +928,7 @@ export default {
     .filter-right {
       display: flex;
       flex-wrap: nowrap;
+      margin-bottom: 10px;
     }
   }
   .list-container {

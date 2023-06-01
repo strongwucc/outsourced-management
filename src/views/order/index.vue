@@ -62,6 +62,7 @@
           type="primary"
           icon="el-icon-download"
           size="mini"
+          :loading="exporting"
           @click="handleExportOrders"
         >
           导出
@@ -915,7 +916,8 @@ export default {
       dialogRejectReasonVisible: false,
       dialogStopReasonVisible: false,
       fileList: [],
-      posting: false
+      posting: false,
+      exporting: false
     }
   },
   created() {
@@ -1463,6 +1465,9 @@ export default {
      * 导出
      */
     handleExportOrders() {
+      if (this.exporting) {
+        return false
+      }
       const { order_id, task_id, project_name, supplier_name, date_range } = this.listQuery
       let filter = {
         order_id,
@@ -1484,12 +1489,15 @@ export default {
         filter = Object.assign({}, filter, { order_id: checked })
       }
 
+      this.exporting = true
       exportOrders(filter)
         .then((response) => {
+          this.exporting = false
           const fileName = `订单-${this.$moment().format('YYYYMMD')}.xlsx`
           downloadFileStream(fileName, response)
         })
         .catch((error) => {
+          this.exporting = false
           console.log(error)
         })
     },
