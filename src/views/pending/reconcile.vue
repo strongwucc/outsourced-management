@@ -136,16 +136,11 @@
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="经费使用"
                 >
-                  <span style="margin-right: 10px;">%</span>
-                  {{
-                    detail.process && detail.process.budget_dep
-                      ? detail.process.budget_dep.employ_budget
-                      : 0
-                  }}/{{
-                    detail.process && detail.process.budget_dep
-                      ? detail.process.budget_dep.budget
-                      : 0
-                  }}
+                  {{ [detail.process && detail.process.budget_dep
+                    ? detail.process.budget_dep.employ_budget
+                    : 0, detail.process && detail.process.budget_dep
+                    ? detail.process.budget_dep.budget
+                    : 0] | percentage }}
                 </el-descriptions-item>
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
@@ -443,7 +438,7 @@
                 >
                   {{ tempBill.invoice_detail }}
                 </el-descriptions-item>
-                <el-descriptions-item label="发票文件" span="4">
+                <el-descriptions-item label="发票文件" span="4" :label-style="{'alignItems': 'center', 'width': '100px', 'fontWeight': 'bold'}">
                   <!-- <el-image
                     v-if="tempBill.invoice_file_url"
                     style="cursor: pointer; width: 640px; height: 420px;"

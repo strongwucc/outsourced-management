@@ -43,14 +43,14 @@ module.exports = {
     },
     // before: require('./mock/mock-server.js'),
     proxy: {
-      // "/": {
-      //   target: "http://pms.madainfo.cn", // 目标服务器
-      //   changeOrigin: true,
-      // },
       '/': {
-        target: 'http://192.168.1.44:81', // 目标服务器
+        target: 'http://pms.miour.cn', // 目标服务器
         changeOrigin: true
       }
+      // '/': {
+      //   target: 'http://192.168.1.44:81', // 目标服务器
+      //   changeOrigin: true
+      // }
       // '/': {
       //   target: 'http://pms.test', // 目标服务器
       //   changeOrigin: true

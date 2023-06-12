@@ -117,16 +117,11 @@
                   detail.demand.flow ? detail.demand.flow.account_dep.name : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="经费使用">
-                  <span style="margin-right: 10px;">%</span>
-                  {{
-                    detail.demand.flow && detail.demand.flow.budget_dep
-                      ? detail.demand.flow.budget_dep.employ_budget
-                      : 0
-                  }}/{{
-                    detail.demand.flow && detail.demand.flow.budget_dep
-                      ? detail.demand.flow.budget_dep.budget
-                      : 0
-                  }}
+                  {{ [detail.demand.flow && detail.demand.flow.budget_dep
+                    ? detail.demand.flow.budget_dep.employ_budget
+                    : 0, detail.demand.flow && detail.demand.flow.budget_dep
+                    ? detail.demand.flow.budget_dep.budget
+                    : 0] | percentage }}
                 </el-descriptions-item>
 
                 <el-descriptions-item label="需求创建人">{{
@@ -135,8 +130,14 @@
                 <el-descriptions-item label="创建时间">{{
                   detail.demand.created_at
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="意向供应商" span="2">{{
+                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="意向供应商">{{
                   detail.supplier ? detail.supplier.name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="分配理由"
+                >{{
+                  detail.supplier_reason || ''
                 }}</el-descriptions-item>
                 <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="备注说明" span="4">{{
                   detail.demand.remark

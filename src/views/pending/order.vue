@@ -125,16 +125,11 @@
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="经费使用"
                 >
-                  <span style="margin-right: 10px;">%</span>
-                  {{
-                    detail.demand.flow && detail.demand.flow.budget_dep
-                      ? detail.demand.flow.budget_dep.employ_budget
-                      : 0
-                  }}/{{
-                    detail.demand.flow && detail.demand.flow.budget_dep
-                      ? detail.demand.flow.budget_dep.budget
-                      : 0
-                  }}
+                  {{ [detail.demand.flow && detail.demand.flow.budget_dep
+                    ? detail.demand.flow.budget_dep.employ_budget
+                    : 0, detail.demand.flow && detail.demand.flow.budget_dep
+                    ? detail.demand.flow.budget_dep.budget
+                    : 0] | percentage }}
                 </el-descriptions-item>
 
                 <el-descriptions-item label="需求创建人">{{
@@ -164,9 +159,14 @@
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="意向供应商"
-                  span="2"
                 >{{
                   detail.demand.supplier ? detail.demand.supplier.name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="分配理由"
+                >{{
+                  detail.supplier_reason || ''
                 }}</el-descriptions-item>
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
@@ -666,7 +666,7 @@
               >
                 <el-option
                   v-for="(item, itemIndex) in [
-                    '人名币',
+                    '人民币',
                     '美元',
                     '英镑',
                     '澳元',
@@ -685,7 +685,7 @@
             </el-form-item>
 
             <el-form-item
-              v-show="tempTask.currency !== '人民币'"
+              v-if="tempTask.currency !== '人民币'"
               label="支付金额:"
               prop="pay_amount"
             >

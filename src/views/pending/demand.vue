@@ -41,6 +41,21 @@
                   @click="handleResolveTask(false, true)"
                 >驳回</el-button>
                 <el-button
+                  v-if="$route.path === '/pending/xmzfzr/demand/review'"
+                  v-permission="[2]"
+                  type="primary"
+                  size="mini"
+                  @click="handleResolveTask(true, true)"
+                >通过</el-button>
+                <el-button
+                  v-if="$route.path === '/pending/xmzfzr/demand/review'"
+                  v-permission="[2]"
+                  type="primary"
+                  size="mini"
+                  @click="handleResolveTask(false, true)"
+                >驳回</el-button>
+                <el-button
+                  v-if="$route.path === '/pending/xmzfzr/demand/check'"
                   v-permission="[2]"
                   type="primary"
                   size="mini"
@@ -49,6 +64,7 @@
                   通过
                 </el-button>
                 <el-button
+                  v-if="$route.path === '/pending/xmzfzr/demand/check'"
                   v-permission="[2]"
                   type="primary"
                   size="mini"
@@ -191,16 +207,11 @@
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="经费使用"
                 >
-                  <span style="margin-right: 10px;">%</span>
-                  {{
-                    detail.flow && detail.flow.budget_dep
-                      ? detail.flow.budget_dep.employ_budget
-                      : 0
-                  }}/{{
-                    detail.flow && detail.flow.budget_dep
-                      ? detail.flow.budget_dep.budget
-                      : 0
-                  }}
+                  {{ [detail.flow && detail.flow.budget_dep
+                    ? detail.flow.budget_dep.employ_budget
+                    : 0, detail.flow && detail.flow.budget_dep
+                    ? detail.flow.budget_dep.budget
+                    : 0] | percentage }}
                 </el-descriptions-item>
 
                 <el-descriptions-item label="需求创建人">{{
@@ -212,9 +223,14 @@
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="意向供应商"
-                  span="2"
                 >{{
                   detail.supplier ? detail.supplier.name : ""
+                }}</el-descriptions-item>
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="分配理由"
+                >{{
+                  detail.supplier_reason || ''
                 }}</el-descriptions-item>
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
@@ -313,7 +329,7 @@
               </el-button>
               <el-button
                 v-if="detail.status === 5"
-                v-permission="[1]"
+                v-permission="[1,2]"
                 icon="el-icon-check"
                 type="primary"
                 size="mini"
@@ -332,7 +348,7 @@
               </el-button>
               <el-button
                 v-if="detail.status === 5"
-                v-permission="[1]"
+                v-permission="[1,2]"
                 icon="el-icon-jinzhi"
                 type="primary"
                 size="mini"
@@ -1393,7 +1409,7 @@
               >
                 <el-option
                   v-for="(item, itemIndex) in [
-                    '人名币',
+                    '人民币',
                     '美元',
                     '英镑',
                     '澳元',
@@ -1412,7 +1428,7 @@
             </el-form-item>
 
             <el-form-item
-              v-show="tempTask.currency !== '人民币'"
+              v-if="tempTask.currency !== '人民币'"
               label="支付金额:"
               prop="pay_amount"
             >
@@ -1980,6 +1996,7 @@ export default {
       const hiddenTaskCheckRowPaths = [
         '/pending/gys/demand/quote',
         '/pending/xmz/demand/review',
+        '/pending/xmzfzr/demand/review',
         // '/pending/gg/order/prepare',
         '/pending/ggfzr/order/approval'
       ]
@@ -2790,6 +2807,7 @@ export default {
       this.detailLoaded = true
       this.detail = Object.assign({}, this.detail, detailData.data)
       this.multipleTaskSelection = []
+      this.pacts = []
     },
     /**
      * 重置物件数据

@@ -157,7 +157,7 @@
           label="是否需要缩略图:"
           prop="thumbnail"
         >
-          <el-switch v-model="temp.thumbnail" />
+          <el-switch v-model="temp.thumbnail" :active-value="1" :inactive-value="0" />
         </el-form-item>
 
         <el-form-item
@@ -376,7 +376,7 @@ export default {
         parent_id: '',
         cat_path: '',
         category_name: '',
-        thumbnail: true,
+        thumbnail: 0,
         property_json: '[]',
         property_array: []
       },

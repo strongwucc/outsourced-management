@@ -871,10 +871,7 @@
               tempDetail.flow ? tempDetail.flow.account_dep.name : ""
             }}</el-descriptions-item>
             <el-descriptions-item label="经费使用">
-              <span style="margin-right: 10px;">%</span>
-              {{ tempDetail.project ? tempDetail.project.budget_used : 0 }}/{{
-                tempDetail.project ? tempDetail.project.budget_cost : 0
-              }}
+              {{ [tempDetail.project ? tempDetail.project.budget_used : 0, tempDetail.project ? tempDetail.project.budget_cost : 0] | percentage }}
             </el-descriptions-item>
             <el-descriptions-item label="需求创建人">{{
               tempDetail.creator ? tempDetail.creator.name : ""
@@ -894,9 +891,9 @@
             <el-descriptions-item label="需求状态" span="4">{{
               tempDetail.status | statusText
             }}</el-descriptions-item>
-            <el-descriptions-item label="需求说明" span="4">{{
-              tempDetail.introduce
-            }}</el-descriptions-item>
+            <el-descriptions-item label="需求说明" span="4" :label-style="{'verticalAlign': 'top', 'fontWeight': 'bold'}">
+              <span v-line-break="tempDetail.introduce" />
+            </el-descriptions-item>
             <el-descriptions-item label="需求品类" span="4">{{
               tempDetail.category | categoryText
             }}</el-descriptions-item>
