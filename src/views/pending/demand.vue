@@ -207,11 +207,16 @@
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="经费使用"
                 >
-                  {{ [detail.flow && detail.flow.budget_dep
-                    ? detail.flow.budget_dep.employ_budget
-                    : 0, detail.flow && detail.flow.budget_dep
-                    ? detail.flow.budget_dep.budget
-                    : 0] | percentage }}
+                  {{
+                    [
+                      detail.flow && detail.flow.budget_dep
+                        ? detail.flow.budget_dep.employ_budget
+                        : 0,
+                      detail.flow && detail.flow.budget_dep
+                        ? detail.flow.budget_dep.budget
+                        : 0,
+                    ] | percentage
+                  }}
                 </el-descriptions-item>
 
                 <el-descriptions-item label="需求创建人">{{
@@ -229,9 +234,7 @@
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="分配理由"
-                >{{
-                  detail.supplier_reason || ''
-                }}</el-descriptions-item>
+                >{{ detail.supplier_reason || "" }}</el-descriptions-item>
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="备注说明"
@@ -329,7 +332,7 @@
               </el-button>
               <el-button
                 v-if="detail.status === 5"
-                v-permission="[1,2]"
+                v-permission="[1, 2]"
                 icon="el-icon-check"
                 type="primary"
                 size="mini"
@@ -348,7 +351,7 @@
               </el-button>
               <el-button
                 v-if="detail.status === 5"
-                v-permission="[1,2]"
+                v-permission="[1, 2]"
                 icon="el-icon-jinzhi"
                 type="primary"
                 size="mini"
@@ -1097,7 +1100,12 @@
           </div>
         </el-form-item>
 
-        <el-form-item v-show="temp.supplier !== ''" label="选择理由:" prop="supplier_reason" class="custom-unrequired">
+        <el-form-item
+          v-show="temp.supplier !== ''"
+          label="选择理由:"
+          prop="supplier_reason"
+          class="custom-unrequired"
+        >
           <div class="has-secret-notice">
             <el-select
               v-model="temp.supplier_reason"
@@ -1114,7 +1122,6 @@
             </el-select>
             <div class="secret-notice">仅内部可见</div>
           </div>
-
         </el-form-item>
 
         <el-form-item label="备注说明:" prop="remark" class="custom-unrequired">
@@ -1824,9 +1831,7 @@ export default {
         cat_id: [
           { required: true, message: '请选择需求品类', trigger: 'change' }
         ],
-        supplier_reason: [
-          { validator: validateReason, trigger: 'change' }
-        ]
+        supplier_reason: [{ validator: validateReason, trigger: 'change' }]
       },
       posting: false,
       processLoading: false,
@@ -1903,7 +1908,35 @@ export default {
             trigger: 'blur'
           }
         ],
-        price: [{ required: true, message: '请输入单价', trigger: 'blur' }],
+        price: [
+          { required: true, message: '请输入单价', trigger: 'blur' },
+          {
+            validator: (rule, value, callback) => {
+              if (value > 0) {
+                callback()
+              } else {
+                callback(new Error('单价必须大于零'))
+              }
+            },
+            trigger: 'blur'
+          }
+        ],
+        pay_amount: [
+          {
+            validator: (rule, value, callback) => {
+              if (value === '') {
+                callback()
+              } else {
+                if (value > 0) {
+                  callback()
+                } else {
+                  callback(new Error('请输入正确的金额'))
+                }
+              }
+            },
+            trigger: 'blur'
+          }
+        ],
         deliver_date: [
           { required: true, message: '请选择日期', trigger: 'blur' }
         ],
@@ -2886,7 +2919,15 @@ export default {
     /**
      * 导入物件弹窗
      */
-    handleImportTask() {
+    async handleImportTask() {
+      const supplier_id = this.detail.supplier_id || 0
+      const cat_id = this.detail.category.cat_id
+      const priceData = await queryCategoryPrice({ supplier_id, cat_id }).catch(
+        (_error) => {}
+      )
+      if (priceData) {
+        this.supplierCategoryPrice = parseFloat(priceData.data.max_price)
+      }
       this.tempImportTask = Object.assign({}, this.tempImportTask, {
         demand_id: this.detail.demand_id,
         tasks: []
@@ -2916,6 +2957,16 @@ export default {
      * 导入模板成功
      */
     handleAddTaskTplSucc(response, file, fileList) {
+      if (
+        response.some((task) => {
+          return task.work_price > this.supplierCategoryPrice
+        })
+      ) {
+        this.$message.error(
+          '导入物件单价不能大于' + this.supplierCategoryPrice
+        )
+        return false
+      }
       this.tempImportTaskFileName = file.name
       this.tempImportTask = Object.assign({}, this.tempImportTask, {
         tasks: response
@@ -3656,9 +3707,11 @@ export default {
      */
     intentProviderChange(supplier) {
       if (supplier && this.intentProviderReasons.length <= 0) {
-        fetchIntentReasonList().then(response => {
-          this.intentProviderReasons = response.data.list
-        }).catch(_error => {})
+        fetchIntentReasonList()
+          .then((response) => {
+            this.intentProviderReasons = response.data.list
+          })
+          .catch((_error) => {})
       }
     }
   }

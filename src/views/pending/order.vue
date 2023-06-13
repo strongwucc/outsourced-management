@@ -1135,7 +1135,35 @@ export default {
             trigger: 'blur'
           }
         ],
-        price: [{ required: true, message: '请输入单价', trigger: 'blur' }],
+        price: [
+          { required: true, message: '请输入单价', trigger: 'blur' },
+          {
+            validator: (rule, value, callback) => {
+              if (value > 0) {
+                callback()
+              } else {
+                callback(new Error('单价必须大于零'))
+              }
+            },
+            trigger: 'blur'
+          }
+        ],
+        pay_amount: [
+          {
+            validator: (rule, value, callback) => {
+              if (value === '') {
+                callback()
+              } else {
+                if (value > 0) {
+                  callback()
+                } else {
+                  callback(new Error('请输入正确的金额'))
+                }
+              }
+            },
+            trigger: 'blur'
+          }
+        ],
         deliver_date: [
           { required: true, message: '请选择日期', trigger: 'blur' }
         ],
