@@ -216,7 +216,15 @@
                         ? detail.flow.budget_dep.budget
                         : 0,
                     ] | percentage
-                  }}
+                  }}（{{
+                    detail.flow && detail.flow.budget_dep
+                      ? detail.flow.budget_dep.employ_budget
+                      : 0
+                  }}/{{
+                    detail.flow && detail.flow.budget_dep
+                      ? detail.flow.budget_dep.budget
+                      : 0,
+                  }}）
                 </el-descriptions-item>
 
                 <el-descriptions-item label="需求创建人">{{

@@ -125,11 +125,24 @@
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="经费使用"
                 >
-                  {{ [detail.demand.flow && detail.demand.flow.budget_dep
-                    ? detail.demand.flow.budget_dep.employ_budget
-                    : 0, detail.demand.flow && detail.demand.flow.budget_dep
-                    ? detail.demand.flow.budget_dep.budget
-                    : 0] | percentage }}
+                  {{
+                    [
+                      detail.demand.flow && detail.demand.flow.budget_dep
+                        ? detail.demand.flow.budget_dep.employ_budget
+                        : 0,
+                      detail.demand.flow && detail.demand.flow.budget_dep
+                        ? detail.demand.flow.budget_dep.budget
+                        : 0,
+                    ] | percentage
+                  }}（{{
+                    detail.demand.flow && detail.demand.flow.budget_dep
+                      ? detail.demand.flow.budget_dep.employ_budget
+                      : 0
+                  }}/{{
+                    detail.demand.flow && detail.demand.flow.budget_dep
+                      ? detail.demand.flow.budget_dep.budget
+                      : 0
+                  }}）
                 </el-descriptions-item>
 
                 <el-descriptions-item label="需求创建人">{{
@@ -165,9 +178,7 @@
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="分配理由"
-                >{{
-                  detail.supplier_reason || ''
-                }}</el-descriptions-item>
+                >{{ detail.supplier_reason || "" }}</el-descriptions-item>
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="备注说明"
@@ -348,7 +359,9 @@
               <el-table-column label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
-                    v-if="scope.row.display_area.length > 0 || scope.row.image_url"
+                    v-if="
+                      scope.row.display_area.length > 0 || scope.row.image_url
+                    "
                     style="width: 50px; height: 50px"
                     :src="
                       scope.row.display_area.length > 0
@@ -462,7 +475,10 @@
                     下载作品
                   </el-button> -->
                   <el-upload
-                    v-if="scope.row.image && [0, 4].indexOf(scope.row.task_status) >= 0"
+                    v-if="
+                      scope.row.image &&
+                        [0, 4].indexOf(scope.row.task_status) >= 0
+                    "
                     v-permission="[0]"
                     class="upload-box"
                     :action="`${$baseUrl}/api/tools/upfile`"

@@ -121,9 +121,7 @@
                     'margin-bottom': '20px',
                     'font-weight': 'bold',
                   }"
-                >{{
-                  detail.demand.introduce
-                }}</el-descriptions-item>
+                >{{ detail.demand.introduce }}</el-descriptions-item>
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
@@ -145,11 +143,24 @@
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="经费使用"
                 >
-                  {{ [detail.demand.flow && detail.demand.flow.budget_dep
-                    ? detail.demand.flow.budget_dep.employ_budget
-                    : 0, detail.demand.flow && detail.demand.flow.budget_dep
-                    ? detail.demand.flow.budget_dep.budget
-                    : 0] | percentage }}
+                  {{
+                    [
+                      detail.demand.flow && detail.demand.flow.budget_dep
+                        ? detail.demand.flow.budget_dep.employ_budget
+                        : 0,
+                      detail.demand.flow && detail.demand.flow.budget_dep
+                        ? detail.demand.flow.budget_dep.budget
+                        : 0,
+                    ] | percentage
+                  }}（{{
+                    detail.demand.flow && detail.demand.flow.budget_dep
+                      ? detail.demand.flow.budget_dep.employ_budget
+                      : 0
+                  }}/{{
+                    detail.demand.flow && detail.demand.flow.budget_dep
+                      ? detail.demand.flow.budget_dep.budget
+                      : 0
+                  }}）
                 </el-descriptions-item>
                 <el-descriptions-item label="需求创建人">{{
                   detail.demand.creator ? detail.demand.creator.name : ""
@@ -359,9 +370,15 @@
               <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
-                    v-if="scope.row.display_area.length > 0 || scope.row.image_url"
+                    v-if="
+                      scope.row.display_area.length > 0 || scope.row.image_url
+                    "
                     style="width: 50px; height: 50px"
-                    :src="scope.row.display_area.length > 0 ? scope.row.display_area[0].url : scope.row.image_url"
+                    :src="
+                      scope.row.display_area.length > 0
+                        ? scope.row.display_area[0].url
+                        : scope.row.image_url
+                    "
                   >
                     <div slot="error" class="image-slot">
                       <i
@@ -401,9 +418,7 @@
               <el-table-column prop="work_price" label="单价" align="center" />
               <el-table-column label="总价" align="center">
                 <template slot-scope="scope">
-                  <span
-                    v-if="scope.row.pay_amount > 0"
-                  >
+                  <span v-if="scope.row.pay_amount > 0">
                     {{ scope.row.pay_amount }} {{ scope.row.currency }}
                   </span>
                   <span v-else>{{ scope.row.work_amount }}</span>
@@ -525,7 +540,7 @@
             </div>
             <div class="files">
               <div
-                v-for="(file) in detail.demand.files"
+                v-for="file in detail.demand.files"
                 :key="file.file_id"
                 class="file-item"
               >
@@ -538,7 +553,7 @@
                 >下载</el-button>
               </div>
               <div
-                v-for="(file) in detail.demand.supplier_files"
+                v-for="file in detail.demand.supplier_files"
                 :key="file.file_id"
                 class="file-item"
               >
@@ -1484,10 +1499,7 @@ export default {
               const fullFileName = `物件展示图-${task.task_id}${url.substring(
                 url.lastIndexOf('.')
               )}`
-              downloadFileStream(
-                fullFileName,
-                file
-              )
+              downloadFileStream(fullFileName, file)
             })
             this.$set(this.detail.items[taskIndex], 'downloading', false)
           })
@@ -1588,7 +1600,10 @@ export default {
       if (this.detail.receipt_id) {
         exportReceiptTask(this.detail.receipt_id)
           .then((response) => {
-            downloadFileStream(`${this.detail.demand.name}-${this.detail.demand.demand_id}.xlsx`, response)
+            downloadFileStream(
+              `${this.detail.demand.name}-${this.detail.demand.demand_id}.xlsx`,
+              response
+            )
           })
           .catch((error) => {
             console.log(error)

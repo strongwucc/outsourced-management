@@ -867,11 +867,18 @@
             <el-descriptions-item label="发起部门">{{
               tempDetail.flow ? tempDetail.flow.launch_dep.name : ""
             }}</el-descriptions-item>
-            <el-descriptions-item label="核算部门">{{
+            <el-descriptions-item label="核算部门" span="2">{{
               tempDetail.flow ? tempDetail.flow.account_dep.name : ""
             }}</el-descriptions-item>
-            <el-descriptions-item label="经费使用">
-              {{ [tempDetail.project ? tempDetail.project.budget_used : 0, tempDetail.project ? tempDetail.project.budget_cost : 0] | percentage }}
+            <el-descriptions-item label="经费使用" span="4">
+              {{
+                [
+                  tempDetail.project ? tempDetail.project.budget_used : 0,
+                  tempDetail.project ? tempDetail.project.budget_cost : 0,
+                ] | percentage
+              }}（{{
+                tempDetail.project ? tempDetail.project.budget_used : 0
+              }}/{{ tempDetail.project ? tempDetail.project.budget_cost : 0 }}）
             </el-descriptions-item>
             <el-descriptions-item label="需求创建人">{{
               tempDetail.creator ? tempDetail.creator.name : ""
@@ -891,7 +898,11 @@
             <el-descriptions-item label="需求状态" span="4">{{
               tempDetail.status | statusText
             }}</el-descriptions-item>
-            <el-descriptions-item label="需求说明" span="4" :label-style="{'verticalAlign': 'top', 'fontWeight': 'bold'}">
+            <el-descriptions-item
+              label="需求说明"
+              span="4"
+              :label-style="{ verticalAlign: 'top', fontWeight: 'bold' }"
+            >
               <span v-line-break="tempDetail.introduce" />
             </el-descriptions-item>
             <el-descriptions-item label="需求品类" span="4">{{
@@ -909,7 +920,9 @@
                     type="primary"
                     size="mini"
                     plain
-                    @click="downLoadContract(`需求附件-${tempDetail.name}`, file.url)"
+                    @click="
+                      downLoadContract(`需求附件-${tempDetail.name}`, file.url)
+                    "
                   >下载</el-button>
                 </div>
               </div>
@@ -1446,9 +1459,10 @@
                   <el-descriptions-item label="物件类别">{{
                     tempTaskDetail.category | categoryText
                   }}</el-descriptions-item>
-                  <el-descriptions-item v-if="tempTaskDetail.remark" label="备注">{{
-                    tempTaskDetail.remark
-                  }}</el-descriptions-item>
+                  <el-descriptions-item
+                    v-if="tempTaskDetail.remark"
+                    label="备注"
+                  >{{ tempTaskDetail.remark }}</el-descriptions-item>
                 </el-descriptions>
               </el-col>
               <el-col :span="12">
