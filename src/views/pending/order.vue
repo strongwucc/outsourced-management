@@ -462,7 +462,7 @@
                     下载作品
                   </el-button> -->
                   <el-upload
-                    v-if="scope.row.task_image && [0, 4].indexOf(scope.row.task_status) >= 0"
+                    v-if="scope.row.image && [0, 4].indexOf(scope.row.task_status) >= 0"
                     v-permission="[0]"
                     class="upload-box"
                     :action="`${$baseUrl}/api/tools/upfile`"
