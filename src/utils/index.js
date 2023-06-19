@@ -223,19 +223,11 @@ export function copyText(text) {
       // clipboard api 复制
       navigator.clipboard.writeText(text)
     } else {
-      const textarea = document.createElement('textarea')
-      document.body.appendChild(textarea)
-      // 隐藏此输入框
-      textarea.style.position = 'fixed'
-      textarea.style.clip = 'rect(0 0 0 0)'
-      textarea.style.top = '10px'
-      // 赋值
+      const textarea = document.createElement('input')
       textarea.value = text
-      // 选中
+      document.body.appendChild(textarea)
       textarea.select()
-      // 复制
-      document.execCommand('copy', true)
-      // 移除输入框
+      document.execCommand('copy')
       document.body.removeChild(textarea)
     }
     return true

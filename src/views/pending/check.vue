@@ -419,7 +419,7 @@
               <el-table-column label="总价" align="center">
                 <template slot-scope="scope">
                   <span v-if="scope.row.pay_amount > 0">
-                    {{ scope.row.pay_amount }} {{ scope.row.currency }}
+                    {{ scope.row.currency }} {{ scope.row.pay_amount }}
                   </span>
                   <span v-else>{{ scope.row.work_amount }}</span>
                 </template>
@@ -947,8 +947,8 @@ export default {
         '/pending/xmz/assign/vendor',
         '/pending/xmz/demand/draft',
         '/pending/gg/demand/draft',
-        '/pending/xmz/accept/confirm'
-        // '/pending/xmzfzr/accept/confirm'
+        '/pending/xmz/accept/confirm',
+        '/pending/xmzfzr/accept/confirm'
       ]
       return hiddenPaths.indexOf(this.$route.path) < 0
     },

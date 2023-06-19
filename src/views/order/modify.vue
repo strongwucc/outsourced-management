@@ -280,8 +280,11 @@
               <el-table-column prop="price" label="单价" align="center" />
               <el-table-column label="总价" align="center" min-width="150">
                 <template slot-scope="scope">
+                  <span v-if="scope.row.pay_amount > 0">
+                    {{ scope.row.currency }} {{ scope.row.pay_amount }}
+                  </span>
                   <div
-                    v-if="scope.row.new_amount !== scope.row.old_amount"
+                    v-else-if="scope.row.new_amount !== scope.row.old_amount"
                     class="modify-color"
                   >
                     <span>{{ scope.row.old_amount }}</span>

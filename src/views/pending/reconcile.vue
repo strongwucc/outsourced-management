@@ -131,12 +131,14 @@
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="流程代码"
+                  span="2"
                 >{{
                   detail.process ? detail.process.bn : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="经费使用"
+                  span="6"
                 >
                   {{
                     [
@@ -367,7 +369,9 @@
                 开票文档下载
               </el-button>
               <el-button
-                v-if="[3].indexOf(detail.statement_status) >= 0"
+                v-if="
+                  [0, 3].indexOf(detail.statement_status) >= 0 && detail.reason
+                "
                 v-permission="[0]"
                 type="primary"
                 icon="el-icon-warning-outline"
@@ -454,33 +458,26 @@
                   {{ tempBill.invoice_detail }}
                 </el-descriptions-item>
                 <el-descriptions-item
-                  label="发票文件"
+                  v-if="tempBill.invoice_image_url"
+                  label="发票图片"
                   span="4"
-                  :label-style="{
-                    alignItems: 'center',
-                    width: '100px',
-                    fontWeight: 'bold',
-                  }"
                 >
-                  <!-- <el-image
-                    v-if="tempBill.invoice_file_url"
-                    style="cursor: pointer; width: 640px; height: 420px;"
-                    :src="tempBill.invoice_file_url"
+                  <el-image
+                    v-if="tempBill.invoice_image_url"
+                    style="cursor: pointer; width: 640px; height: 420px"
+                    :src="tempBill.invoice_image_url"
                     @click.stop="showInvoiceImage"
-                  /> -->
+                  />
+                </el-descriptions-item>
+                <el-descriptions-item label="发票文件" span="4">
                   <div style="display: flex">
-                    <el-link
-                      class="el-button el-button--primary el-button--mini is-plain"
-                      :href="tempBill.invoice_file_url"
-                      target="_blank"
-                    >查看</el-link>
                     <el-button
                       type="primary"
                       size="mini"
                       plain
                       @click="
                         downLoadContract(
-                          '发票-' + tempBill.invoice_detail + '.pdf',
+                          '发票文件-' + baseName(tempBill.invoice_file_url),
                           tempBill.invoice_file_url
                         )
                       "
@@ -612,12 +609,12 @@
               <el-table-column label="总价" align="center">
                 <template slot-scope="scope">
                   <span v-if="scope.row.pay_amount > 0">
-                    {{ scope.row.pay_amount }} {{ scope.row.currency }}
+                    {{ scope.row.currency }} {{ scope.row.pay_amount }}
                   </span>
                   <span v-else>{{ scope.row.work_amount }}</span>
                 </template>
               </el-table-column>
-              <el-table-column
+              <!-- <el-table-column
                 label="作品"
                 align="center"
                 min-width="100"
@@ -634,7 +631,7 @@
                     下载
                   </el-button>
                 </template>
-              </el-table-column>
+              </el-table-column> -->
             </el-table>
             <div class="actions" />
           </div>
@@ -842,14 +839,29 @@
         label-width="150px"
         style="margin: 0 50px"
       >
-        <el-form-item label="发票图片" prop="invoice_file">
+        <el-form-item label="发票图片" prop="invoice_image">
+          <el-upload
+            class="bill-image-uploader"
+            :action="`${$baseUrl}/api/tools/upfile`"
+            :show-file-list="false"
+            :on-success="handleInvoiceImageSuccess"
+            :on-remove="handleInvoiceImageRemove"
+          >
+            <img
+              v-if="tempBill.invoice_image_url"
+              :src="tempBill.invoice_image_url"
+              class="bill-image"
+            >
+            <i v-else class="el-icon-plus bill-image-uploader-icon" />
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="发票文件" prop="invoice_file">
           <el-upload
             class="bill-image-uploader"
             :action="`${$baseUrl}/api/tools/upfile`"
             :file-list="invoiceFileList"
-            :on-success="handleInvoiceImageSuccess"
-            :on-remove="handleInvoiceImageRemove"
-            accept=".pdf"
+            :on-success="handleInvoiceFileSuccess"
+            :on-remove="handleInvoiceFileRemove"
           >
             <el-button size="mini" type="primary">上传发票</el-button>
             <!-- <img
@@ -859,9 +871,6 @@
             >
             <i v-else class="el-icon-plus bill-image-uploader-icon" /> -->
           </el-upload>
-          <div class="notice" style="color: red; font-size: 12px">
-            注：请上传PDF文件
-          </div>
         </el-form-item>
         <!-- <el-form-item label="序号:" prop="invoice_serial">
           <el-input
@@ -946,12 +955,12 @@
       :visible.sync="dialogRejectReasonVisible"
       width="600px"
     >
-      <div v-if="detail.reject" class="reason-box">
-        <div class="content">{{ detail.reject.reason || "" }}</div>
-        <div class="user-info">
+      <div v-if="detail.reason" class="reason-box">
+        <div class="content">{{ detail.reason || "" }}</div>
+        <!-- <div class="user-info">
           <div>驳回人：{{ detail.reject.user }}</div>
           <div>驳回时间：{{ detail.reject.created_at }}</div>
-        </div>
+        </div> -->
       </div>
     </el-dialog>
 
@@ -1000,7 +1009,7 @@
     >
       <el-image
         style="width: 960px; height: 620px"
-        :src="tempBill.invoice_file_url"
+        :src="tempBill.invoice_image_url"
       />
     </el-dialog>
 
@@ -1253,6 +1262,7 @@ export default {
         ]
       },
       tempBill: {
+        invoice_image: '',
         invoice_file: '',
         // invoice_serial: '',
         invoice_type: '',
@@ -1331,6 +1341,7 @@ export default {
     this.$bus.$off('navSearch')
   },
   methods: {
+    baseName,
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
@@ -1639,6 +1650,8 @@ export default {
 
       this.tempBill = Object.assign({}, this.tempBill, {
         statement_id: statement_id,
+        invoice_image: '',
+        invoice_image_url: '',
         invoice_file: '',
         invoice_file_url: '',
         invoice_serial: '',
@@ -1665,6 +1678,30 @@ export default {
      * 上传发票图片变化回调
      */
     handleInvoiceImageChange(file, fileList) {
+      this.tempBill = Object.assign({}, this.tempBill, {
+        invoice_image: file.response.data.file_id,
+        invoice_image_url: file.response.data.url
+      })
+    },
+    /**
+     * 上传发票图片变化回调
+     */
+    handleInvoiceImageRemove(file, fileList) {
+      this.tempBill = Object.assign({}, this.tempBill, {
+        invoice_image: '',
+        invoice_image_url: ''
+      })
+    },
+    /**
+     * 上传发票文件成功回调
+     */
+    handleInvoiceFileSuccess(response, file, fileList) {
+      this.handleInvoiceFileChange(file, fileList)
+    },
+    /**
+     * 上传发票文件变化回调
+     */
+    handleInvoiceFileChange(file, fileList) {
       this.invoiceFileList = [file]
       this.tempBill = Object.assign({}, this.tempBill, {
         invoice_file: file.response.data.file_id,
@@ -1672,9 +1709,9 @@ export default {
       })
     },
     /**
-     * 上传发票图片变化回调
+     * 上传发票文件变化回调
      */
-    handleInvoiceImageRemove(file, fileList) {
+    handleInvoiceFileRemove(file, fileList) {
       this.invoiceFileList = []
       this.tempBill = Object.assign({}, this.tempBill, {
         invoice_file: '',
@@ -1741,6 +1778,7 @@ export default {
     handleShowBill() {
       this.tempBill = Object.assign({}, this.tempBill, {
         statement_id: this.detail.statement_id,
+        invoice_image_url: this.detail.invoice_image || '',
         invoice_file_url: this.detail.invoice_file || '',
         invoice_serial: this.detail.invoice_serial || '',
         invoice_type: this.detail.invoice_type || 0,
@@ -1790,7 +1828,7 @@ export default {
      * 驳回原因
      */
     handleRejectReason() {
-      if (!this.detail.reject) {
+      if (!this.detail.reason) {
         this.$message.error('对不起，没有驳回原因')
         return false
       }

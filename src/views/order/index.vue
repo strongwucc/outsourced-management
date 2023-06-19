@@ -235,11 +235,17 @@
                 align="center"
               />
               <el-table-column
-                prop="amount"
                 label="总价"
                 min-width="80"
                 align="center"
-              />
+              >
+                <template slot-scope="scope">
+                  <span v-if="scope.row.pay_amount > 0">
+                    {{ scope.row.currency }} {{ scope.row.pay_amount }}
+                  </span>
+                  <span v-else>{{ scope.row.amount }}</span>
+                </template>
+              </el-table-column>
               <el-table-column
                 label="停留时间"
                 align="center"

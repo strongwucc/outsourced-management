@@ -689,7 +689,7 @@
               <el-table-column label="总价" align="center">
                 <template slot-scope="scope">
                   <span v-if="scope.row.pay_amount > 0">
-                    {{ scope.row.pay_amount }} {{ scope.row.currency }}
+                    {{ scope.row.currency }} {{ scope.row.pay_amount }}
                   </span>
                   <span v-else>{{ scope.row.work_amount }}</span>
                 </template>
@@ -1316,11 +1316,11 @@
             <el-option
               v-for="item in pacts"
               :key="item.id"
-              :label="item.remark"
+              :label="item.pact_name"
               :value="item.id"
             >
               <div class="pact-box">
-                <div class="name">{{ item.remark }}</div>
+                <div class="name">{{ item.pact_name }}</div>
                 <div class="time">
                   {{ item.period_start | dateFormat }} -
                   {{ item.period_end | dateFormat }}
@@ -1444,12 +1444,12 @@
 
             <el-form-item
               v-if="tempTask.currency !== '人民币'"
-              label="支付金额:"
+              label="实际支付外币金额:"
               prop="pay_amount"
             >
               <el-input
                 v-model="tempTask.pay_amount"
-                placeholder="请输入支付金额"
+                placeholder="请输入实际支付外币金额"
                 class="dialog-form-item"
               />
             </el-form-item>
