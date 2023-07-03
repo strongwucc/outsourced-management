@@ -476,10 +476,10 @@
                   </el-button> -->
                   <el-upload
                     v-if="
-                      scope.row.image &&
-                        [0, 4].indexOf(scope.row.task_status) >= 0
-                    "
-                    v-permission="[0]"
+                      scope.row.category && scope.row.category.thumbnail === 1 &&
+                        [0, 4].indexOf(scope.row.task_status) >= 0"
+                    v-permission="
+                      [0]"
                     class="upload-box"
                     :action="`${$baseUrl}/api/tools/upfile`"
                     :show-file-list="false"
@@ -1462,7 +1462,7 @@ export default {
               this.$message.error(errorName)
               return true
             }
-            if (taskItem.task_image && taskItem.display_area.length <= 0) {
+            if (taskItem.category && taskItem.category.thumbnail === 1 && taskItem.display_area.length <= 0) {
               const errorName = `[${taskItem.task_id}]: 请上传该物件的展示图`
               this.$message.error(errorName)
               return true
@@ -1507,7 +1507,7 @@ export default {
             this.$message.error(errorName)
             return true
           }
-          if (taskItem.task_image && taskItem.display_area.length <= 0) {
+          if (taskItem.category && taskItem.category.thumbnail === 1 && taskItem.display_area.length <= 0) {
             const errorName = `[${taskItem.task_id}]: 请上传该物件的展示图`
             this.$message.error(errorName)
             return true

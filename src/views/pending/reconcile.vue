@@ -1236,8 +1236,8 @@ export default {
       invoiceFileList: [],
       dialogBillVisible: false,
       billRules: {
-        invoice_file: [
-          { required: true, message: '请添加发票文件', trigger: 'blur' }
+        invoice_image: [
+          { required: true, message: '请添加发票图片', trigger: 'blur' }
         ],
         // invoice_serial: [
         //   { required: true, message: '请输入序号', trigger: 'blur' }
@@ -1662,6 +1662,7 @@ export default {
         invoice_amount: '',
         invoice_detail: ''
       })
+      this.invoiceFileList = []
       this.dialogStatus = 'bill'
       this.dialogBillVisible = true
       this.$nextTick(() => {
@@ -1900,6 +1901,7 @@ export default {
         statement_id: this.detail.statement_id,
         pay_date: ''
       })
+      this.dialogStatus = 'pay_register'
       this.dialogPayRegVisible = true
     },
     /**
