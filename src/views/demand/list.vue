@@ -12,6 +12,14 @@
           @keyup.enter.native="handleFilter"
         />
         <el-input
+          v-model="listQuery.project_name"
+          placeholder="输入项目名称"
+          style="width: 200px"
+          class="filter-item"
+          size="mini"
+          @keyup.enter.native="handleFilter"
+        />
+        <el-input
           v-model="listQuery.demand_id"
           placeholder="输入需求单号"
           style="width: 200px"
@@ -50,6 +58,29 @@
             :value="item.id"
           />
         </el-select>
+        <el-input
+          v-model="listQuery.supplier_name"
+          placeholder="输入供应商名称"
+          style="width: 200px"
+          class="filter-item"
+          size="mini"
+          @keyup.enter.native="handleFilter"
+        />
+        <el-select
+          v-model="listQuery.status"
+          placeholder="需求状态"
+          clearable
+          class="filter-item"
+          style="width: 200px"
+          size="mini"
+        >
+          <el-option
+            v-for="item in statusMap"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
+        </el-select>
         <el-date-picker
           v-model="listQuery.date_range"
           type="daterange"
@@ -58,11 +89,12 @@
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           size="mini"
+          value-format="yyyy-MM-dd"
         />
 
         <el-button
           v-waves
-          class="filter-item"
+          class="filter-btn"
           type="primary"
           icon="el-icon-search"
           size="mini"
@@ -73,7 +105,7 @@
         <el-button
           v-permission="[1, 2, 3, 4, 5]"
           v-waves
-          class="filter-item"
+          class="filter-btn"
           type="primary"
           icon="el-icon-download"
           size="mini"
@@ -938,6 +970,9 @@
             <el-descriptions-item label="意向供应商" span="4">{{
               tempDetail.supplier ? tempDetail.supplier.name : ""
             }}</el-descriptions-item>
+            <el-descriptions-item label="供应商选择理由" span="4">{{
+              tempDetail.supplier_reason ? tempDetail.supplier_reason : ""
+            }}</el-descriptions-item>
             <el-descriptions-item label="备注说明" span="4">{{
               tempDetail.remark
             }}</el-descriptions-item>
@@ -1410,13 +1445,13 @@
               <el-descriptions-item label="核算部门" span="3">{{
                 tempTaskDetail.process.account_dep.name
               }}</el-descriptions-item>
-              <el-descriptions-item label="需求说明" span="6">{{
-                tempTaskDetail.demand.introduce
-              }}</el-descriptions-item>
+              <el-descriptions-item label="需求说明" span="6">
+                <span v-line-break="tempTaskDetail.demand.introduce" />
+              </el-descriptions-item>
               <el-descriptions-item label="需求品类">{{
                 tempTaskDetail.category | categoryText
               }}</el-descriptions-item>
-              <el-descriptions-item v-if="tempTaskDetail.remark" label="备注">{{
+              <el-descriptions-item label="备注">{{
                 tempTaskDetail.category | categoryText
               }}</el-descriptions-item>
               <el-descriptions-item
@@ -1603,6 +1638,8 @@
                 align="center"
               />
               <el-table-column prop="work_price" label="单价" align="center" />
+              <el-table-column prop="currency" label="货币" align="center" />
+              <el-table-column prop="pay_amount" label="实际支付" align="center" />
               <el-table-column prop="work_amount" label="总价" align="center" />
               <el-table-column
                 prop="deliver_date"
@@ -1613,6 +1650,7 @@
                 prop="created_at"
                 label="创建时间"
                 align="center"
+                show-overflow-tooltip
               />
             </el-table>
             <div class="file-title" style="margin-top: 20px">
@@ -1852,6 +1890,20 @@ const tagList = [
   { id: 3, name: '动态团队' }
 ]
 
+const statusMap = [
+  { id: 0, name: '待提报' },
+  { id: 1, name: '审核中' },
+  { id: 2, name: '审核未通过' },
+  { id: 3, name: '待分配供应商' },
+  { id: 4, name: '待填写物件' },
+  { id: 5, name: '物件审核中' },
+  { id: 6, name: '物件审核未通过' },
+  { id: 7, name: '待生成订单' },
+  { id: 8, name: '订单待审核' },
+  { id: 9, name: '订单审核未通过' },
+  { id: 10, name: '已生成订单' }
+]
+
 export default {
   name: 'DemandList',
   components: { Pagination, TaskDetail },
@@ -1874,23 +1926,11 @@ export default {
       return name
     },
     statusText(status) {
-      const statusMap = {
-        0: '待提报',
-        1: '审核中',
-        2: '审核未通过',
-        3: '待分配供应商',
-        4: '待填写物件',
-        5: '物件审核中',
-        6: '物件审核未通过',
-        7: '待生成订单',
-        8: '订单待审核',
-        9: '订单审核未通过',
-        10: '已生成订单'
-      }
-      return statusMap[status]
+      const existIndex = statusMap.findIndex(item => item.id === status)
+      return existIndex >= 0 ? statusMap[existIndex].name : ''
     },
     operatorText(status) {
-      const statusMap = {
+      const operatorMap = {
         0: '项目组',
         1: '项目组负责人',
         2: '项目组',
@@ -1903,7 +1943,7 @@ export default {
         9: '供管',
         10: '供应商'
       }
-      return statusMap[status]
+      return operatorMap[status]
     },
     tagText(tag) {
       let text = tag
@@ -1955,6 +1995,7 @@ export default {
     // }
 
     return {
+      statusMap: statusMap,
       statusColor(status) {
         const statusMap = {
           0: '#606266;',
@@ -1978,11 +2019,14 @@ export default {
       listLoading: true,
       listQuery: {
         name: '',
+        project_name: '',
+        supplier_name: '',
         demand_id: '',
         task_id: '',
         category_name: '',
         tag: '',
         date_range: [],
+        status: '',
         page: 1,
         page_num: 10,
         all: true
@@ -3999,10 +4043,16 @@ export default {
     margin-bottom: 20px;
     @extend %flex-space-between;
     .filter-left {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      flex-wrap: wrap;
       .filter-item {
-        &:not(:first-child) {
-          margin-left: 10px;
-        }
+        width: 15%;
+        margin: 0 10px 10px 0;
+      }
+      .filter-btn {
+        margin: 0 10px 10px 0;
       }
     }
   }

@@ -100,7 +100,9 @@
                     'margin-bottom': '20px',
                     'font-weight': 'bold',
                   }"
-                >{{ detail.demand.introduce }}</el-descriptions-item>
+                >
+                  <span v-line-break="detail.demand.introduce" />
+                </el-descriptions-item>
 
                 <el-descriptions-item label="项目名称">{{
                   detail.demand.project

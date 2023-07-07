@@ -186,7 +186,9 @@
                     'margin-bottom': '20px',
                     'font-weight': 'bold',
                   }"
-                >{{ detail.introduce }}</el-descriptions-item>
+                >
+                  <span v-line-break="detail.introduce" />
+                </el-descriptions-item>
 
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
@@ -1839,7 +1841,7 @@ export default {
         cat_id: [
           { required: true, message: '请选择需求品类', trigger: 'change' }
         ],
-        supplier_reason: [{ validator: validateReason, trigger: 'change' }]
+        supplier_reason: [{ validator: validateReason, trigger: 'change', required: false }]
       },
       posting: false,
       processLoading: false,
@@ -3714,12 +3716,17 @@ export default {
      * @param {*} supplier
      */
     intentProviderChange(supplier) {
-      if (supplier && this.intentProviderReasons.length <= 0) {
-        fetchIntentReasonList()
-          .then((response) => {
-            this.intentProviderReasons = response.data.list
-          })
-          .catch((_error) => {})
+      if (supplier) {
+        if (this.intentProviderReasons.length <= 0) {
+          fetchIntentReasonList()
+            .then((response) => {
+              this.intentProviderReasons = response.data.list
+            })
+            .catch((_error) => {})
+        }
+        this.$set(this.rules.supplier_reason[0], 'required', true)
+      } else {
+        this.$set(this.rules.supplier_reason[0], 'required', false)
       }
     }
   }

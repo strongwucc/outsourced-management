@@ -43,7 +43,23 @@
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           size="mini"
+          value-format="yyyy-MM-dd"
         />
+        <el-select
+          v-model="listQuery.statement_status"
+          placeholder="结算状态"
+          clearable
+          class="filter-item"
+          style="width: 200px"
+          size="mini"
+        >
+          <el-option
+            v-for="item in statusMap"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
+        </el-select>
 
         <el-button
           v-waves
@@ -731,6 +747,16 @@ const typeList = [
   { id: 1, name: '单一主体合同' }
 ]
 
+const statusMap = [
+  { id: 0, name: '待上传发票' },
+  { id: 1, name: '待申请用印' },
+  { id: 2, name: '待上传结算单' },
+  { id: 3, name: '待提交结算申请' },
+  { id: 4, name: '待支付登记' },
+  { id: 5, name: '已付款' },
+  { id: 6, name: '终止' }
+]
+
 export default {
   components: { Pagination, ElImageViewer, TaskDetail },
   directives: { waves, permission },
@@ -752,16 +778,8 @@ export default {
       return name
     },
     statusText(status) {
-      const statusMap = {
-        0: '待上传发票',
-        1: '待申请用印',
-        2: '待上传结算单',
-        3: '待提交结算申请',
-        4: '待支付登记',
-        5: '已付款',
-        6: '终止'
-      }
-      return statusMap[status]
+      const existIndex = statusMap.findIndex(item => item.id === status)
+      return existIndex >= 0 ? statusMap[existIndex].name : ''
     },
     typeText(type) {
       let typeText = ''
@@ -781,6 +799,7 @@ export default {
   },
   data() {
     return {
+      statusMap: statusMap,
       globelCheckedAll: false,
       expandRowKeys: [],
       total: 0,
@@ -793,6 +812,7 @@ export default {
         supplier_name: '',
         tag: '',
         date_range: [],
+        statement_status: '',
         page: 1,
         page_num: 10,
         all: true

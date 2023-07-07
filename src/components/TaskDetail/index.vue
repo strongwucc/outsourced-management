@@ -51,9 +51,9 @@
               <el-descriptions-item label="需求品类" span="3">{{
                 tempTaskDetail.category | categoryText
               }}</el-descriptions-item>
-              <el-descriptions-item label="需求说明" span="6">{{
-                tempTaskDetail.demand.introduce
-              }}</el-descriptions-item>
+              <el-descriptions-item label="需求说明" span="6">
+                <span v-line-break="tempTaskDetail.demand.introduce" />
+              </el-descriptions-item>
               <el-descriptions-item label="需求附件" span="4">
                 <div class="file-box" style="width: 100%">
                   <div
@@ -131,7 +131,7 @@
                   <el-descriptions-item label="物件类别">{{
                     tempTaskDetail.category | categoryText
                   }}</el-descriptions-item>
-                  <el-descriptions-item v-if="tempTaskDetail.remark" label="备注">{{
+                  <el-descriptions-item label="备注">{{
                     tempTaskDetail.remark
                   }}</el-descriptions-item>
                 </el-descriptions>
@@ -264,6 +264,8 @@
                 align="center"
               />
               <el-table-column prop="work_price" label="单价" align="center" />
+              <el-table-column prop="currency" label="货币" align="center" />
+              <el-table-column prop="pay_amount" label="实际支付" align="center" />
               <el-table-column prop="work_amount" label="总价" align="center" />
               <el-table-column
                 prop="deliver_date"
@@ -274,6 +276,7 @@
                 prop="created_at"
                 label="创建时间"
                 align="center"
+                show-overflow-tooltip
               />
             </el-table>
             <div class="file-title" style="margin-top: 20px">

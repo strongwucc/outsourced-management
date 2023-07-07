@@ -66,6 +66,15 @@
       </el-table-column>
     </el-table>
 
+    <!--分页-->
+    <pagination
+      v-show="total > 0"
+      :total="total"
+      :page.sync="listQuery.page"
+      :limit.sync="listQuery.page_num"
+      @pagination="getList"
+    />
+
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogFormVisible"

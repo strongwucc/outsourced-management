@@ -121,7 +121,9 @@
                     'margin-bottom': '20px',
                     'font-weight': 'bold',
                   }"
-                >{{ detail.demand.introduce }}</el-descriptions-item>
+                >
+                  <span v-line-break="detail.demand.introduce" />
+                </el-descriptions-item>
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
@@ -282,7 +284,7 @@
                 plain
                 @click="handleRefuseReceipt()"
               >驳回</el-button>
-              <el-button
+              <!-- <el-button
                 v-permission="[0]"
                 icon="el-icon-document"
                 type="primary"
@@ -291,7 +293,7 @@
                 @click="handleReconcile(false)"
               >
                 生成结算单
-              </el-button>
+              </el-button> -->
               <el-button
                 v-if="detail.file_url"
                 v-permission="[1, 2]"
@@ -1034,6 +1036,11 @@ export default {
               this.handleDetail()
             } else {
               this.detail = {}
+            }
+            if (this.$route.path === '/pending/gys/order/check') {
+              this.list.forEach(listItem => {
+                this.$refs.listTable.toggleRowSelection(listItem, true)
+              })
             }
           })
         })

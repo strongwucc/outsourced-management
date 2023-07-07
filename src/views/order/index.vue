@@ -43,6 +43,7 @@
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           size="mini"
+          value-format="yyyy-MM-dd"
         />
 
         <el-button

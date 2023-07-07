@@ -51,7 +51,23 @@
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           size="mini"
+          value-format="yyyy-MM-dd"
         />
+        <el-select
+          v-model="listQuery.receipts_status"
+          placeholder="订单状态"
+          clearable
+          class="filter-item"
+          style="width: 200px"
+          size="mini"
+        >
+          <el-option
+            v-for="item in statusMap"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
+        </el-select>
 
         <el-button
           v-waves
@@ -585,6 +601,13 @@ import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
 import { exportOrders } from '@/api/system/download'
 
+const statusMap = [
+  { id: 0, name: '资源审核中' },
+  { id: 1, name: '资源已验收' },
+  { id: 2, name: '验收不通过' },
+  { id: 3, name: '物件已终止' },
+  { id: 4, name: '已生成对帐单' }
+]
 export default {
   components: { Pagination, TaskDetail },
   directives: { waves, permission },
@@ -606,7 +629,7 @@ export default {
       return name
     },
     taskStatusText(status) {
-      const statusMap = {
+      const taskStatusMap = {
         0: '资源审核中',
         1: '变更中',
         2: '资源已验收',
@@ -614,30 +637,25 @@ export default {
         4: '物件已终止',
         5: '已生成对帐单'
       }
-      return statusMap[status]
+      return taskStatusMap[status]
     },
     statusText(status) {
-      const statusMap = {
-        0: '资源审核中',
-        1: '资源已验收',
-        2: '验收不通过',
-        3: '物件已终止',
-        4: '已生成对帐单'
-      }
-      return statusMap[status]
+      const existIndex = statusMap.findIndex(item => item.id === status)
+      return existIndex >= 0 ? statusMap[existIndex].name : ''
     }
   },
   data() {
     return {
+      statusMap: statusMap,
       statusColor(status) {
-        const statusMap = {
+        const colorStatusMap = {
           0: '#606266;',
           1: '#606266',
           2: '#606266',
           3: '#606266',
           4: '#cccccc'
         }
-        return statusMap[status]
+        return colorStatusMap[status]
       },
       globelCheckedAll: false,
       expandRowKeys: [],
@@ -652,6 +670,7 @@ export default {
         supplier_name: '',
         tag: '',
         date_range: [],
+        receipts_status: '',
         page: 1,
         page_num: 10,
         all: true

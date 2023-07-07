@@ -431,7 +431,7 @@
           </div>
           <el-divider />
           <div
-            v-if="detail.invoice_file"
+            v-if="detail.invoice_image"
             v-permission="[3]"
             class="info-content"
           >
@@ -1255,7 +1255,7 @@ export default {
           { required: true, message: '请输入发票号码', trigger: 'blur' }
         ],
         invoice_amount: [
-          { required: true, message: '请输入价格合计', trigger: 'blur' }
+          { required: true, message: '请输入价格合计，只能输入数字，不能输入符号及文字', trigger: 'blur' }
         ],
         invoice_detail: [
           { required: true, message: '请输入发票明细', trigger: 'blur' }

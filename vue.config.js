@@ -43,8 +43,12 @@ module.exports = {
     },
     // before: require('./mock/mock-server.js'),
     proxy: {
+      // '/': {
+      //   target: 'http://pms.miour.cn', // 目标服务器
+      //   changeOrigin: true
+      // }
       '/': {
-        target: 'http://pms.miour.cn', // 目标服务器
+        target: 'https://wb-test.xindong.com', // 目标服务器
         changeOrigin: true
       }
       // '/': {
