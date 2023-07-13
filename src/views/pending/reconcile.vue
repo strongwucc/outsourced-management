@@ -923,7 +923,7 @@
         <el-form-item label="价格合计:" prop="invoice_amount">
           <el-input
             v-model="tempBill.invoice_amount"
-            placeholder="请输入价格合计"
+            placeholder="请输入价格合计，只能输入数字，不能输入符号及文字"
             class="dialog-form-item"
           />
         </el-form-item>

@@ -239,7 +239,7 @@
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="意向供应商"
                 >{{
-                  detail.supplier ? detail.supplier.name : ""
+                  detail.intentSupplier ? detail.intentSupplier.name : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
@@ -3150,7 +3150,7 @@ export default {
       this.detail = Object.assign({}, this.detail, { assignLoading: true })
       this.demandSupplierFileList = []
       try {
-        const reasonData = await fetchReasonList()
+        const reasonData = await fetchReasonList({ page_num: 10000 })
         this.providerReasons = reasonData.data.list
 
         const providerData = await fetchAllProvider({
@@ -3718,7 +3718,7 @@ export default {
     intentProviderChange(supplier) {
       if (supplier) {
         if (this.intentProviderReasons.length <= 0) {
-          fetchIntentReasonList()
+          fetchIntentReasonList({ page_num: 10000 })
             .then((response) => {
               this.intentProviderReasons = response.data.list
             })
