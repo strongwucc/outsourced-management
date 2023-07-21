@@ -406,7 +406,7 @@
               </el-button>
               <el-button
                 v-permission="[3]"
-                :disabled="[1, 2].indexOf(detail.statement_status) < 0"
+                :disabled="[1].indexOf(detail.statement_status) < 0"
                 type="primary"
                 icon="el-icon-jinzhi"
                 size="mini"

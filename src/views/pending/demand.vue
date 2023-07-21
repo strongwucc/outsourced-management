@@ -2515,7 +2515,8 @@ export default {
           files: this.detail.files || [],
           remark: this.detail.remark || '',
           tag: parseInt(this.detail.tag) || 0,
-          supplier: ''
+          supplier: '',
+          copy_demand_id: this.detail.demand_id
         }
       )
       this.demandFileList = this.temp.files.map((file) => {
