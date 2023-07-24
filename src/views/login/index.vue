@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="login-box">
       <div class="box-left">
-        <img src="@/assets/login/left_bg.png">
+        <!-- <img src="@/assets/login/left_bg.png"> -->
       </div>
       <div class="box-right">
         <!-- <el-form

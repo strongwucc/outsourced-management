@@ -47,8 +47,12 @@ module.exports = {
       //   target: "http://pms.madainfo.cn", // 目标服务器
       //   changeOrigin: true,
       // },
+      // '/': {
+      //   target: 'http://pms-test.madainfo.cn', // 目标服务器
+      //   changeOrigin: true
+      // }
       '/': {
-        target: 'http://pms-test.madainfo.cn', // 目标服务器
+        target: 'http://120.55.160.101:81', // 目标服务器
         changeOrigin: true
       }
       // '/': {
