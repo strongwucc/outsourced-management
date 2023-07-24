@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="login-box">
       <div class="box-left">
-        <!-- <img src="@/assets/login/left_bg.png"> -->
+        <img src="@/assets/login/left_bg.png">
       </div>
       <div class="box-right">
         <!-- <el-form
@@ -71,11 +71,11 @@
           label-position="left"
         >
           <div class="title">
-            <!-- <div class="title-logo">
+            <div class="title-logo">
               <img src="@/assets/login/logo.png">
-            </div> -->
+            </div>
             <div class="title-name">
-              <!-- <div class="large">外包管理系统</div> -->
+              <div class="large">外包管理系统</div>
               <div class="small">Outsourcing management system</div>
             </div>
           </div>
@@ -477,7 +477,7 @@ $light_gray: #eee;
             }
           }
           .title-name {
-            // margin-left: 15px;
+            margin-left: 15px;
             .large {
               height: 18px;
               line-height: 18px;
