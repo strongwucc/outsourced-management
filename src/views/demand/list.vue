@@ -968,7 +968,7 @@
               </div>
             </el-descriptions-item>
             <el-descriptions-item label="意向供应商" span="4">{{
-              tempDetail.intentSupplier ? tempDetail.intentSupplier.name : ""
+              tempDetail.intent_supplier ? tempDetail.intent_supplier.name : ""
             }}</el-descriptions-item>
             <el-descriptions-item label="供应商选择理由" span="4">{{
               tempDetail.supplier_reason ? tempDetail.supplier_reason : ""

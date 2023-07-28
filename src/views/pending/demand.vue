@@ -239,7 +239,7 @@
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="意向供应商"
                 >{{
-                  detail.intentSupplier ? detail.intentSupplier.name : ""
+                  detail.intent_supplier ? detail.intent_supplier.name : ""
                 }}</el-descriptions-item>
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
@@ -3728,6 +3728,7 @@ export default {
         this.$set(this.rules.supplier_reason[0], 'required', true)
       } else {
         this.$set(this.rules.supplier_reason[0], 'required', false)
+        this.$set(this.temp, 'supplier_reason', '')
       }
     }
   }
