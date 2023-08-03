@@ -1251,7 +1251,7 @@ export default {
       if (this.exporting) {
         return false
       }
-      const { receipt_id, task_id, order_id, project_name, supplier_name, date_range } = this.listQuery
+      const { receipt_id, task_id, order_id, project_name, supplier_name, date_range, receipts_status } = this.listQuery
       let filter = {
         receipt_id,
         task_id,
@@ -1259,6 +1259,7 @@ export default {
         project_name,
         supplier_name,
         date_range,
+        receipts_status,
         class_name: 'receipt'
       }
 
