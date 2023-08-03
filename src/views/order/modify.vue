@@ -90,6 +90,7 @@
           range-separator="至"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
+          value-format="yyyy-MM-dd"
           size="mini"
         />
 
@@ -110,6 +111,7 @@
           type="primary"
           icon="el-icon-download"
           size="mini"
+          :loading="exporting"
           @click="handleExportOrders"
         >
           导出
@@ -279,8 +281,11 @@
               <el-table-column prop="price" label="单价" align="center" />
               <el-table-column label="总价" align="center" min-width="150">
                 <template slot-scope="scope">
+                  <span v-if="scope.row.pay_amount > 0">
+                    {{ scope.row.currency }} {{ scope.row.pay_amount }}
+                  </span>
                   <div
-                    v-if="scope.row.new_amount !== scope.row.old_amount"
+                    v-else-if="scope.row.new_amount !== scope.row.old_amount"
                     class="modify-color"
                   >
                     <span>{{ scope.row.old_amount }}</span>
@@ -587,7 +592,8 @@ export default {
         change_reason: '',
         initiator: undefined,
         created_at: ''
-      }
+      },
+      exporting: false
     }
   },
   created() {
@@ -852,6 +858,9 @@ export default {
      * 导出
      */
     handleExportOrders() {
+      if (this.exporting) {
+        return false
+      }
       const { change_id, task_id, project_name, supplier_name, sponsor, change_type, change_status, date_range } = this.listQuery
       let filter = {
         change_id,
@@ -875,13 +884,15 @@ export default {
       if (checked.length > 0) {
         filter = Object.assign({}, filter, { change_id: checked })
       }
-
+      this.exporting = true
       exportOrders(filter)
         .then((response) => {
+          this.exporting = false
           const fileName = `变更单-${this.$moment().format('YYYYMMD')}.xlsx`
           downloadFileStream(fileName, response)
         })
         .catch((error) => {
+          this.exporting = false
           console.log(error)
         })
     }
@@ -921,6 +932,7 @@ export default {
     .filter-right {
       display: flex;
       flex-wrap: nowrap;
+      margin-bottom: 10px;
     }
   }
   .list-container {

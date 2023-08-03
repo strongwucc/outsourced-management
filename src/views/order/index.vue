@@ -43,6 +43,7 @@
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           size="mini"
+          value-format="yyyy-MM-dd"
         />
 
         <el-button
@@ -62,6 +63,7 @@
           type="primary"
           icon="el-icon-download"
           size="mini"
+          :loading="exporting"
           @click="handleExportOrders"
         >
           导出
@@ -178,6 +180,7 @@
               >
                 <template slot-scope="scope">
                   <el-image
+                    v-if="scope.row.image_url"
                     style="width: 50px; height: 50px"
                     :src="scope.row.image_url"
                   >
@@ -188,6 +191,7 @@
                       />
                     </div>
                   </el-image>
+                  <span v-else>-</span>
                 </template>
               </el-table-column>
               <el-table-column
@@ -232,11 +236,17 @@
                 align="center"
               />
               <el-table-column
-                prop="amount"
                 label="总价"
                 min-width="80"
                 align="center"
-              />
+              >
+                <template slot-scope="scope">
+                  <span v-if="scope.row.pay_amount > 0">
+                    {{ scope.row.currency }} {{ scope.row.pay_amount }}
+                  </span>
+                  <span v-else>{{ scope.row.amount }}</span>
+                </template>
+              </el-table-column>
               <el-table-column
                 label="停留时间"
                 align="center"
@@ -913,7 +923,8 @@ export default {
       dialogRejectReasonVisible: false,
       dialogStopReasonVisible: false,
       fileList: [],
-      posting: false
+      posting: false,
+      exporting: false
     }
   },
   created() {
@@ -1461,6 +1472,9 @@ export default {
      * 导出
      */
     handleExportOrders() {
+      if (this.exporting) {
+        return false
+      }
       const { order_id, task_id, project_name, supplier_name, date_range } = this.listQuery
       let filter = {
         order_id,
@@ -1482,12 +1496,15 @@ export default {
         filter = Object.assign({}, filter, { order_id: checked })
       }
 
+      this.exporting = true
       exportOrders(filter)
         .then((response) => {
+          this.exporting = false
           const fileName = `订单-${this.$moment().format('YYYYMMD')}.xlsx`
           downloadFileStream(fileName, response)
         })
         .catch((error) => {
+          this.exporting = false
           console.log(error)
         })
     },

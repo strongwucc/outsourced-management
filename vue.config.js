@@ -43,20 +43,24 @@ module.exports = {
     },
     // before: require('./mock/mock-server.js'),
     proxy: {
-      // "/": {
-      //   target: "http://pms.madainfo.cn", // 目标服务器
-      //   changeOrigin: true,
-      // },
+      // '/': {
+      //   target: 'http://pms.miour.cn', // 目标服务器
+      //   changeOrigin: true
+      // }
       '/': {
-        target: 'http://pms-test.madainfo.cn', // 目标服务器
+        target: 'https://wb-test.xindong.com', // 目标服务器
         changeOrigin: true
       }
+      // '/': {
+      //   target: 'http://192.168.1.44:81', // 目标服务器
+      //   changeOrigin: true
+      // }
       // '/': {
       //   target: 'http://pms.test', // 目标服务器
       //   changeOrigin: true
       // }
     },
-    host: 'localhost'
+    host: '192.168.1.73'
   },
   configureWebpack: {
     // provide the app's title in webpack's name field, so that

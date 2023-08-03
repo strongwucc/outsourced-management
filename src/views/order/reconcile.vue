@@ -43,7 +43,23 @@
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           size="mini"
+          value-format="yyyy-MM-dd"
         />
+        <el-select
+          v-model="listQuery.statement_status"
+          placeholder="结算状态"
+          clearable
+          class="filter-item"
+          style="width: 200px"
+          size="mini"
+        >
+          <el-option
+            v-for="item in statusMap"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
+        </el-select>
 
         <el-button
           v-waves
@@ -62,6 +78,7 @@
           type="primary"
           icon="el-icon-download"
           size="mini"
+          :loading="exporting"
           @click="handleExportOrders"
         >
           导出
@@ -176,6 +193,7 @@
               <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
+                    v-if="scope.row.image"
                     style="width: 50px; height: 50px"
                     :src="scope.row.image"
                   >
@@ -186,6 +204,7 @@
                       />
                     </div>
                   </el-image>
+                  <span v-else>-</span>
                 </template>
               </el-table-column>
               <el-table-column
@@ -216,7 +235,14 @@
               />
               <el-table-column prop="work_num" label="数量" align="center" />
               <el-table-column prop="work_price" label="单价" align="center" />
-              <el-table-column prop="work_amount" label="总价" align="center" />
+              <el-table-column label="总价" align="center">
+                <template slot-scope="scope">
+                  <span v-if="scope.row.pay_amount > 0">
+                    {{ scope.row.currency }} {{ scope.row.pay_amount }}
+                  </span>
+                  <span v-else>{{ scope.row.work_amount }}</span>
+                </template>
+              </el-table-column>
               <!-- <el-table-column
                 label="作品"
                 align="center"
@@ -721,6 +747,16 @@ const typeList = [
   { id: 1, name: '单一主体合同' }
 ]
 
+const statusMap = [
+  { id: 0, name: '待上传发票' },
+  { id: 1, name: '待申请用印' },
+  { id: 2, name: '待上传结算单' },
+  { id: 3, name: '待提交结算申请' },
+  { id: 4, name: '待支付登记' },
+  { id: 5, name: '已付款' },
+  { id: 6, name: '终止' }
+]
+
 export default {
   components: { Pagination, ElImageViewer, TaskDetail },
   directives: { waves, permission },
@@ -742,16 +778,8 @@ export default {
       return name
     },
     statusText(status) {
-      const statusMap = {
-        0: '待上传发票',
-        1: '待申请用印',
-        2: '待上传结算单',
-        3: '待提交结算申请',
-        4: '待支付登记',
-        5: '已付款',
-        6: '终止'
-      }
-      return statusMap[status]
+      const existIndex = statusMap.findIndex(item => item.id === status)
+      return existIndex >= 0 ? statusMap[existIndex].name : ''
     },
     typeText(type) {
       let typeText = ''
@@ -771,6 +799,7 @@ export default {
   },
   data() {
     return {
+      statusMap: statusMap,
       globelCheckedAll: false,
       expandRowKeys: [],
       total: 0,
@@ -783,6 +812,7 @@ export default {
         supplier_name: '',
         tag: '',
         date_range: [],
+        statement_status: '',
         page: 1,
         page_num: 10,
         all: true
@@ -857,7 +887,8 @@ export default {
       },
       modifyRules: {},
       pact: {},
-      dialogPactVisible: false
+      dialogPactVisible: false,
+      exporting: false
     }
   },
   created() {
@@ -1317,6 +1348,9 @@ export default {
      * 导出
      */
     handleExportOrders() {
+      if (this.exporting) {
+        return false
+      }
       const { statement_id, task_id, project_name, supplier_name, date_range } = this.listQuery
       let filter = {
         statement_id,
@@ -1337,13 +1371,15 @@ export default {
       if (checked.length > 0) {
         filter = Object.assign({}, filter, { statement_id: checked })
       }
-
+      this.exporting = true
       exportOrders(filter)
         .then((response) => {
+          this.exporting = false
           const fileName = `结算单-${this.$moment().format('YYYYMMD')}.xlsx`
           downloadFileStream(fileName, response)
         })
         .catch((error) => {
+          this.exporting = false
           console.log(error)
         })
     },
@@ -1448,6 +1484,7 @@ export default {
     .filter-right {
       display: flex;
       flex-wrap: nowrap;
+      margin-bottom: 10px;
     }
   }
   .list-container {

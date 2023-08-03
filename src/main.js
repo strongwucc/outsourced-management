@@ -20,6 +20,8 @@ import '@/permission' // permission control
 import '@/directive/index'
 
 import { baseApi } from './utils/env'
+import './utils/filters'
+import './utils/directives'
 
 /**
  * If you don't want to use mock-server

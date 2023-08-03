@@ -110,10 +110,10 @@
 
 <script>
 import {
-  fetchReasonList,
-  createReason,
-  updateReason,
-  deleteReason
+  fetchIntentReasonList,
+  createIntentReason,
+  updateIntentReason,
+  deleteIntentReason
 } from '@/api/system/reason'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
@@ -156,7 +156,7 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      fetchReasonList(this.listQuery)
+      fetchIntentReasonList(this.listQuery)
         .then((response) => {
           this.listLoading = false
           this.list = response.data.list
@@ -189,7 +189,7 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           // this.temp.id = parseInt(Math.random() * 100) + 1024
-          createReason(this.temp)
+          createIntentReason(this.temp)
             .then((response) => {
               this.temp.id = response.data.id
               this.list.unshift(this.temp)
@@ -216,7 +216,7 @@ export default {
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          updateReason(this.temp)
+          updateIntentReason(this.temp)
             .then(() => {
               const index = this.list.findIndex((v) => v.id === this.temp.id)
               this.list.splice(index, 1, this.temp)
@@ -233,7 +233,7 @@ export default {
       })
     },
     handleDelete(row, index) {
-      deleteReason({ id: row.id })
+      deleteIntentReason({ id: row.id })
         .then(() => {
           this.$notify({
             title: '成功',

@@ -100,7 +100,9 @@
                     'margin-bottom': '20px',
                     'font-weight': 'bold',
                   }"
-                >{{ detail.demand.introduce }}</el-descriptions-item>
+                >
+                  <span v-line-break="detail.demand.introduce" />
+                </el-descriptions-item>
 
                 <el-descriptions-item label="项目名称">{{
                   detail.demand.project
@@ -126,6 +128,15 @@
                   label="经费使用"
                 >
                   {{
+                    [
+                      detail.demand.flow && detail.demand.flow.budget_dep
+                        ? detail.demand.flow.budget_dep.employ_budget
+                        : 0,
+                      detail.demand.flow && detail.demand.flow.budget_dep
+                        ? detail.demand.flow.budget_dep.budget
+                        : 0,
+                    ] | percentage
+                  }}（{{
                     detail.demand.flow && detail.demand.flow.budget_dep
                       ? detail.demand.flow.budget_dep.employ_budget
                       : 0
@@ -133,7 +144,7 @@
                     detail.demand.flow && detail.demand.flow.budget_dep
                       ? detail.demand.flow.budget_dep.budget
                       : 0
-                  }}
+                  }}）
                 </el-descriptions-item>
 
                 <el-descriptions-item label="需求创建人">{{
@@ -163,10 +174,13 @@
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="意向供应商"
-                  span="2"
                 >{{
                   detail.demand.supplier ? detail.demand.supplier.name : ""
                 }}</el-descriptions-item>
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="分配理由"
+                >{{ detail.supplier_reason || "" }}</el-descriptions-item>
                 <el-descriptions-item
                   v-if="$store.getters.roles.indexOf(0) < 0"
                   label="备注说明"
@@ -243,6 +257,7 @@
                 icon="el-icon-document-add"
                 size="mini"
                 plain
+                :loading="addTaskLoading"
                 @click.stop="handleCreateTask()"
               >
                 新增物件
@@ -346,6 +361,9 @@
               <el-table-column label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
+                    v-if="
+                      scope.row.display_area.length > 0 || scope.row.image_url
+                    "
                     style="width: 50px; height: 50px"
                     :src="
                       scope.row.display_area.length > 0
@@ -360,6 +378,7 @@
                       />
                     </div>
                   </el-image>
+                  <span v-else>-</span>
                 </template>
               </el-table-column>
               <el-table-column
@@ -378,7 +397,14 @@
               <el-table-column prop="nums" label="数量" align="center" />
               <el-table-column prop="unit" label="单位" align="center" />
               <el-table-column prop="price" label="单价" align="center" />
-              <el-table-column prop="amount" label="总价" align="center" />
+              <el-table-column label="总价" align="center">
+                <template slot-scope="scope">
+                  <span v-if="scope.row.pay_amount > 0">
+                    {{ scope.row.currency }} {{ scope.row.pay_amount }}
+                  </span>
+                  <span v-else>{{ scope.row.amount }}</span>
+                </template>
+              </el-table-column>
               <el-table-column
                 prop="stay_time"
                 label="停留时间"
@@ -451,8 +477,11 @@
                     下载作品
                   </el-button> -->
                   <el-upload
-                    v-if="[0, 4].indexOf(scope.row.task_status) >= 0"
-                    v-permission="[0]"
+                    v-if="
+                      scope.row.category && scope.row.category.thumbnail === 1 &&
+                        [0, 4].indexOf(scope.row.task_status) >= 0"
+                    v-permission="
+                      [0]"
                     class="upload-box"
                     :action="`${$baseUrl}/api/tools/upfile`"
                     :show-file-list="false"
@@ -635,6 +664,56 @@
               />
             </el-form-item>
 
+            <el-form-item label="单价:" prop="price">
+              <el-input
+                v-model="tempTask.price"
+                :placeholder="`请输入单价${
+                  supplierCategoryPrice > 0
+                    ? '，不能超过' + supplierCategoryPrice
+                    : ''
+                }`"
+                class="dialog-form-item"
+              />
+            </el-form-item>
+
+            <el-form-item label="支付货币:" prop="currency">
+              <el-select
+                v-model="tempTask.currency"
+                class="dialog-form-item"
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="(item, itemIndex) in [
+                    '人民币',
+                    '美元',
+                    '英镑',
+                    '澳元',
+                    '日元',
+                    '欧元 ',
+                    '加元',
+                    '新元',
+                    '纽元',
+                    '瑞郎',
+                  ]"
+                  :key="itemIndex"
+                  :label="item"
+                  :value="item"
+                />
+              </el-select>
+            </el-form-item>
+
+            <el-form-item
+              v-if="tempTask.currency !== '人民币'"
+              label="实际支付外币金额:"
+              prop="pay_amount"
+            >
+              <el-input
+                v-model="tempTask.pay_amount"
+                placeholder="请输入实际支付外币金额"
+                class="dialog-form-item"
+              />
+            </el-form-item>
+
             <el-form-item label="完成日期:" prop="deliver_date">
               <el-date-picker
                 v-model="tempTask.deliver_date"
@@ -664,14 +743,14 @@
                 property.type === 1
                   ? [
                     {
-                      required: true,
+                      required: false,
                       message: `请选择${property.name}`,
                       trigger: 'change',
                     },
                   ]
                   : [
                     {
-                      required: true,
+                      required: false,
                       message: `请输入${property.name}`,
                       trigger: 'blur',
                     },
@@ -701,28 +780,30 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item>
-              <div slot="label" class="form-title is-required">缩略图</div>
-            </el-form-item>
-            <el-form-item prop="task_image" label-width="0">
-              <el-upload
-                class="task-image-uploader"
-                :action="`${$baseUrl}/api/tools/upfile`"
-                :show-file-list="false"
-                :on-success="handleTaskImageSuccess"
-                :on-change="handleTaskImageChange"
-              >
-                <img
-                  v-if="tempTask.task_image_url"
-                  :src="tempTask.task_image_url"
-                  class="task-image"
+            <template v-if="tempTaskCategory.thumbnail === 1">
+              <el-form-item>
+                <div slot="label" class="form-title is-required">缩略图</div>
+              </el-form-item>
+              <el-form-item prop="task_image" label-width="0">
+                <el-upload
+                  class="task-image-uploader"
+                  :action="`${$baseUrl}/api/tools/upfile`"
+                  :show-file-list="false"
+                  :on-success="handleTaskImageSuccess"
+                  :on-change="handleTaskImageChange"
                 >
-                <i v-else class="el-icon-plus task-image-uploader-icon" />
-                <div slot="tip" class="el-upload__tip">
-                  只能上传jpg/png/jpeg文件，且不超过2M
-                </div>
-              </el-upload>
-            </el-form-item>
+                  <img
+                    v-if="tempTask.task_image_url"
+                    :src="tempTask.task_image_url"
+                    class="task-image"
+                  >
+                  <i v-else class="el-icon-plus task-image-uploader-icon" />
+                  <div slot="tip" class="el-upload__tip">
+                    只能上传jpg/png/jpeg文件，且不超过2M
+                  </div>
+                </el-upload>
+              </el-form-item>
+            </template>
             <el-form-item>
               <div slot="label" class="form-title is-required">
                 新增物件原因
@@ -910,6 +991,7 @@ import {
 } from '@/api/order/index'
 import { createTask } from '@/api/demand/task'
 import { downloadFile } from '@/api/system/file'
+import { queryCategoryPrice } from '@/api/provider/index'
 import { downloadFileStream, baseName } from '@/utils/index'
 
 import waves from '@/directive/waves'
@@ -1020,6 +1102,8 @@ export default {
       },
       dialogStatus: '',
       dialogTaskVisible: false,
+      addTaskLoading: false,
+      supplierCategoryPrice: 0,
       tempTaskCategory: {
         category_id: '',
         category_name: '',
@@ -1034,6 +1118,9 @@ export default {
         task_image_url: '',
         work_unit: '',
         work_num: '',
+        price: '',
+        currency: '人民币',
+        pay_amount: '',
         deliver_date: '',
         remark: '',
         extend: [],
@@ -1061,6 +1148,35 @@ export default {
                 callback()
               } else {
                 callback(new Error('单位数量必须大于零'))
+              }
+            },
+            trigger: 'blur'
+          }
+        ],
+        price: [
+          { required: true, message: '请输入单价', trigger: 'blur' },
+          {
+            validator: (rule, value, callback) => {
+              if (value > 0) {
+                callback()
+              } else {
+                callback(new Error('单价必须大于零'))
+              }
+            },
+            trigger: 'blur'
+          }
+        ],
+        pay_amount: [
+          {
+            validator: (rule, value, callback) => {
+              if (value === '') {
+                callback()
+              } else {
+                if (value > 0) {
+                  callback()
+                } else {
+                  callback(new Error('请输入正确的金额'))
+                }
               }
             },
             trigger: 'blur'
@@ -1348,7 +1464,7 @@ export default {
               this.$message.error(errorName)
               return true
             }
-            if (taskItem.display_area.length <= 0) {
+            if (taskItem.category && taskItem.category.thumbnail === 1 && taskItem.display_area.length <= 0) {
               const errorName = `[${taskItem.task_id}]: 请上传该物件的展示图`
               this.$message.error(errorName)
               return true
@@ -1393,7 +1509,7 @@ export default {
             this.$message.error(errorName)
             return true
           }
-          if (taskItem.display_area.length <= 0) {
+          if (taskItem.category && taskItem.category.thumbnail === 1 && taskItem.display_area.length <= 0) {
             const errorName = `[${taskItem.task_id}]: 请上传该物件的展示图`
             this.$message.error(errorName)
             return true
@@ -1627,6 +1743,9 @@ export default {
         task_image: '',
         work_unit: '',
         work_num: '',
+        price: '',
+        currency: '人民币',
+        pay_amount: '',
         deliver_date: '',
         remark: '',
         extend: []
@@ -1635,7 +1754,16 @@ export default {
     /**
      * 新增物件弹窗
      */
-    handleCreateTask() {
+    async handleCreateTask() {
+      this.addTaskLoading = true
+      const supplier_id = this.detail.supplier_id || 0
+      const cat_id = this.detail.demand.cat_id
+      const priceData = await queryCategoryPrice({ supplier_id, cat_id }).catch(
+        (_error) => {}
+      )
+      if (priceData) {
+        this.supplierCategoryPrice = parseFloat(priceData.data.max_price)
+      }
       this.tempTaskCategory = this.detail.demand.category
       this.resetTaskTemp()
       this.tempTask = Object.assign({}, this.tempTask, {
@@ -1651,6 +1779,7 @@ export default {
         })
       })
       this.dialogStatus = 'create_task'
+      this.addTaskLoading = false
       this.dialogTaskVisible = true
       this.$nextTick(() => {
         this.$refs['taskDataForm'].clearValidate()

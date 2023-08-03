@@ -103,21 +103,41 @@
                     'margin-bottom': '20px',
                     'font-weight': 'bold',
                   }"
-                >{{
-                  detail.demand.introduce
-                }}</el-descriptions-item>
+                >
+                  <span v-line-break="detail.demand.introduce" />
+                </el-descriptions-item>
 
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="发起部门">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="发起部门"
+                >{{
                   detail.demand.flow ? detail.demand.flow.launch_dep.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="核算部门">{{
-                  detail.demand.flow ? detail.demand.flow.account_dep.name : ""
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="核算部门"
+                >{{
+                  detail.demand.flow
+                    ? detail.demand.flow.account_dep.name
+                    : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="经费使用">
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="经费使用"
+                >
                   {{
+                    [
+                      detail.demand.flow && detail.demand.flow.budget_dep
+                        ? detail.demand.flow.budget_dep.employ_budget
+                        : 0,
+                      detail.demand.flow && detail.demand.flow.budget_dep
+                        ? detail.demand.flow.budget_dep.budget
+                        : 0,
+                    ] | percentage
+                  }}（{{
                     detail.demand.flow && detail.demand.flow.budget_dep
                       ? detail.demand.flow.budget_dep.employ_budget
                       : 0
@@ -125,7 +145,7 @@
                     detail.demand.flow && detail.demand.flow.budget_dep
                       ? detail.demand.flow.budget_dep.budget
                       : 0
-                  }}
+                  }}）
                 </el-descriptions-item>
 
                 <el-descriptions-item label="需求创建人">{{
@@ -134,12 +154,21 @@
                 <el-descriptions-item label="创建时间">{{
                   detail.demand.created_at
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="意向供应商" span="2">{{
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="意向供应商"
+                >{{
                   detail.supplier ? detail.supplier.name : ""
                 }}</el-descriptions-item>
-                <el-descriptions-item v-if="$store.getters.roles.indexOf(0) < 0" label="备注说明" span="4">{{
-                  detail.demand.remark
-                }}</el-descriptions-item>
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="分配理由"
+                >{{ detail.supplier_reason || "" }}</el-descriptions-item>
+                <el-descriptions-item
+                  v-if="$store.getters.roles.indexOf(0) < 0"
+                  label="备注说明"
+                  span="4"
+                >{{ detail.demand.remark }}</el-descriptions-item>
               </el-descriptions>
             </div>
             <el-table :data="[detail]" class="table-info" width="100%" border>
@@ -304,6 +333,7 @@
               <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
+                    v-if="scope.row.image_url"
                     style="width: 50px; height: 50px"
                     :src="scope.row.image_url"
                   >
@@ -314,6 +344,7 @@
                       />
                     </div>
                   </el-image>
+                  <span v-else>-</span>
                 </template>
               </el-table-column>
               <el-table-column
@@ -334,7 +365,12 @@
               </el-table-column>
               <el-table-column label="交付日期" width="200" align="center">
                 <template slot-scope="scope">
-                  <div v-if="scope.row.deliver_old_date !== scope.row.deliver_new_date" class="modify-color">
+                  <div
+                    v-if="
+                      scope.row.deliver_old_date !== scope.row.deliver_new_date
+                    "
+                    class="modify-color"
+                  >
                     <span>{{ scope.row.deliver_old_date }}</span>
                     <i class="el-icon-right" />
                     <span>{{ scope.row.deliver_new_date }}</span>
@@ -346,12 +382,17 @@
               </el-table-column>
               <el-table-column label="数量" align="center">
                 <template slot-scope="scope">
-                  <div v-if="scope.row.old_nums !== scope.row.new_nums" class="modify-color">
+                  <div
+                    v-if="scope.row.old_nums !== scope.row.new_nums"
+                    class="modify-color"
+                  >
                     <span>{{ scope.row.old_nums }}</span>
                     <i class="el-icon-right" />
                     <span>{{ scope.row.new_nums }}</span>
                   </div>
-                  <div v-else class="modify-color">{{ scope.row.new_nums }}</div>
+                  <div v-else class="modify-color">
+                    {{ scope.row.new_nums }}
+                  </div>
                 </template>
               </el-table-column>
               <el-table-column label="单位" align="center">
@@ -362,8 +403,11 @@
               <el-table-column prop="price" label="单价" align="center" />
               <el-table-column label="总价" align="center" min-width="200">
                 <template slot-scope="scope">
+                  <span v-if="scope.row.pay_amount > 0">
+                    {{ scope.row.currency }} {{ scope.row.pay_amount }}
+                  </span>
                   <div
-                    v-if="scope.row.new_amount !== scope.row.old_amount"
+                    v-else-if="scope.row.new_amount !== scope.row.old_amount"
                     class="modify-color"
                   >
                     <span>{{ scope.row.old_amount }}</span>
@@ -710,7 +754,8 @@ export default {
         totalAmount += parseFloat(task.new_amount)
         if (
           deliverDate === '' ||
-          (deliverDate && new Date(deliverDate) < new Date(task.deliver_new_date))
+          (deliverDate &&
+            new Date(deliverDate) < new Date(task.deliver_new_date))
         ) {
           deliverDate = task.deliver_new_date
         }
@@ -927,7 +972,10 @@ export default {
       if (this.detail.change_id) {
         exportChangeTask(this.detail.change_id)
           .then((response) => {
-            downloadFileStream(`${this.detail.demand.name}-${this.detail.demand.demand_id}.xlsx`, response)
+            downloadFileStream(
+              `${this.detail.demand.name}-${this.detail.demand.demand_id}.xlsx`,
+              response
+            )
           })
           .catch((error) => {
             console.log(error)

@@ -51,7 +51,23 @@
           start-placeholder="开始日期"
           end-placeholder="结束日期"
           size="mini"
+          value-format="yyyy-MM-dd"
         />
+        <el-select
+          v-model="listQuery.receipts_status"
+          placeholder="订单状态"
+          clearable
+          class="filter-item"
+          style="width: 200px"
+          size="mini"
+        >
+          <el-option
+            v-for="item in statusMap"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
+        </el-select>
 
         <el-button
           v-waves
@@ -70,6 +86,7 @@
           type="primary"
           icon="el-icon-download"
           size="mini"
+          :loading="exporting"
           @click="handleExportOrders"
         >
           导出
@@ -212,6 +229,7 @@
               <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
+                    v-if="scope.row.image_url"
                     style="width: 50px; height: 50px"
                     :src="scope.row.image_url"
                   >
@@ -222,6 +240,7 @@
                       />
                     </div>
                   </el-image>
+                  <span v-else>-</span>
                 </template>
               </el-table-column>
               <el-table-column
@@ -253,7 +272,14 @@
               />
               <el-table-column prop="work_num" label="数量" align="center" />
               <el-table-column prop="work_price" label="单价" align="center" />
-              <el-table-column prop="work_amount" label="总价" align="center" />
+              <el-table-column label="总价" align="center">
+                <template slot-scope="scope">
+                  <span v-if="scope.row.pay_amount > 0">
+                    {{ scope.row.currency }} {{ scope.row.pay_amount }}
+                  </span>
+                  <span v-else>{{ scope.row.work_amount }}</span>
+                </template>
+              </el-table-column>
               <el-table-column
                 label="停留时间"
                 align="center"
@@ -575,6 +601,13 @@ import Pagination from '@/components/Pagination'
 import TaskDetail from '@/components/TaskDetail'
 import { exportOrders } from '@/api/system/download'
 
+const statusMap = [
+  { id: 0, name: '资源审核中' },
+  { id: 1, name: '资源已验收' },
+  { id: 2, name: '验收不通过' },
+  { id: 3, name: '物件已终止' },
+  { id: 4, name: '已生成对帐单' }
+]
 export default {
   components: { Pagination, TaskDetail },
   directives: { waves, permission },
@@ -596,7 +629,7 @@ export default {
       return name
     },
     taskStatusText(status) {
-      const statusMap = {
+      const taskStatusMap = {
         0: '资源审核中',
         1: '变更中',
         2: '资源已验收',
@@ -604,30 +637,25 @@ export default {
         4: '物件已终止',
         5: '已生成对帐单'
       }
-      return statusMap[status]
+      return taskStatusMap[status]
     },
     statusText(status) {
-      const statusMap = {
-        0: '资源审核中',
-        1: '资源已验收',
-        2: '验收不通过',
-        3: '物件已终止',
-        4: '已生成对帐单'
-      }
-      return statusMap[status]
+      const existIndex = statusMap.findIndex(item => item.id === status)
+      return existIndex >= 0 ? statusMap[existIndex].name : ''
     }
   },
   data() {
     return {
+      statusMap: statusMap,
       statusColor(status) {
-        const statusMap = {
+        const colorStatusMap = {
           0: '#606266;',
           1: '#606266',
           2: '#606266',
           3: '#606266',
           4: '#cccccc'
         }
-        return statusMap[status]
+        return colorStatusMap[status]
       },
       globelCheckedAll: false,
       expandRowKeys: [],
@@ -642,6 +670,7 @@ export default {
         supplier_name: '',
         tag: '',
         date_range: [],
+        receipts_status: '',
         page: 1,
         page_num: 10,
         all: true
@@ -686,7 +715,8 @@ export default {
       },
       verifyRules: {},
       dialogUrlVisible: false,
-      currentFileUrl: ''
+      currentFileUrl: '',
+      exporting: false
     }
   },
   created() {
@@ -1218,6 +1248,9 @@ export default {
      * 导出
      */
     handleExportOrders() {
+      if (this.exporting) {
+        return false
+      }
       const { receipt_id, task_id, order_id, project_name, supplier_name, date_range } = this.listQuery
       let filter = {
         receipt_id,
@@ -1239,13 +1272,15 @@ export default {
       if (checked.length > 0) {
         filter = Object.assign({}, filter, { receipt_id: checked })
       }
-
+      this.exporting = true
       exportOrders(filter)
         .then((response) => {
+          this.exporting = false
           const fileName = `验收单-${this.$moment().format('YYYYMMD')}.xlsx`
           downloadFileStream(fileName, response)
         })
         .catch((error) => {
+          this.exporting = false
           console.log(error)
         })
     },
@@ -1354,6 +1389,7 @@ export default {
     .filter-right {
       display: flex;
       flex-wrap: nowrap;
+      margin-bottom: 10px;
     }
   }
   .list-container {

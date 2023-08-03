@@ -63,3 +63,11 @@ export function queryInfoByUserId(params) {
     params
   })
 }
+
+export function queryCategoryPrice(params) {
+  return request({
+    url: '/api/supply/queryCategoryPrice',
+    method: 'post',
+    params
+  })
+}

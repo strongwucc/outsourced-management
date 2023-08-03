@@ -121,9 +121,9 @@
                     'margin-bottom': '20px',
                     'font-weight': 'bold',
                   }"
-                >{{
-                  detail.demand.introduce
-                }}</el-descriptions-item>
+                >
+                  <span v-line-break="detail.demand.introduce" />
+                </el-descriptions-item>
                 <el-descriptions-item label="项目名称">{{
                   detail.project ? detail.project.project_name : ""
                 }}</el-descriptions-item>
@@ -146,6 +146,15 @@
                   label="经费使用"
                 >
                   {{
+                    [
+                      detail.demand.flow && detail.demand.flow.budget_dep
+                        ? detail.demand.flow.budget_dep.employ_budget
+                        : 0,
+                      detail.demand.flow && detail.demand.flow.budget_dep
+                        ? detail.demand.flow.budget_dep.budget
+                        : 0,
+                    ] | percentage
+                  }}（{{
                     detail.demand.flow && detail.demand.flow.budget_dep
                       ? detail.demand.flow.budget_dep.employ_budget
                       : 0
@@ -153,7 +162,7 @@
                     detail.demand.flow && detail.demand.flow.budget_dep
                       ? detail.demand.flow.budget_dep.budget
                       : 0
-                  }}
+                  }}）
                 </el-descriptions-item>
                 <el-descriptions-item label="需求创建人">{{
                   detail.demand.creator ? detail.demand.creator.name : ""
@@ -275,7 +284,7 @@
                 plain
                 @click="handleRefuseReceipt()"
               >驳回</el-button>
-              <el-button
+              <!-- <el-button
                 v-permission="[0]"
                 icon="el-icon-document"
                 type="primary"
@@ -284,7 +293,7 @@
                 @click="handleReconcile(false)"
               >
                 生成结算单
-              </el-button>
+              </el-button> -->
               <el-button
                 v-if="detail.file_url"
                 v-permission="[1, 2]"
@@ -363,8 +372,15 @@
               <el-table-column prop="task_image" label="缩略图" align="center">
                 <template slot-scope="scope">
                   <el-image
+                    v-if="
+                      scope.row.display_area.length > 0 || scope.row.image_url
+                    "
                     style="width: 50px; height: 50px"
-                    :src="scope.row.display_area.length > 0 ? scope.row.display_area[0].url : scope.row.image_url"
+                    :src="
+                      scope.row.display_area.length > 0
+                        ? scope.row.display_area[0].url
+                        : scope.row.image_url
+                    "
                   >
                     <div slot="error" class="image-slot">
                       <i
@@ -373,6 +389,7 @@
                       />
                     </div>
                   </el-image>
+                  <span v-else>-</span>
                 </template>
               </el-table-column>
               <el-table-column
@@ -401,7 +418,14 @@
               <el-table-column prop="work_unit" label="单位" align="center" />
               <el-table-column prop="work_num" label="数量" align="center" />
               <el-table-column prop="work_price" label="单价" align="center" />
-              <el-table-column prop="work_amount" label="总价" align="center" />
+              <el-table-column label="总价" align="center">
+                <template slot-scope="scope">
+                  <span v-if="scope.row.pay_amount > 0">
+                    {{ scope.row.currency }} {{ scope.row.pay_amount }}
+                  </span>
+                  <span v-else>{{ scope.row.work_amount }}</span>
+                </template>
+              </el-table-column>
               <el-table-column
                 label="停留时间"
                 align="center"
@@ -518,7 +542,7 @@
             </div>
             <div class="files">
               <div
-                v-for="(file) in detail.demand.files"
+                v-for="file in detail.demand.files"
                 :key="file.file_id"
                 class="file-item"
               >
@@ -531,7 +555,7 @@
                 >下载</el-button>
               </div>
               <div
-                v-for="(file) in detail.demand.supplier_files"
+                v-for="file in detail.demand.supplier_files"
                 :key="file.file_id"
                 class="file-item"
               >
@@ -925,8 +949,8 @@ export default {
         '/pending/xmz/assign/vendor',
         '/pending/xmz/demand/draft',
         '/pending/gg/demand/draft',
-        '/pending/xmz/accept/confirm'
-        // '/pending/xmzfzr/accept/confirm'
+        '/pending/xmz/accept/confirm',
+        '/pending/xmzfzr/accept/confirm'
       ]
       return hiddenPaths.indexOf(this.$route.path) < 0
     },
@@ -1012,6 +1036,11 @@ export default {
               this.handleDetail()
             } else {
               this.detail = {}
+            }
+            if (this.$route.path === '/pending/gys/order/check') {
+              this.list.forEach(listItem => {
+                this.$refs.listTable.toggleRowSelection(listItem, true)
+              })
             }
           })
         })
@@ -1477,10 +1506,7 @@ export default {
               const fullFileName = `物件展示图-${task.task_id}${url.substring(
                 url.lastIndexOf('.')
               )}`
-              downloadFileStream(
-                fullFileName,
-                file
-              )
+              downloadFileStream(fullFileName, file)
             })
             this.$set(this.detail.items[taskIndex], 'downloading', false)
           })
@@ -1581,7 +1607,10 @@ export default {
       if (this.detail.receipt_id) {
         exportReceiptTask(this.detail.receipt_id)
           .then((response) => {
-            downloadFileStream(`${this.detail.demand.name}-${this.detail.demand.demand_id}.xlsx`, response)
+            downloadFileStream(
+              `${this.detail.demand.name}-${this.detail.demand.demand_id}.xlsx`,
+              response
+            )
           })
           .catch((error) => {
             console.log(error)

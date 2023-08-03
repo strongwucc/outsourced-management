@@ -74,7 +74,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="抄送邮件" align="center" min-width="150px">
+      <el-table-column label="收件人邮箱" align="center" min-width="150px">
         <template slot-scope="{ row }">
           {{ row.email }}
         </template>
@@ -195,9 +195,16 @@
           <el-input v-model="temp.contact_phone" class="dialog-form-item" />
         </el-form-item>
 
-        <el-form-item label="抄送邮件:" prop="email">
+        <el-form-item label="收件人邮箱:" prop="email">
           <el-input
             v-model="temp.email"
+            class="dialog-form-item"
+            placeholder="可多个，分号隔开"
+          />
+        </el-form-item>
+        <el-form-item label="抄送人邮箱:" prop="mail_cc">
+          <el-input
+            v-model="temp.mail_cc"
             class="dialog-form-item"
             placeholder="可多个，分号隔开"
           />
@@ -264,7 +271,7 @@
               </template>
             </el-table-column>
 
-            <el-table-column label="单价" align="center">
+            <el-table-column label="单价最大值" align="center">
               <template slot-scope="scope">
                 <el-form-item
                   label-width="0"
@@ -273,7 +280,7 @@
                 >
                   <el-input
                     v-model="scope.row.price"
-                    placeholder="请输入单价"
+                    placeholder="请输入单价最大值"
                   />
                 </el-form-item>
               </template>
@@ -448,8 +455,11 @@
         <el-descriptions-item label="手机号">
           {{ temp.contact_phone }}
         </el-descriptions-item>
-        <el-descriptions-item label="抄送邮件">
+        <el-descriptions-item label="收件人邮箱">
           {{ temp.email }}
+        </el-descriptions-item>
+        <el-descriptions-item label="抄送人邮箱">
+          {{ temp.email_cc }}
         </el-descriptions-item>
         <el-descriptions-item label="区域">{{
           temp.area
@@ -604,6 +614,7 @@ export default {
         pass_word: '',
         contact_phone: '',
         email: '',
+        mail_cc: '',
         bank_name: '',
         bank_account: '',
         area: '',
@@ -647,7 +658,7 @@ export default {
           { required: true, message: '请输入手机号', trigger: 'blur' }
         ],
         email: [
-          { required: true, message: '请输入抄送邮件', trigger: 'blur' }
+          { required: true, message: '请输入收件人邮箱', trigger: 'blur' }
         ],
         bank_name: [
           { required: true, message: '请输入银行及开户行', trigger: 'blur' }
@@ -729,6 +740,7 @@ export default {
         pass_word: '',
         contact_phone: '',
         email: '',
+        email_cc: '',
         bank_name: '',
         bank_account: '',
         area: '',

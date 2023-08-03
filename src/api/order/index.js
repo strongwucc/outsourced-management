@@ -249,3 +249,11 @@ export function downloadStatementdMaterial(data) {
     data
   })
 }
+
+export function rejectStatementBySupplier(data) {
+  return request({
+    url: '/api/statement/reback',
+    method: 'post',
+    data
+  })
+}

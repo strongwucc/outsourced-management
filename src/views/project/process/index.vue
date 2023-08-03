@@ -513,7 +513,7 @@
             </el-select>
           </div>
         </el-form-item>
-        <el-form-item label="物件审核（项目组）:" prop="wj_verify_json">
+        <el-form-item label="物件审核（项目组/项目组负责人）:" prop="wj_verify_json">
           <div class="wj-verify-box json-normal-box">
             <div
               v-for="(item, itemIndex) in temp.wj_verify_json"
@@ -532,9 +532,9 @@
                   :placeholder="
                     itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'
                   "
-                  :remote-method="(query) => fetchMemberList(query, 1)"
+                  :remote-method="(query) => fetchMemberList(query, '1,2')"
                   :loading="memberLoading"
-                  @focus="fetchMemberList('', 1)"
+                  @focus="fetchMemberList('', '1,2')"
                 >
                   <el-option
                     v-for="member in members"

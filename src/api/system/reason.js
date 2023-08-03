@@ -31,3 +31,35 @@ export function deleteReason(data) {
     data
   })
 }
+
+export function fetchIntentReasonList(params) {
+  return request({
+    url: '/api/setting/queryPurposeSupplierReason',
+    method: 'post',
+    params
+  })
+}
+
+export function createIntentReason(data) {
+  return request({
+    url: '/api/setting/addPurposeSupplierReason',
+    method: 'post',
+    data
+  })
+}
+
+export function updateIntentReason(data) {
+  return request({
+    url: '/api/setting/addPurposeSupplierReason',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteIntentReason(data) {
+  return request({
+    url: '/api/setting/delPurposeSupplierReason',
+    method: 'post',
+    data
+  })
+}
