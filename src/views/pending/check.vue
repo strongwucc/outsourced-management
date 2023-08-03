@@ -949,8 +949,8 @@ export default {
         '/pending/xmz/assign/vendor',
         '/pending/xmz/demand/draft',
         '/pending/gg/demand/draft',
-        '/pending/xmz/accept/confirm',
-        '/pending/xmzfzr/accept/confirm'
+        '/pending/xmz/accept/confirm'
+        // '/pending/xmzfzr/accept/confirm'
       ]
       return hiddenPaths.indexOf(this.$route.path) < 0
     },
