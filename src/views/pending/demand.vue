@@ -124,7 +124,7 @@
                 </el-button>
               </template>
               <template slot-scope="scope">
-                <div class="item-box">
+                <div class="item-box" :class="{'box-red': filterStatus === 3 && scope.row.status === 3 && scope.row.refuse === 1}">
                   <span class="item-no">{{ scope.row.demand_id }}</span>
                   <span class="item-name">{{ scope.row.name }}</span>
                   <span v-if="scope.row.provider" class="item-supplier">{{
@@ -3763,6 +3763,9 @@ export default {
         overflow: hidden;
         text-overflow: ellipsis;
       }
+    }
+    .box-red {
+      color: #F56C6C;
     }
   }
   .detail-container {

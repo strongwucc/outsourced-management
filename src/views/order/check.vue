@@ -1327,12 +1327,12 @@ export default {
       })
     },
     handleDownloadFile(row, index) {
-      if (row.file_id.length <= 0) {
+      if (row.work_file.length <= 0) {
         this.$message.error('附件不存在')
         return false
       }
       this.$set(this.list[index], 'fileDownloading', true)
-      const actions = row.file_id.map((file) => {
+      const actions = row.work_file.map((file) => {
         return downloadFile({ url: file.url })
       })
       const results = Promise.all(actions)
@@ -1340,7 +1340,7 @@ export default {
       results
         .then((data) => {
           data.forEach((file, fileIndex) => {
-            const url = row.file_id[fileIndex].url
+            const url = row.work_file[fileIndex].url
             const fullFileName = `${fileName}${url.substring(url.lastIndexOf('.'))}`
             downloadFileStream(
               fullFileName,
