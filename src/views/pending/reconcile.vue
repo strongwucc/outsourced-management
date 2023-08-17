@@ -469,7 +469,7 @@
                     @click.stop="showInvoiceImage"
                   />
                 </el-descriptions-item>
-                <el-descriptions-item label="发票文件" span="4">
+                <el-descriptions-item v-if="tempBill.invoice_file_url" label="发票文件" span="4">
                   <div style="display: flex">
                     <el-button
                       type="primary"
