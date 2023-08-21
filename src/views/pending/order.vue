@@ -1765,6 +1765,9 @@ export default {
       )
       if (priceData) {
         this.supplierCategoryPrice = parseFloat(priceData.data.max_price)
+      } else {
+        this.addTaskLoading = false
+        return false
       }
       this.tempTaskCategory = this.detail.demand.category
       this.resetTaskTemp()
