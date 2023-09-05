@@ -43,14 +43,14 @@ module.exports = {
     },
     // before: require('./mock/mock-server.js'),
     proxy: {
-      // '/': {
-      //   target: 'http://pms.miour.cn', // 目标服务器
-      //   changeOrigin: true
-      // }
       '/': {
-        target: 'https://wb-test.xindong.com', // 目标服务器
+        target: 'http://pms.miour.cn', // 目标服务器
         changeOrigin: true
       }
+      // '/': {
+      //   target: 'https://wb-test.xindong.com', // 目标服务器
+      //   changeOrigin: true
+      // }
       // '/': {
       //   target: 'http://192.168.1.44:81', // 目标服务器
       //   changeOrigin: true
@@ -60,7 +60,7 @@ module.exports = {
       //   changeOrigin: true
       // }
     },
-    host: '192.168.1.73'
+    host: '192.168.1.4'
   },
   configureWebpack: {
     // provide the app's title in webpack's name field, so that

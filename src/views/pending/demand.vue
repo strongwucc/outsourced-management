@@ -124,7 +124,7 @@
                 </el-button>
               </template>
               <template slot-scope="scope">
-                <div class="item-box">
+                <div class="item-box" :class="{'box-red': filterStatus === 3 && scope.row.status === 3 && scope.row.refuse === 1}">
                   <span class="item-no">{{ scope.row.demand_id }}</span>
                   <span class="item-name">{{ scope.row.name }}</span>
                   <span v-if="scope.row.provider" class="item-supplier">{{
@@ -1389,6 +1389,8 @@
                     '小时',
                     '分钟',
                     '秒 ',
+                    '字',
+                    '百字',
                     '千字',
                   ]"
                   :key="itemIndex"
@@ -2884,6 +2886,9 @@ export default {
       )
       if (priceData) {
         this.supplierCategoryPrice = parseFloat(priceData.data.max_price)
+      } else {
+        this.addTaskLoading = false
+        return false
       }
       this.tempTaskCategory = this.detail.category
       this.resetTaskTemp()
@@ -2938,6 +2943,8 @@ export default {
       )
       if (priceData) {
         this.supplierCategoryPrice = parseFloat(priceData.data.max_price)
+      } else {
+        return false
       }
       this.tempImportTask = Object.assign({}, this.tempImportTask, {
         demand_id: this.detail.demand_id,
@@ -2968,6 +2975,12 @@ export default {
      * 导入模板成功
      */
     handleAddTaskTplSucc(response, file, fileList) {
+      
+      if (response.message) {
+        this.$message.error(response.message)
+        return false
+      }
+
       if (
         response.some((task) => {
           return task.work_price > this.supplierCategoryPrice
@@ -3763,6 +3776,9 @@ export default {
         overflow: hidden;
         text-overflow: ellipsis;
       }
+    }
+    .box-red {
+      color: #F56C6C;
     }
   }
   .detail-container {

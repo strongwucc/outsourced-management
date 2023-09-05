@@ -469,7 +469,7 @@
                     @click.stop="showInvoiceImage"
                   />
                 </el-descriptions-item>
-                <el-descriptions-item label="发票文件" span="4">
+                <el-descriptions-item v-if="tempBill.invoice_file_url" label="发票文件" span="4">
                   <div style="display: flex">
                     <el-button
                       type="primary"
@@ -1121,7 +1121,7 @@ const tagList = [
 const statusMap = {
   0: '待上传发票',
   1: '待申请用印',
-  2: '待上传结算单',
+  2: '待回寄结算单',
   3: '待提交结算申请',
   4: '待支付登记',
   5: '已付款',

@@ -685,7 +685,7 @@
         <el-button size="mini" @click="dialogVerifyVisible = false">
           取消
         </el-button>
-        <el-button type="primary" size="mini" @click="confirmVerify">
+        <el-button type="primary" size="mini" :loading="dialogVerifyVisible && verifyLoading" @click="confirmVerify">
           确认
         </el-button>
       </div>
@@ -940,7 +940,8 @@ export default {
       },
       dialogFileUrlVisible: false,
       fileDownloading: false,
-      posting: false
+      posting: false,
+      verifyLoading: false
     }
   },
   computed: {
@@ -949,8 +950,8 @@ export default {
         '/pending/xmz/assign/vendor',
         '/pending/xmz/demand/draft',
         '/pending/gg/demand/draft',
-        '/pending/xmz/accept/confirm',
-        '/pending/xmzfzr/accept/confirm'
+        '/pending/xmz/accept/confirm'
+        // '/pending/xmzfzr/accept/confirm'
       ]
       return hiddenPaths.indexOf(this.$route.path) < 0
     },
@@ -1362,15 +1363,22 @@ export default {
       })
     },
     baseConfirmVerify() {
+      if (this.verifyLoading === true) {
+        return false
+      }
+      this.verifyLoading = true
       const tempData = JSON.parse(JSON.stringify(this.tempVerify))
       verifyCheckOrder(tempData)
         .then(async(response) => {
           this.$message.success('处理成功')
           this.dialogVerifyVisible = false
+          this.verifyLoading = false
           await this.$store.dispatch('user/getPending')
           this.getList(false)
         })
-        .catch((_error) => {})
+        .catch((_error) => {
+          this.verifyLoading = false
+        })
     },
     /**
      * 终止弹窗

@@ -1230,6 +1230,8 @@
                     '小时',
                     '分钟',
                     '秒 ',
+                    '字',
+                    '百字',
                     '千字',
                   ]"
                   :key="itemIndex"
@@ -3965,14 +3967,17 @@ export default {
       if (this.exporting) {
         return false
       }
-      const { name, demand_id, category_name, tag, date_range } =
+      const { name, project_name, supplier_name, demand_id, category_name, tag, date_range, status } =
         this.listQuery
       let filter = {
         name,
+        project_name,
+        supplier_name,
         demand_id,
         category_name,
         tag,
         date_range,
+        status,
         class_name: 'demand'
       }
 

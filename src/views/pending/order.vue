@@ -647,6 +647,8 @@
                     '小时',
                     '分钟',
                     '秒 ',
+                    '字',
+                    '百字',
                     '千字',
                   ]"
                   :key="itemIndex"
@@ -1371,7 +1373,7 @@ export default {
       let price, amount
 
       this.multipleTaskSelection.some((taskItem, taskIndex) => {
-        if ([0].indexOf(taskItem.task_status) < 0) {
+        if ([0, 4].indexOf(taskItem.task_status) < 0) {
           const errorName = `[${taskItem.task_id}]: 该物件状态无法申请变更`
           this.$message.error(errorName)
           return true
@@ -1763,6 +1765,9 @@ export default {
       )
       if (priceData) {
         this.supplierCategoryPrice = parseFloat(priceData.data.max_price)
+      } else {
+        this.addTaskLoading = false
+        return false
       }
       this.tempTaskCategory = this.detail.demand.category
       this.resetTaskTemp()

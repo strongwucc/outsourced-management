@@ -750,7 +750,7 @@ const typeList = [
 const statusMap = [
   { id: 0, name: '待上传发票' },
   { id: 1, name: '待申请用印' },
-  { id: 2, name: '待上传结算单' },
+  { id: 2, name: '待回寄结算单' },
   { id: 3, name: '待提交结算申请' },
   { id: 4, name: '待支付登记' },
   { id: 5, name: '已付款' },
@@ -1351,13 +1351,14 @@ export default {
       if (this.exporting) {
         return false
       }
-      const { statement_id, task_id, project_name, supplier_name, date_range } = this.listQuery
+      const { statement_id, task_id, project_name, supplier_name, date_range, statement_status } = this.listQuery
       let filter = {
         statement_id,
         task_id,
         project_name,
         supplier_name,
         date_range,
+        statement_status,
         class_name: 'statement'
       }
 
