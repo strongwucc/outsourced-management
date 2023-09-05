@@ -2943,6 +2943,8 @@ export default {
       )
       if (priceData) {
         this.supplierCategoryPrice = parseFloat(priceData.data.max_price)
+      } else {
+        return false
       }
       this.tempImportTask = Object.assign({}, this.tempImportTask, {
         demand_id: this.detail.demand_id,
@@ -2973,6 +2975,12 @@ export default {
      * 导入模板成功
      */
     handleAddTaskTplSucc(response, file, fileList) {
+      
+      if (response.message) {
+        this.$message.error(response.message)
+        return false
+      }
+
       if (
         response.some((task) => {
           return task.work_price > this.supplierCategoryPrice

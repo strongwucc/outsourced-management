@@ -1373,7 +1373,7 @@ export default {
       let price, amount
 
       this.multipleTaskSelection.some((taskItem, taskIndex) => {
-        if ([0].indexOf(taskItem.task_status) < 0) {
+        if ([0, 4].indexOf(taskItem.task_status) < 0) {
           const errorName = `[${taskItem.task_id}]: 该物件状态无法申请变更`
           this.$message.error(errorName)
           return true
