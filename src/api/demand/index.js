@@ -4,7 +4,7 @@ export function fetchList(params) {
   return request({
     url: '/api/needs/queryList',
     method: 'post',
-    params
+    params,
   })
 }
 

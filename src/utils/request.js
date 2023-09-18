@@ -95,14 +95,15 @@ service.interceptors.response.use(
     // }
   },
   (error) => {
-    console.log('response', error.response)
 
-    if (error.response.status === 401) {
+    if (error.response && error.response.status === 401) {
       if (router.currentRoute.fullPath.indexOf('login') === -1) {
         const backtoUrl = encodeURIComponent(router.currentRoute.fullPath)
         store.dispatch('user/resetToken')
         router.push('/login?redirect=' + backtoUrl)
       }
+    } else if (error.message && error.message.indexOf('timeout') >= 0) {
+      MessageBox.alert('网络超时，请联系供应商管理部', '提示')
     } else {
       // Message({
       //   message: '哎呀，系统出错啦',

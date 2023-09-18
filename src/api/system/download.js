@@ -5,6 +5,7 @@ export function exportOrders(params) {
     url: '/api/download/order',
     method: 'get',
     params,
-    responseType: 'arraybuffer'
+    responseType: 'arraybuffer',
+    timeout: 60000
   })
 }
