@@ -144,7 +144,7 @@
         :rules="rules"
         :model="temp"
         label-position="left"
-        label-width="100px"
+        label-width="110px"
         style="margin-left: 50px"
       >
         <el-form-item label="姓名:" prop="name">
@@ -181,6 +181,23 @@
               :key="item.id"
               :label="item.group_name"
               :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="负责需求品类:" prop="cat_id" v-if="[1, 3].indexOf(temp.group_id) >= 0">
+          <el-select
+            v-model="temp.cat_id"
+            :disabled="dialogStatus === 'update'"
+            class="dialog-form-item"
+            placeholder="请选择"
+            multiple
+          >
+            <el-option
+              v-for="item in categories"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
             />
           </el-select>
         </el-form-item>
@@ -258,6 +275,7 @@ import {
 } from '@/api/system/member'
 import { fetchAllDepartment } from '@/api/system/department'
 import { fetchAllRole } from '@/api/system/role'
+import { fetchAllCategory } from '@/api/system/category'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 
@@ -317,6 +335,7 @@ export default {
       listLoading: true,
       departments: [],
       roles: [],
+      categories: [],
       listQuery: {
         page: 1,
         page_num: 10,
@@ -329,6 +348,7 @@ export default {
         id: undefined,
         name: '',
         group_id: '',
+        cat_id: '',
         dep_json: [],
         dep_array: [],
         login_name: '',
@@ -345,6 +365,9 @@ export default {
         name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
         group_id: [
           { required: true, message: '请选择用户分组', trigger: 'change' }
+        ],
+        cat_id: [
+          { required: true, message: '请选择品类', trigger: 'change' }
         ],
         login_name: [
           { required: true, message: '请输入登录名', trigger: 'blur' }
@@ -370,6 +393,15 @@ export default {
         this.roles = roleData.data.list
         this.roles.push({ id: 0, type: '', nums: 0, group_name: '系统管理员' })
       }
+      if (this.categories.length === 0) {
+        const categoryData = await fetchAllCategory()
+        this.categories = categoryData.data.list.map((first) => {
+          return {
+            label: first.category_name,
+            value: first.cat_id,
+          }
+        })
+      }
       fetchList(this.listQuery)
         .then((response) => {
           this.listLoading = false
@@ -382,6 +414,8 @@ export default {
             newItem.dep_json = newItem.dep_array.map((depItem) => {
               return depItem.id
             })
+
+            newItem.cat_id = newItem.cat_id.split(",").map(Number)
 
             this.roles.some((roleItem) => {
               if (roleItem.id === item.group_id) {
@@ -410,6 +444,7 @@ export default {
         id: undefined,
         name: '',
         group_id: '',
+        cat_id: '',
         dep_json: [],
         dep_array: [],
         login_name: '',
@@ -433,6 +468,7 @@ export default {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.temp))
           // temp.id = parseInt(Math.random() * 100) + 1024
+          temp.cat_id = temp.cat_id.join(',')
           createMember(temp)
             .then((response) => {
               temp.id = response.data.id
@@ -476,6 +512,7 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.temp))
+          temp.cat_id = temp.cat_id.join(',')
           updateMember(temp)
             .then(() => {
               this.roles.some((roleItem) => {
