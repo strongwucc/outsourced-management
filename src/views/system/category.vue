@@ -583,6 +583,12 @@ export default {
                     return property.property_id
                   })
                 )
+                thirdItem.property_array = thirdItem.property_array.map(property_item=>{
+                  let {id, property_id} = property_item
+                  property_item.id = property_id
+                  property_item.property_id = id
+                  return property_item
+                })
                 return thirdItem
               })
               secondItem.property_json = JSON.stringify(
@@ -590,6 +596,12 @@ export default {
                   return property.property_id
                 })
               )
+              secondItem.property_array = secondItem.property_array.map(property_item=>{
+                let {id, property_id} = property_item
+                property_item.id = property_id
+                property_item.property_id = id
+                return property_item
+              })
               return secondItem
             })
             firstItem.property_json = JSON.stringify(
@@ -597,6 +609,12 @@ export default {
                 return property.property_id
               })
             )
+            firstItem.property_array = firstItem.property_array.map(property_item=>{
+                let {id, property_id} = property_item
+                property_item.id = property_id
+                property_item.property_id = id
+                return property_item
+              })
             return firstItem
           })
           this.total = response.data.total
