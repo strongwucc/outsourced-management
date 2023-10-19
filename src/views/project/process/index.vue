@@ -168,6 +168,15 @@
           >
             查看
           </el-button>
+          <el-button
+            type="primary"
+            size="mini"
+            plain
+            :loading="row.copying"
+            @click="handleCopy($index)"
+          >
+            复制
+          </el-button>
           <el-popconfirm
             style="margin-left: 10px"
             title="确定删除吗？"
@@ -212,7 +221,22 @@
         class="dialog-form"
         style="margin-left: 30px"
       >
-        <el-form-item label="主项目:" prop="project_id">
+        <el-form-item label="主项目:" prop="project_id" v-if="dialogStatus === 'copy'">
+          <el-select
+            v-model="temp.project_id"
+            filterable
+            placeholder="请输入关键词"
+            class="dialog-form-item"
+          >
+            <el-option
+              v-for="item in allProjects"
+              :key="item.project_id"
+              :label="item.project_name"
+              :value="item.project_id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="主项目:" prop="project_id" v-else>
           <el-select
             v-model="temp.project_id"
             filterable
@@ -255,7 +279,24 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="预算使用方:" prop="budget_dep_id">
+        <el-form-item label="预算使用方:" prop="budget_dep_id" v-if="dialogStatus === 'copy'">
+          <el-select
+            v-model="temp.budget_dep_id"
+            filterable
+            :remote-method="(query) => fetchDepartList(query, 2)"
+            placeholder="请输入关键词"
+            class="dialog-form-item"
+            @focus="fetchDepartList('', 2)"
+          >
+            <el-option
+              v-for="item in budgetDeps"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="预算使用方:" prop="budget_dep_id" v-else>
           <el-select
             v-model="temp.budget_dep_id"
             filterable
@@ -289,7 +330,24 @@
             placeholder="输入项目简介"
           />
         </el-form-item>
-        <el-form-item label="发起部门:" prop="launch_dep_id">
+        <el-form-item label="发起部门:" prop="launch_dep_id" v-if="dialogStatus === 'copy'">
+          <el-select
+            v-model="temp.launch_dep_id"
+            filterable
+            :remote-method="(query) => fetchDepartList(query, 0)"
+            placeholder="请输入关键词"
+            class="dialog-form-item"
+            @focus="fetchDepartList('', 0)"
+          >
+            <el-option
+              v-for="item in launchDeps"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="发起部门:" prop="launch_dep_id" v-else>
           <el-select
             v-model="temp.launch_dep_id"
             filterable
@@ -308,7 +366,22 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="合同主体:" prop="sub_id">
+        <el-form-item label="合同主体:" prop="sub_id" v-if="dialogStatus === 'copy'">
+          <el-select
+            v-model="temp.sub_id"
+            filterable
+            placeholder="请输入关键词"
+            class="dialog-form-item"
+          >
+            <el-option
+              v-for="item in allSubs"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="合同主体:" prop="sub_id" v-else>
           <el-select
             v-model="temp.sub_id"
             filterable
@@ -334,7 +407,24 @@
             placeholder="大写字母或数字，15字符以内"
           />
         </el-form-item>
-        <el-form-item label="核算部门:" prop="account_dep_id">
+        <el-form-item label="核算部门:" prop="account_dep_id" v-if="dialogStatus === 'copy'">
+          <el-select
+            v-model="temp.account_dep_id"
+            filterable
+            :remote-method="(query) => fetchDepartList(query, 1)"
+            placeholder="请输入关键词"
+            class="dialog-form-item"
+            @focus="fetchDepartList('', 1)"
+          >
+            <el-option
+              v-for="item in accountDeps"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="核算部门:" prop="account_dep_id" v-else>
           <el-select
             v-model="temp.account_dep_id"
             filterable
@@ -353,7 +443,26 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="抄送人:" prop="project_producer">
+        <el-form-item label="抄送人:" prop="project_producer" v-if="dialogStatus === 'copy'">
+          <el-select
+            v-model="temp.project_producer"
+            multiple
+            filterable
+            collapse-tags
+            class="dialog-form-item"
+          >
+            <el-option
+              v-for="member in projectProducerList"
+              :key="member.id"
+              :label="member.name"
+              :value="member.id"
+            >
+              <span style="float: left">{{ member.name }}</span>
+              <span style="float: right">{{ member.mobile }}</span>
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="抄送人:" prop="project_producer" v-else>
           <el-select
             v-model="temp.project_producer"
             multiple
@@ -409,11 +518,31 @@
                     v-model="item.user_id"
                     clearable
                     filterable
+                    placeholder="请输入关键词"
+                    v-if="dialogStatus === 'copy'"
+                  >
+                    <el-option
+                      v-for="member in filterNeedsCreate"
+                      :key="member.id"
+                      :label="member.name"
+                      :value="member.id"
+                    >
+                      <span style="float: left">{{ member.name }}</span>
+                      <span style="float: right">{{
+                        member.group.group_name
+                      }}</span>
+                    </el-option>
+                  </el-select>
+                  <el-select
+                    v-model="item.user_id"
+                    clearable
+                    filterable
                     remote
                     placeholder="请输入关键词"
                     :remote-method="(query) => fetchMemberList(query, '1,3')"
                     :loading="memberLoading"
                     @focus="fetchMemberList('', '1,3')"
+                    v-else
                   >
                     <el-option
                       v-for="member in members"
@@ -464,6 +593,25 @@
                   v-model="item.id"
                   clearable
                   filterable
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                  "
+                  v-if="dialogStatus === 'copy'"
+                >
+                  <el-option
+                    v-for="member in filterNeedsVerify"
+                    :key="member.id"
+                    :label="member.name"
+                    :value="member.id"
+                  >
+                    <span style="float: left">{{ member.name }}</span>
+                    <span style="float: right">{{ member.group_name }}</span>
+                  </el-option>
+                </el-select>
+                <el-select
+                  v-model="item.id"
+                  clearable
+                  filterable
                   remote
                   :placeholder="
                     itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
@@ -471,6 +619,7 @@
                   :remote-method="(query) => fetchMemberList(query, 2)"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', 2)"
+                  v-else
                 >
                   <el-option
                     v-for="member in members"
@@ -492,6 +641,26 @@
               v-model="temp.assign_supplier_json"
               clearable
               filterable
+              multiple
+              collapse-tags
+              placeholder="请输入关键词"
+              :multiple-limit="2"
+              v-if="dialogStatus === 'copy'"
+            >
+              <el-option
+                v-for="member in filterAssignSupplier"
+                :key="member.id"
+                :label="member.name"
+                :value="member.id"
+              >
+                <span style="float: left">{{ member.name }}</span>
+                <span style="float: right">{{ member.group_name }}</span>
+              </el-option>
+            </el-select>
+            <el-select
+              v-model="temp.assign_supplier_json"
+              clearable
+              filterable
               remote
               multiple
               collapse-tags
@@ -500,6 +669,7 @@
               :loading="memberLoading"
               :multiple-limit="2"
               @focus="fetchMemberList('', '3')"
+              v-else
             >
               <el-option
                 v-for="member in members"
@@ -528,6 +698,26 @@
                   :disabled="itemIndex === 0"
                   clearable
                   filterable
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'
+                  "
+                  v-if="dialogStatus === 'copy'"
+                >
+                  <el-option
+                    v-for="member in filterWjVerify"
+                    :key="member.id"
+                    :label="member.name"
+                    :value="member.id"
+                  >
+                    <span style="float: left">{{ member.name }}</span>
+                    <span style="float: right">{{ member.group_name }}</span>
+                  </el-option>
+                </el-select>
+                <el-select
+                  v-model="item.id"
+                  :disabled="itemIndex === 0"
+                  clearable
+                  filterable
                   remote
                   :placeholder="
                     itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'
@@ -535,6 +725,7 @@
                   :remote-method="(query) => fetchMemberList(query, '1,2')"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', '1,2')"
+                  v-else
                 >
                   <el-option
                     v-for="member in members"
@@ -556,6 +747,26 @@
               v-model="temp.order_create_json"
               clearable
               filterable
+              multiple
+              collapse-tags
+              placeholder="请输入关键词"
+              :multiple-limit="2"
+              v-if="dialogStatus === 'copy'"
+            >
+              <el-option
+                v-for="member in filterOrderCreate"
+                :key="member.id"
+                :label="member.name"
+                :value="member.id"
+              >
+                <span style="float: left">{{ member.name }}</span>
+                <span style="float: right">{{ member.group_name }}</span>
+              </el-option>
+            </el-select>
+            <el-select
+              v-model="temp.order_create_json"
+              clearable
+              filterable
               remote
               multiple
               collapse-tags
@@ -564,6 +775,7 @@
               :loading="memberLoading"
               :multiple-limit="2"
               @focus="fetchMemberList('', 3)"
+              v-else
             >
               <el-option
                 v-for="member in members"
@@ -589,6 +801,25 @@
                   v-model="item.id"
                   clearable
                   filterable
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                  "
+                  v-if="dialogStatus === 'copy'"
+                >
+                  <el-option
+                    v-for="member in filterOrderVerify"
+                    :key="member.id"
+                    :label="member.name"
+                    :value="member.id"
+                  >
+                    <span style="float: left">{{ member.name }}</span>
+                    <span style="float: right">{{ member.group_name }}</span>
+                  </el-option>
+                </el-select>
+                <el-select
+                  v-model="item.id"
+                  clearable
+                  filterable
                   remote
                   :placeholder="
                     itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
@@ -596,6 +827,7 @@
                   :remote-method="(query) => fetchMemberList(query, 4)"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', 4)"
+                  v-else
                 >
                   <el-option
                     v-for="member in members"
@@ -624,6 +856,26 @@
                   :disabled="itemIndex === 0"
                   clearable
                   filterable
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'
+                  "
+                  v-if="dialogStatus === 'copy'"
+                >
+                  <el-option
+                    v-for="member in filterWjVerify"
+                    :key="member.id"
+                    :label="member.name"
+                    :value="member.id"
+                  >
+                    <span style="float: left">{{ member.name }}</span>
+                    <span style="float: right">{{ member.group_name }}</span>
+                  </el-option>
+                </el-select>
+                <el-select
+                  v-model="item.id"
+                  :disabled="itemIndex === 0"
+                  clearable
+                  filterable
                   remote
                   :placeholder="
                     itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'
@@ -631,6 +883,7 @@
                   :remote-method="(query) => fetchMemberList(query, 1)"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', 1)"
+                  v-else
                 >
                   <el-option
                     v-for="member in members"
@@ -661,6 +914,25 @@
                   v-model="item.id"
                   clearable
                   filterable
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                  "
+                  v-if="dialogStatus === 'copy'"
+                >
+                  <el-option
+                    v-for="member in filterNeedsVerify"
+                    :key="member.id"
+                    :label="member.name"
+                    :value="member.id"
+                  >
+                    <span style="float: left">{{ member.name }}</span>
+                    <span style="float: right">{{ member.group_name }}</span>
+                  </el-option>
+                </el-select>
+                <el-select
+                  v-model="item.id"
+                  clearable
+                  filterable
                   remote
                   :placeholder="
                     itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
@@ -668,6 +940,7 @@
                   :remote-method="(query) => fetchMemberList(query, 2)"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', 2)"
+                  v-else
                 >
                   <el-option
                     v-for="member in members"
@@ -765,6 +1038,26 @@
               v-model="temp.push_settle_json"
               clearable
               filterable
+              multiple
+              collapse-tags
+              placeholder="请输入关键词"
+              :multiple-limit="2"
+              v-if="dialogStatus === 'copy'"
+            >
+              <el-option
+                v-for="member in filterOrderCreate"
+                :key="member.id"
+                :label="member.name"
+                :value="member.id"
+              >
+                <span style="float: left">{{ member.name }}</span>
+                <span style="float: right">{{ member.group_name }}</span>
+              </el-option>
+            </el-select>
+            <el-select
+              v-model="temp.push_settle_json"
+              clearable
+              filterable
               remote
               multiple
               collapse-tags
@@ -773,6 +1066,7 @@
               :loading="memberLoading"
               :multiple-limit="2"
               @focus="fetchMemberList('', 3)"
+              v-else
             >
               <el-option
                 v-for="member in members"
@@ -804,6 +1098,26 @@
                   :disabled="itemIndex === 0"
                   clearable
                   filterable
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'
+                  "
+                  v-if="dialogStatus === 'copy'"
+                >
+                  <el-option
+                    v-for="member in filterWjVerify"
+                    :key="member.id"
+                    :label="member.name"
+                    :value="member.id"
+                  >
+                    <span style="float: left">{{ member.name }}</span>
+                    <span style="float: right">{{ member.group_name }}</span>
+                  </el-option>
+                </el-select>
+                <el-select
+                  v-model="item.id"
+                  :disabled="itemIndex === 0"
+                  clearable
+                  filterable
                   remote
                   :placeholder="
                     itemIndex === 0 ? '一级审批系统默认' : '二级审批（非必选）'
@@ -811,6 +1125,7 @@
                   :remote-method="(query) => fetchMemberList(query, '1,2')"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', '1,2')"
+                  v-else
                 >
                   <el-option
                     v-for="member in members"
@@ -841,6 +1156,25 @@
                   v-model="item.id"
                   clearable
                   filterable
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                  "
+                  v-if="dialogStatus === 'copy'"
+                >
+                  <el-option
+                    v-for="member in filterOrderCreate.concat(filterOrderVerify)"
+                    :key="member.id"
+                    :label="member.name"
+                    :value="member.id"
+                  >
+                    <span style="float: left">{{ member.name }}</span>
+                    <span style="float: right">{{ member.group_name }}</span>
+                  </el-option>
+                </el-select>
+                <el-select
+                  v-model="item.id"
+                  clearable
+                  filterable
                   remote
                   :placeholder="
                     itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
@@ -848,6 +1182,7 @@
                   :remote-method="(query) => fetchMemberList(query, '3,4')"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', '3,4')"
+                  v-else
                 >
                   <el-option
                     v-for="member in members"
@@ -880,6 +1215,25 @@
                   v-model="item.id"
                   clearable
                   filterable
+                  :placeholder="
+                    itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
+                  "
+                  v-if="dialogStatus === 'copy'"
+                >
+                  <el-option
+                    v-for="member in filterNeedsVerify"
+                    :key="member.id"
+                    :label="member.name"
+                    :value="member.id"
+                  >
+                    <span style="float: left">{{ member.name }}</span>
+                    <span style="float: right">{{ member.group_name }}</span>
+                  </el-option>
+                </el-select>
+                <el-select
+                  v-model="item.id"
+                  clearable
+                  filterable
                   remote
                   :placeholder="
                     itemIndex === 0 ? '一级审批' : '二级审批（非必选）'
@@ -887,6 +1241,7 @@
                   :remote-method="(query) => fetchMemberList(query, 2)"
                   :loading="memberLoading"
                   @focus="fetchMemberList('', 2)"
+                  v-else
                 >
                   <el-option
                     v-for="member in members"
@@ -944,7 +1299,7 @@
 </template>
 
 <script>
-import { fetchList, createProcess, deleteProcess } from '@/api/project/process'
+import { fetchList, createProcess, deleteProcess, fetchDetail } from '@/api/project/process'
 import { fetchAllProject } from '@/api/project/index'
 import { fetchAllDepartment } from '@/api/system/department'
 import { fetchAllSub } from '@/api/project/sub'
@@ -1079,6 +1434,7 @@ export default {
       },
       dialogStatus: '',
       dialogFormVisible: false,
+      copying: false,
       temp: {
         id: undefined,
         project_id: '',
@@ -1113,7 +1469,8 @@ export default {
       },
       textMap: {
         update: '修改流程',
-        create: '创建流程'
+        create: '创建流程',
+        copy: '复制流程',
       },
       rules: {
         project_id: [
@@ -1307,11 +1664,22 @@ export default {
       allDeparts: [],
       departs: [],
       departLoading: false,
+      launchDeps: [],
+      accountDeps: [],
+      budgetDeps: [],
       allSubs: [],
       subs: [],
       subLoading: false,
       allMembers: [],
       members: [],
+      projectProducerList: [],
+      filterProjectProducer: [],
+      filterNeedsCreate: [],
+      filterNeedsVerify: [],
+      filterAssignSupplier: [],
+      filterWjVerify: [],
+      filterOrderCreate: [],
+      filterOrderVerify: [],
       memberLoading: false,
       categorys: []
     }
@@ -1333,29 +1701,32 @@ export default {
       })
       return group_type
     },
+    formatCategoryList(list) {
+      return list.map((first) => {
+        const seconds = first.children.map((second) => {
+          const thirds = second.children.map((third) => {
+            return {
+              label: third.category_name,
+              value: third.cat_id
+            }
+          })
+          return {
+            label: second.category_name,
+            value: second.cat_id,
+            children: thirds
+          }
+        })
+        return {
+          label: first.category_name,
+          value: first.cat_id,
+          children: seconds
+        }
+      }) 
+    },
     getCategory() {
       fetchAllCategory()
         .then((response) => {
-          this.categorys = response.data.list.map((first) => {
-            const seconds = first.children.map((second) => {
-              const thirds = second.children.map((third) => {
-                return {
-                  label: third.category_name,
-                  value: third.cat_id
-                }
-              })
-              return {
-                label: second.category_name,
-                value: second.cat_id,
-                children: thirds
-              }
-            })
-            return {
-              label: first.category_name,
-              value: first.cat_id,
-              children: seconds
-            }
-          })
+          this.categorys = this.formatCategoryList(response.data.list)
         })
         .catch((error) => {})
     },
@@ -1556,6 +1927,104 @@ export default {
     },
     handleDetail(row) {
       this.$router.push(`/project/process/detail/${row.process_id}`)
+    },
+    async handleCopy(rowIndex) {
+      this.$set(this.list[rowIndex], 'copying', true)
+
+      let projectData = await fetchAllProject()
+      if (projectData.data && projectData.data.list) {
+        this.allProjects = projectData.data.list
+      } else {
+        this.$set(this.list[rowIndex], 'copying', false)
+        return false
+      }
+
+      let categoryData = await fetchAllCategory()
+      if (categoryData.data && categoryData.data.list) {
+        this.categorys = this.formatCategoryList(categoryData.data.list)
+      } else {
+        this.$set(this.list[rowIndex], 'copying', false)
+        return false
+      }
+
+      let departData = await fetchAllDepartment()
+      if (departData.data && departData.data.list) {
+        this.allDeparts = departData.data.list
+        departData.data.list.forEach((depart) => {
+          if (depart.tag === 0) {
+            this.launchDeps.push(depart)
+          } else if (depart.tag === 1) {
+            this.accountDeps.push(depart)
+          } else if (depart.tag === 2) {
+            this.budgetDeps.push(depart)
+          }
+        })
+      } else {
+        this.$set(this.list[rowIndex], 'copying', false)
+        return false
+      }
+
+      let memberData = await fetchAllMember()
+      if (memberData.data && memberData.data.list) {
+        this.allMembers = memberData.data.list
+        memberData.data.list.forEach((member) => {
+          if (member.group && member.group.type === 5) {
+            this.projectProducerList.push(member)
+          }
+          if (member.group && [1, 3].indexOf(member.group.type) >= 0) {
+            this.filterNeedsCreate.push(member)
+          }
+          if (member.group && member.group.type === 2) {
+            this.filterNeedsVerify.push(member)
+          }
+          if (member.group && [3].indexOf(member.group.type) >= 0) {
+            this.filterAssignSupplier.push(member)
+          }
+          if (member.group && [1, 2].indexOf(member.group.type) >= 0) {
+            this.filterWjVerify.push(member)
+          }
+          if (member.group && member.group.type === 3) {
+            this.filterOrderCreate.push(member)
+          }
+          if (member.group && member.group.type === 4) {
+            this.filterOrderVerify.push(member)
+          }
+        })
+      } else {
+        this.$set(this.list[rowIndex], 'copying', false)
+        return false
+      }
+
+      let subData = await fetchAllSub()
+      if (subData.data && subData.data.list) {
+        this.allSubs = subData.data.list
+      } else {
+        this.$set(this.list[rowIndex], 'copying', false)
+        return false
+      }
+
+      let detailData = await fetchDetail({ process_id: this.list[rowIndex].process_id })
+      if (detailData.data) {
+        let tempData = JSON.parse(JSON.stringify(detailData.data))
+        this.temp = Object.assign({}, this.temp, tempData)
+        this.$set(this.temp, 'id', undefined)
+        this.$set(this.temp, 'process_id', undefined)
+      } else {
+        this.$set(this.list[rowIndex], 'copying', false)
+        return false
+      }
+
+      // let tempData = JSON.parse(JSON.stringify(this.list[rowIndex]))
+      // tempData.id = undefined
+      // this.temp = Object.assign({}, this.temp, tempData)
+
+      this.$set(this.list[rowIndex], 'copying', false)
+
+      this.dialogStatus = 'copy'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
     },
     fetchProjectList(query) {
       this.projectLoading = true
