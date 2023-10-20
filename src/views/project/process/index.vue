@@ -485,6 +485,15 @@
             </el-option>
           </el-select>
         </el-form-item>
+
+        <el-form-item label="关键节点通知邮箱:" prop="notice_email">
+          <el-input
+            v-model="temp.notice_email"
+            class="dialog-form-item"
+            placeholder="请输入关键节点通知邮箱"
+          />
+        </el-form-item>
+
         <el-form-item label="邮件抄送人:" prop="email_cc">
           <el-input
             v-model="temp.email_cc"
@@ -1449,6 +1458,7 @@ export default {
         accounting: '',
         account_dep_id: '',
         project_producer: [],
+        notice_email: '',
         email_cc: '',
         legal_email: '',
         needs_create_json: [], // 创建需求卡
@@ -1520,6 +1530,9 @@ export default {
         ],
         legal_email: [
           { required: true, message: '请输入法务收件人', trigger: 'blur' }
+        ],
+        notice_email: [
+          { required: true, message: '请输入关键节点通知邮箱', trigger: 'blur' }
         ],
         needs_create_json: [
           {
@@ -1776,6 +1789,7 @@ export default {
         accounting: '',
         account_dep_id: '',
         project_producer: [],
+        notice_email: '',
         email_cc: '',
         legal_email: '',
         needs_create_json: [],
