@@ -257,3 +257,11 @@ export function rejectStatementBySupplier(data) {
     data
   })
 }
+
+export function fillExpressAddress(data) {
+  return request({
+    url: '/api/statement/fillExpressAddress',
+    method: 'post',
+    data
+  })
+}

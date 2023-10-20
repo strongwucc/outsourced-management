@@ -317,7 +317,10 @@
       </el-table-column>
       <el-table-column label="结算状态" align="center" min-width="120">
         <template slot-scope="{ row }">
-          {{ row.statement_status | statusText }}
+          <el-tooltip class="item" effect="dark" :content="row.express" placement="top" v-if="[3].indexOf(row.statement_status) >= 0 && row.express">
+            <span style="color: #f56c6c">{{ row.statement_status | statusText }}</span>
+          </el-tooltip>
+          <span v-else>{{ row.statement_status | statusText }}</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -397,6 +400,16 @@
           >
             查看发票
           </el-button> -->
+          <el-button
+            v-if="[3].indexOf(row.statement_status) >= 0 && row.express === ''"
+            v-permission="[0]"
+            type="primary"
+            size="mini"
+            plain
+            @click.stop="handleBackfillOrderNum(row)"
+          >
+            填写回寄快递单号
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -718,6 +731,47 @@
         </el-button>
       </div>
     </el-dialog>
+
+    <!--填写回寄快递单号-->
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogBackfillVisible"
+    >
+      <el-form
+        ref="backfillDataForm"
+        class="dialog-form"
+        :rules="backfillRules"
+        :model="tempBackfill"
+        label-position="left"
+        label-width="150px"
+        style="margin: 0 50px"
+      >
+        <el-form-item label="快递单号:" prop="express">
+          <el-input
+            v-model="tempBackfill.express"
+            placeholder="请输入快递单号"
+            class="dialog-form-item"
+          />
+        </el-form-item>
+
+        <el-form-item label="备注:" prop="remark">
+          <el-input
+            v-model="tempBackfill.remark"
+            type="textarea"
+            placeholder="请输入备注"
+            class="dialog-form-item"
+          />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogBackfillVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="confirmBackfillOrderNum">
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -729,7 +783,8 @@ import {
   submitStatement,
   rejectStatement,
   createExcel,
-  downloadStatementdMaterial
+  downloadStatementdMaterial,
+  fillExpressAddress
 } from '@/api/order/index'
 import { fetchPactDetail } from '@/api/provider/contract'
 import { downloadFile } from '@/api/system/file'
@@ -822,7 +877,8 @@ export default {
         reject: '驳回',
         reconcile: '上传结算单',
         bill: '结算申请',
-        bill_show: '查看发票'
+        bill_show: '查看发票',
+        backfill: '填写回寄快递单号',
       },
       dialogStatus: '',
       dialogRejectReasonVisible: false,
@@ -888,7 +944,18 @@ export default {
       modifyRules: {},
       pact: {},
       dialogPactVisible: false,
-      exporting: false
+      exporting: false,
+      dialogBackfillVisible: false,
+      tempBackfill: {
+        statement_id: '',
+        express: '',
+        remark: '',
+      },
+      backfillRules: {
+        express: [
+          { required: true, message: '请输入快递单号', trigger: 'blur' }
+        ]
+      },
     }
   },
   created() {
@@ -1447,7 +1514,41 @@ export default {
           // this.$message.error('哎呀，打包出错啦')
           this.$set(this.list[index], 'zipPacking', false)
         })
-    }
+    },
+    /**
+     * 回填快递地址
+     */
+     handleBackfillOrderNum(row, index) {
+      if (row.express) {
+        this.$message.error('不能重复填写')
+        return false
+      }
+      this.tempBackfill = Object.assign({}, this.tempBackfill, {statement_id: row.statement_id, express: '', remark: ''})
+      this.dialogStatus = 'backfill'
+      this.dialogBackfillVisible = true
+      this.$nextTick(() => {
+        this.$refs['backfillDataForm'].clearValidate()
+      })
+      
+     },
+     confirmBackfillOrderNum() {
+      this.$refs['backfillDataForm'].validate((valid) => {
+        if (valid) {
+          const tempData = Object.assign({}, this.tempBackfill)
+          fillExpressAddress(tempData)
+            .then(() => {
+              const index = this.list.findIndex(
+                (v) => v.statement_id === tempData.statement_id
+              )
+              this.$set(this.list[index], 'express', tempData.express)
+              this.$set(this.list[index], 'remark', tempData.remark)
+              this.$message.success('回填成功')
+              this.dialogBackfillVisible = false
+            })
+            .catch((error) => {})
+        }
+      })
+     }
   }
 }
 </script>
