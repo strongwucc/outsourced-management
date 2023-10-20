@@ -536,6 +536,16 @@
             详情
           </el-button>
           <el-button
+            v-permission="[1, 3]"
+            type="primary"
+            size="mini"
+            plain
+            :loading="row.editing"
+            @click.stop="handleEdit(row, $index)"
+          >
+            修改
+          </el-button>
+          <el-button
             v-if="row.files.length > 0"
             v-permission="[1, 2, 3, 4, 5]"
             type="primary"
@@ -1841,6 +1851,72 @@
     <el-dialog :visible.sync="dialogImageVisible" append-to-body>
       <img width="100%" :src="dialogImageUrl" alt="">
     </el-dialog>
+
+    <!--修改-->
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogEditVisible">
+      <el-form
+        ref="editForm"
+        class="dialog-form"
+        :rules="rulesEdit"
+        :model="tempEdit"
+        label-position="left"
+        label-width="150px"
+        style="margin: 0 50px"
+      >
+
+        <el-form-item label="需求标记:" prop="tag">
+          <el-radio-group v-model="tempEdit.tag">
+            <el-radio
+              v-for="(tag, tagIndex) in tagOptions"
+              :key="tagIndex"
+              :label="tag.id"
+            >{{ tag.name }}</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="选择供应商理由:" prop="supplier_reason">
+          <el-select
+            v-model="tempEdit.supplier_reason"
+            style="width: 350px"
+            clearable
+            placeholder="请选择理由"
+            class="dialog-form-item"
+          >
+            <el-option
+              v-for="item in providerReasons"
+              :key="item.id"
+              :label="item.content"
+              :value="item.content"
+            />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="需求品类:" prop="cat_id">
+          <el-cascader
+            ref="categoryCascader"
+            v-model="tempEdit.cat_id"
+            :options="categorys"
+            :props="{ emitPath: false }"
+            collapse-tags
+            clearable
+            style="width: 350px"
+          />
+        </el-form-item>
+
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogEditVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          size="mini"
+          @click="editDemand"
+        >
+          确定
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -1859,7 +1935,8 @@ import {
   createOrder,
   verifyOrder,
   exportTaskTpl,
-  batchAddTasks
+  batchAddTasks,
+  editCatTagReason
 } from '@/api/demand/index'
 import {
   createTask,
@@ -1877,6 +1954,7 @@ import {
 import { fetchAllMember } from '@/api/system/member'
 import { fetchAllProvider } from '@/api/provider/index'
 import { fetchAllCategory } from '@/api/system/category'
+import { fetchReasonList } from '@/api/system/reason'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
 import permission from '@/directive/permission/index.js' // 权限判断指令
@@ -2172,7 +2250,22 @@ export default {
       demandSupplierFileList: [],
       dialogImageUrl: '',
       dialogImageVisible: false,
-      exporting: false
+      exporting: false,
+      dialogEditVisible: false,
+      providerReasons: [],
+      tempEdit: {
+        demand_id: undefined,
+        tag: 0,
+        supplier_reason: '',
+        cat_id: '',
+      },
+      rulesEdit: {
+        tag: [{ required: true, message: '请选择需求标记', trigger: 'blur' }],
+        cat_id: [
+          { required: true, message: '请选择需求品类', trigger: 'change' }
+        ],
+        supplier_reason: [{ message: '请选择理由', trigger: 'change', required: true }]
+      },
     }
   },
   computed: {
@@ -4027,7 +4120,114 @@ export default {
           this.$set(this.list[index], 'downloading', false)
           this.$message.error(error || '哎呀，下载失败啦')
         })
-    }
+    },
+    /**
+     * 编辑品类、理由、标签
+     */
+     async handleEdit(row, index) {
+      this.list.splice(index, 1, Object.assign({}, row, { editing: true }))
+      try {
+
+        const categoryData = await fetchProcessCategory({
+          process_id: row.process_id
+        })
+
+        if (!categoryData.data || !categoryData.data.list) {
+          this.list.splice(
+            index,
+            1,
+            Object.assign({}, row, { editing: false })
+          )
+          return false
+        }
+
+        this.categorys = categoryData.data.list.map((first) => {
+          const seconds = first.children.map((second) => {
+            const thirds = second.children.map((third) => {
+              return {
+                label: third.category_name,
+                value: third.cat_id
+              }
+            })
+            return {
+              label: second.category_name,
+              value: second.cat_id,
+              children: thirds
+            }
+          })
+          return {
+            label: first.category_name,
+            value: first.cat_id,
+            children: seconds
+          }
+        })
+
+        const reasonData = await fetchReasonList({ page_num: 10000 })
+
+        if (!reasonData.data || !reasonData.data.list) {
+          this.list.splice(
+            index,
+            1,
+            Object.assign({}, row, { editing: false })
+          )
+          return false
+        }
+        this.providerReasons = reasonData.data.list
+
+        
+      } catch (error) {
+        console.log(error)
+        this.list.splice(
+          index,
+          1,
+          Object.assign({}, row, { editing: false })
+        )
+        this.$notify({
+          title: '失败',
+          message: '修改失败',
+          type: 'error',
+          duration: 2000
+        })
+      }
+      this.list.splice(
+        index,
+        1,
+        Object.assign({}, row, { editing: false })
+      )
+      this.tempEdit = Object.assign({}, this.tempEdit, {
+        demand_id: row.demand_id,
+        tag: parseInt(row.tag),
+        supplier_reason: row.supplier_reason,
+        cat_id: parseInt(row.cat_id)
+      })
+      this.dialogStatus = 'update'
+      this.dialogEditVisible = true
+      this.$nextTick(() => {
+        this.$refs['editForm'].clearValidate()
+      })
+    },
+    /**
+     * 修改需求
+     */
+     editDemand() {
+      this.$refs['editForm'].validate((valid) => {
+        if (valid) {
+          const tempData = Object.assign({}, this.tempEdit)
+          editCatTagReason(tempData)
+            .then(() => {
+              this.getList(false)
+              this.dialogEditVisible = false
+              this.$notify({
+                title: '成功',
+                message: '修改成功',
+                type: 'success',
+                duration: 2000
+              })
+            })
+            .catch((error) => {})
+        }
+      })
+    },
   }
 }
 </script>

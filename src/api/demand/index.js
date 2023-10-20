@@ -145,3 +145,11 @@ export function exportTask(demand_id) {
     responseType: 'arraybuffer'
   })
 }
+
+export function editCatTagReason(data) {
+  return request({
+    url: '/api/needs/editCatTagReason',
+    method: 'post',
+    data
+  })
+}
