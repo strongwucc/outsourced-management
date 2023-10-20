@@ -209,7 +209,7 @@
             placeholder="可多个，分号隔开"
           />
         </el-form-item>
-        <el-form-item label="银行账号:" prop="bank_account">
+        <!-- <el-form-item label="银行账号:" prop="bank_account">
           <el-input
             v-model="temp.bank_account"
             class="dialog-form-item"
@@ -222,7 +222,7 @@
             class="dialog-form-item"
             placeholder="请输入银行及开户行"
           />
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item label="区域:" prop="area">
           <el-select
@@ -615,8 +615,8 @@ export default {
         contact_phone: '',
         email: '',
         mail_cc: '',
-        bank_name: '',
-        bank_account: '',
+        // bank_name: '',
+        // bank_account: '',
         area: '',
         prices: [],
         contacts: []
@@ -741,8 +741,8 @@ export default {
         contact_phone: '',
         email: '',
         email_cc: '',
-        bank_name: '',
-        bank_account: '',
+        // bank_name: '',
+        // bank_account: '',
         area: '',
         prices: [],
         contacts: []

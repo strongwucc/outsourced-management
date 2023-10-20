@@ -269,6 +269,16 @@
           </el-select>
         </el-form-item>
 
+        <el-form-item label="开户行" prop="bank_name">
+          <el-input v-model="temp.bank_name" class="dialog-form-item" />
+        </el-form-item>
+        <el-form-item label="开户行账号" prop="bank_account">
+          <el-input v-model="temp.bank_account" class="dialog-form-item" />
+        </el-form-item>
+        <el-form-item label="增值税（%)" prop="tax">
+          <el-input v-model="temp.tax" class="dialog-form-item" />
+        </el-form-item>
+
         <el-form-item label="合同编号" prop="bn">
           <el-input v-model="temp.bn" class="dialog-form-item" />
         </el-form-item>
@@ -363,6 +373,15 @@
         </el-form-item>
         <el-form-item label="签约主体:">
           <div>{{ temp.sub_name }}</div>
+        </el-form-item>
+        <el-form-item label="开户行:">
+          <div>{{ temp.bank_name }}</div>
+        </el-form-item>
+        <el-form-item label="开户行账号:">
+          <div>{{ temp.bank_account }}</div>
+        </el-form-item>
+        <el-form-item label="增值税（%）:">
+          <div>{{ temp.tax }}</div>
         </el-form-item>
         <el-form-item label="合同号:">
           <div>{{ temp.bn }}</div>
@@ -518,6 +537,9 @@ export default {
         pact_id: undefined,
         supplier_id: '',
         sub_id: '',
+        bank_name: '',
+        bank_account: '',
+        tax: '',
         bn: '',
         pact_name: '',
         pact_type: 0,
@@ -540,6 +562,9 @@ export default {
         sub_id: [
           { required: true, message: '请选择签约主体', trigger: 'change' }
         ],
+        bank_name: [{ required: true, message: '请输入开户行', trigger: 'blur' }],
+        bank_account: [{ required: true, message: '请输入开户行账号', trigger: 'blur' }],
+        tax: [{ required: true, message: '请输入增值税', trigger: 'blur' }],
         bn: [{ required: true, message: '请输入合同号', trigger: 'blur' }],
         pact_name: [{ required: true, message: '请输入合同名称', trigger: 'blur' }],
         pact_type: [
@@ -624,6 +649,9 @@ export default {
         pact_id: undefined,
         supplier_id: '',
         sub_id: '',
+        bank_name: '',
+        bank_account: '',
+        tax: '',
         bn: '',
         pact_name: '',
         pact_type: 0,
@@ -700,7 +728,7 @@ export default {
       const subData = await fetchSubject().catch((_error) => {})
       this.subjects = subData.data.list
 
-      this.fileList = this.temp.files.map((file) => {
+      this.fileList = this.temp.files.length > 0 ? this.temp.files.map((file) => {
         return {
           name: file.name,
           url: file.url,
@@ -710,7 +738,7 @@ export default {
             }
           }
         }
-      })
+      }) : []
 
       this.$set(this.list[index], 'editLoading', false)
       this.dialogStatus = 'update'
