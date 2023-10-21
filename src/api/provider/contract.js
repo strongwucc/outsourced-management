@@ -47,3 +47,19 @@ export function fetchPactDetail(params) {
     params
   })
 }
+
+export function exportTpl() {
+  return request({
+    url: '/api/supply/exportPactTpl',
+    method: 'get',
+    responseType: 'arraybuffer'
+  })
+}
+
+export function batchAddPacts(data) {
+  return request({
+    url: '/api/supply/batchAddPacts',
+    method: 'post',
+    data
+  })
+}

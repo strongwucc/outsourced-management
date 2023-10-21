@@ -3,72 +3,98 @@
     <!--筛选-->
     <div class="filter-container">
       <div class="filter-left">
-        <el-input
-          v-model="listQuery.supplier_name"
-          placeholder="供应商名称"
-          style="width: 200px"
-          class="filter-item"
-          size="mini"
-          @keyup.enter.native="handleFilter"
-        />
-        <el-input
-          v-model="listQuery.subject_name"
-          placeholder="签约主体"
-          style="width: 200px"
-          class="filter-item"
-          size="mini"
-          @keyup.enter.native="handleFilter"
-        />
-        <el-input
-          v-model="listQuery.bn"
-          placeholder="合同编号"
-          style="width: 200px"
-          class="filter-item"
-          size="mini"
-          @keyup.enter.native="handleFilter"
-        />
-        <el-select
-          v-model="listQuery.area"
-          placeholder="区域"
-          clearable
-          class="filter-item"
-          style="width: 200px"
-          size="mini"
-        >
-          <el-option
-            v-for="item in areas"
-            :key="item.area_id"
-            :label="item.area_name"
-            :value="item.area_name"
+        <div class="input-area">
+          <el-input
+            v-model="listQuery.supplier_name"
+            placeholder="供应商名称"
+            style="width: 200px"
+            class="filter-item"
+            size="mini"
+            @keyup.enter.native="handleFilter"
           />
-        </el-select>
-        <el-select
-          v-model="listQuery.status"
-          placeholder="合作状态"
-          clearable
-          class="filter-item"
-          style="width: 200px"
-          size="mini"
-        >
-          <el-option
-            v-for="item in statList"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
+          <el-input
+            v-model="listQuery.subject_name"
+            placeholder="签约主体"
+            style="width: 200px"
+            class="filter-item"
+            size="mini"
+            @keyup.enter.native="handleFilter"
           />
-        </el-select>
-        <el-button
-          v-waves
-          class="filter-item"
-          type="primary"
-          icon="el-icon-search"
-          size="mini"
-          @click="handleFilter"
-        >
-          搜索
-        </el-button>
+          <el-input
+            v-model="listQuery.bn"
+            placeholder="合同编号"
+            style="width: 200px"
+            class="filter-item"
+            size="mini"
+            @keyup.enter.native="handleFilter"
+          />
+          <el-select
+            v-model="listQuery.area"
+            placeholder="区域"
+            clearable
+            class="filter-item"
+            style="width: 200px"
+            size="mini"
+          >
+            <el-option
+              v-for="item in areas"
+              :key="item.area_id"
+              :label="item.area_name"
+              :value="item.area_name"
+            />
+          </el-select>
+          <el-select
+            v-model="listQuery.status"
+            placeholder="合作状态"
+            clearable
+            class="filter-item"
+            style="width: 200px"
+            size="mini"
+          >
+            <el-option
+              v-for="item in statList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </div>
+        <div class="btn-area" style="margin-top: 10px;">
+          <el-button
+            v-waves
+            class="filter-item"
+            type="primary"
+            icon="el-icon-search"
+            size="mini"
+            @click="handleFilter"
+          >
+            搜索
+          </el-button>
+          <el-button
+            v-waves
+            class="filter-item"
+            type="primary"
+            icon="el-icon-download"
+            size="mini"
+            :loading="exporting"
+            @click="handleExportPacts"
+          >
+            导出
+          </el-button>
+        </div>
       </div>
       <div class="filter-right">
+        <el-button
+          v-permission="[3, 4]"
+          class="filter-item"
+          style="margin-left: 10px"
+          type="primary"
+          icon="el-icon-plus"
+          size="mini"
+          @click="handleImport"
+        >
+          导入合同
+        </el-button>
         <el-button
           v-permission="[3, 4]"
           class="filter-item"
@@ -393,7 +419,11 @@
           <div>{{ temp.pact_type | typeText }}</div>
         </el-form-item>
         <el-form-item label="合同有效时间:">
-          <div>{{ temp.period_start | dateFormat }}至{{ temp.period_end | dateFormat }}</div>
+          <div>
+            {{ temp.period_start | dateFormat }}至{{
+              temp.period_end | dateFormat
+            }}
+          </div>
         </el-form-item>
         <el-form-item label="合同附件">
           <div class="file-box">
@@ -425,6 +455,50 @@
         </el-button>
       </div>
     </el-dialog>
+
+    <!--导入合同-->
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogImportVisible"
+      width="600px"
+    >
+      <el-form
+        ref="importDataForm"
+        class="dialog-form"
+        :rules="importRules"
+        :model="tempImport"
+        label-position="left"
+        label-width="150px"
+        style="margin: 0 50px"
+      >
+        <el-form-item label="合同导入模板">
+          <el-button size="mini" @click="downloadTpl">下载</el-button>
+        </el-form-item>
+
+        <el-form-item label="导入合同">
+          <el-upload
+            class="upload-demo"
+            :action="`${$baseUrl}/api/needs/importPactTpl`"
+            :headers="{ Authorization: $store.getters.token }"
+            :on-success="handleAddTplSucc"
+            :show-file-list="false"
+          >
+            <el-button size="mini" type="primary">导入</el-button>
+            <span class="file-name" style="margin-left: 10px">{{
+              tempImportFileName
+            }}</span>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogImportVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" size="mini" @click="confirmImport">
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -433,7 +507,9 @@ import {
   fetchList,
   createContract,
   updateContract,
-  changeContractStatus
+  changeContractStatus,
+  exportTpl,
+  batchAddPacts
 } from '@/api/provider/contract'
 import {
   fetchList as fetchProviders,
@@ -447,6 +523,7 @@ import Pagination from '@/components/Pagination'
 import { previewFile } from '@/utils/index'
 import { downloadFile } from '@/api/system/file'
 import { downloadFileStream, baseName } from '@/utils/index'
+import { exportOrders } from '@/api/system/download'
 
 const statList = [
   { id: 0, name: '未生效' },
@@ -553,7 +630,8 @@ export default {
       textMap: {
         update: '修改',
         create: '新增',
-        detail: '查看'
+        detail: '查看',
+        import: '导入合同'
       },
       rules: {
         supplier_id: [
@@ -562,11 +640,17 @@ export default {
         sub_id: [
           { required: true, message: '请选择签约主体', trigger: 'change' }
         ],
-        bank_name: [{ required: true, message: '请输入开户行', trigger: 'blur' }],
-        bank_account: [{ required: true, message: '请输入开户行账号', trigger: 'blur' }],
+        bank_name: [
+          { required: true, message: '请输入开户行', trigger: 'blur' }
+        ],
+        bank_account: [
+          { required: true, message: '请输入开户行账号', trigger: 'blur' }
+        ],
         tax: [{ required: true, message: '请输入增值税', trigger: 'blur' }],
         bn: [{ required: true, message: '请输入合同号', trigger: 'blur' }],
-        pact_name: [{ required: true, message: '请输入合同名称', trigger: 'blur' }],
+        pact_name: [
+          { required: true, message: '请输入合同名称', trigger: 'blur' }
+        ],
         pact_type: [
           { required: true, message: '请选择等级类型', trigger: 'change' }
         ],
@@ -583,7 +667,14 @@ export default {
         ],
         remark: [{ required: true, message: '请输入备注', trigger: 'blur' }]
       },
-      fileList: []
+      fileList: [],
+      dialogImportVisible: false,
+      tempImport: {
+        pacts: []
+      },
+      importRules: {},
+      tempImportFileName: '',
+      exporting: false
     }
   },
   created() {
@@ -591,8 +682,10 @@ export default {
     console.log()
   },
   methods: {
-    async getList() {
-      this.listLoading = true
+    async getList(loading = true) {
+      if (loading) {
+        this.listLoading = true
+      }
       if (this.areas.length === 0) {
         const areaData = await fetchRegion()
         this.areas = areaData.data
@@ -643,6 +736,18 @@ export default {
     handleFilter() {
       this.listQuery.page = 1
       this.getList()
+    },
+    resetQuery() {
+      this.listQuery = Object.assign({}, this.listQuery, {
+        supplier_name: '',
+        subject_name: '',
+        bn: '',
+        area: '',
+        status: '',
+        page: 1,
+        page_num: 10,
+        sort: '+id'
+      })
     },
     resetTemp() {
       this.temp = {
@@ -723,22 +828,27 @@ export default {
     async handleUpdate(row, index) {
       this.temp = JSON.parse(JSON.stringify(row))
       this.$set(this.list[index], 'editLoading', true)
-      const providerData = await fetchProviders({ page_num: 1000 }).catch((_error) => {})
+      const providerData = await fetchProviders({ page_num: 1000 }).catch(
+        (_error) => {}
+      )
       this.providers = providerData.data.list
       const subData = await fetchSubject().catch((_error) => {})
       this.subjects = subData.data.list
 
-      this.fileList = this.temp.files.length > 0 ? this.temp.files.map((file) => {
-        return {
-          name: file.name,
-          url: file.url,
-          response: {
-            data: {
-              file_id: file.file_id
+      this.fileList =
+        this.temp.files.length > 0
+          ? this.temp.files.map((file) => {
+            return {
+              name: file.name,
+              url: file.url,
+              response: {
+                data: {
+                  file_id: file.file_id
+                }
+              }
             }
-          }
-        }
-      }) : []
+          })
+          : []
 
       this.$set(this.list[index], 'editLoading', false)
       this.dialogStatus = 'update'
@@ -840,6 +950,92 @@ export default {
           downloadFileStream(fileName, response)
         })
         .catch((_error) => {})
+    },
+    /**
+     * 导入合同弹窗
+     */
+    handleImport() {
+      this.tempImport = Object.assign({}, this.tempImport, {
+        pacts: []
+      })
+      this.dialogStatus = 'import'
+      this.dialogImportVisible = true
+      this.tempImportFileName = ''
+      this.$nextTick(() => {
+        this.$refs['importDataForm'].clearValidate()
+      })
+    },
+    /**
+     * 导出合同模板
+     */
+    downloadTpl() {
+      exportTpl()
+        .then((response) => {
+          downloadFileStream('合同模板.xlsx', response)
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+    },
+    /**
+     * 导入模板成功
+     */
+    handleAddTplSucc(response, file, fileList) {
+      if (response.message) {
+        this.$message.error(response.message)
+        return false
+      }
+
+      this.tempImportFileName = file.name
+      this.tempImport = Object.assign({}, this.tempImport, {
+        pacts: response
+      })
+    },
+    /**
+     * 确认导入
+     */
+    confirmImport() {
+      this.$refs['importDataForm'].validate((valid) => {
+        if (valid) {
+          const temp = JSON.parse(JSON.stringify(this.tempImport))
+          batchAddPacts(temp)
+            .then((response) => {
+              this.dialogImportVisible = false
+              this.$message.success('导入成功')
+              this.resetQuery()
+              this.getList(false)
+            })
+            .catch((_error) => {})
+        }
+      })
+    },
+    /**
+     * 导出
+     */
+    handleExportPacts() {
+      if (this.exporting) {
+        return false
+      }
+      const { supplier_name, subject_name, bn, area, status } = this.listQuery
+      const filter = {
+        supplier_name,
+        subject_name,
+        bn,
+        area,
+        status,
+        class_name: 'pact'
+      }
+      this.exporting = true
+      exportOrders(filter)
+        .then((response) => {
+          this.exporting = false
+          const fileName = `合同-${this.$moment().format('YYYYMMD')}.xlsx`
+          downloadFileStream(fileName, response)
+        })
+        .catch((error) => {
+          this.exporting = false
+          console.log(error)
+        })
     }
   }
 }
