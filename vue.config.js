@@ -60,7 +60,7 @@ module.exports = {
       //   changeOrigin: true
       // }
     },
-    host: '192.168.0.12'
+    host: '192.168.1.4'
   },
   configureWebpack: {
     // provide the app's title in webpack's name field, so that

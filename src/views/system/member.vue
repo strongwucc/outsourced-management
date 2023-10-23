@@ -71,13 +71,13 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="部门" align="center" min-width="150px">
+      <el-table-column label="部门" align="center" width="150px">
         <template slot-scope="{ row }">
           {{ row.dep_array | depText }}
         </template>
       </el-table-column>
 
-      <el-table-column label="手机号" align="center" min-width="150px">
+      <el-table-column label="手机号" align="center" width="120px">
         <template slot-scope="{ row }">
           {{ row.mobile }}
         </template>
@@ -89,7 +89,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="状态" align="center" min-width="150px">
+      <el-table-column label="状态" align="center" width="80px">
         <template slot-scope="{ row }">
           <el-tag :type="row.status | statusFilter">
             {{ row.status | statusText }}
@@ -100,7 +100,7 @@
       <el-table-column
         label="操作"
         align="center"
-        width="230"
+        min-width="230"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
@@ -121,6 +121,16 @@
               删除
             </el-button>
           </el-popconfirm>
+          <el-button
+            style="margin-left: 10px"
+            v-if="row.group_id === 5"
+            type="primary"
+            size="mini"
+            plain
+            @click="handleShowPermissions(row)"
+          >
+            可见权限
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -263,6 +273,67 @@
         </el-button>
       </div>
     </el-dialog>
+    <el-dialog
+      :title="textMap[dialogStatus]"
+      :visible.sync="dialogPermissionVisible"
+      :close-on-click-modal="false"
+    >
+      <el-form
+        ref="dataPermissionForm"
+        class="dialog-form"
+        :rules="rulesPermission"
+        :model="tempPermission"
+        label-position="left"
+        label-width="110px"
+        style="margin-left: 50px"
+      >
+      <el-table
+        :data="tempPermission.project_producer"
+        border
+        style="width: 100%">
+        <!-- <el-table-column
+          prop="project.project_name"
+          label="主项目"
+          width="180">
+        </el-table-column> -->
+        <el-table-column
+          align="center"
+          prop="flow_name"
+          label="流程名称"
+          width="180">
+        </el-table-column>
+        <el-table-column
+          align="center"
+          prop="bn"
+          label="流程代码">
+        </el-table-column>
+        <el-table-column
+          align="center"
+          prop="created_at"
+          label="创建时间">
+        </el-table-column>
+        <el-table-column
+          align="center"
+          label="是否可见" width="80px">
+          <template slot-scope="{ row }">
+            <el-checkbox v-model="row.selected"></el-checkbox>
+          </template>
+        </el-table-column>
+      </el-table>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="mini" @click="dialogPermissionVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          size="mini"
+          @click="updatePermissionData()"
+        >
+          确定
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -275,6 +346,9 @@ import {
 } from '@/api/system/member'
 import { fetchAllDepartment } from '@/api/system/department'
 import { fetchAllRole } from '@/api/system/role'
+import {
+  fetchAllProcess,
+} from '@/api/project/process'
 import { fetchAllCategory } from '@/api/system/category'
 import waves from '@/directive/waves'
 import Pagination from '@/components/Pagination'
@@ -355,11 +429,12 @@ export default {
         password: '',
         mobile: '',
         email: '',
-        status: 1
+        status: 1,
       },
       textMap: {
         update: '修改用户',
-        create: '添加用户'
+        create: '添加用户',
+        permission: '可见权限',
       },
       rules: {
         name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
@@ -375,15 +450,23 @@ export default {
         password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
         mobile: [{ validator: validateMobile, trigger: 'blur' }],
         email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }]
-      }
+      },
+      dialogPermissionVisible: false,
+      tempPermission: {
+        id: undefined,
+        project_producer: []
+      },
+      rulesPermission: {}
     }
   },
   created() {
     this.getList()
   },
   methods: {
-    async getList() {
-      this.listLoading = true
+    async getList(loading=true) {
+      if (loading === true) {
+        this.listLoading = true
+      }
       if (this.departments.length === 0) {
         const departData = await fetchAllDepartment()
         this.departments = departData.data.list
@@ -554,7 +637,51 @@ export default {
           this.list.splice(index, 1)
         })
         .catch((error) => {})
-    }
+    },
+    async handleShowPermissions(row) {
+
+      const processData = await fetchAllProcess().catch(error=>{})
+      if (!processData.data || !processData.data.list) {
+        return false
+      }
+
+      const projectProducer = processData.data.list.map(item=>{
+        let existIndex = row.process.findIndex(oldItem=>oldItem.process_id === item.process_id)
+        if (existIndex >= 0) {
+          item = Object.assign({}, item, {selected: true})
+        } else {
+          item = Object.assign({}, item, {selected: false})
+        }
+        return item
+      })
+
+      this.tempPermission = Object.assign({}, this.tempPermission, {id: row.id, project_producer: projectProducer})
+      this.dialogStatus = 'permission'
+      this.dialogPermissionVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataPermissionForm'].clearValidate()
+      })
+    },
+    updatePermissionData() {
+      this.$refs['dataPermissionForm'].validate((valid) => {
+        if (valid) {
+          const temp = JSON.parse(JSON.stringify(this.tempPermission))
+          temp.project_producer = temp.project_producer.filter(item=>item.selected === true).map(item=>item.process_id).join(',')
+          updateMember(temp)
+            .then(() => {
+              this.$notify({
+                title: '成功',
+                message: '设置成功',
+                type: 'success',
+                duration: 2000
+              })
+              this.dialogPermissionVisible = false
+              this.getList(false)
+            })
+            .catch((error) => {})
+        }
+      })
+    },
   }
 }
 </script>
