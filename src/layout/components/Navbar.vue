@@ -334,10 +334,18 @@ export default {
             { required: true, message: '请输入原密码', trigger: 'blur' }
           ],
           new_pass: [
-            { required: true, message: '请输入新密码', trigger: 'blur' }
+            { required: true, message: '请输入新密码', trigger: 'blur' },
+            { message: '密码需大于8位，且包含英文字符', trigger: 'blur', pattern: /^(?=.*[a-zA-Z]).{9,}$/  },
           ],
           confirm_pass: [
-            { required: true, message: '请确认新密码', trigger: 'blur' }
+            { required: true, message: '请确认新密码', trigger: 'blur' },
+            { validator: (rule, value, callback) => {
+              if (value === this.temp.new_pass) {
+                callback()
+              } else {
+                callback(new Error('密码不一致，请重新输入'))
+              }
+            }, trigger: 'blur' }
           ]
         }
       } else if (this.dialogStatus === 'userinfo') {
