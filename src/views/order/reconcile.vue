@@ -140,6 +140,7 @@
       element-loading-background="rgba(237, 244, 253, 0.8)"
       class="list-container"
       :data="list"
+      style="width: 100%"
       fit
       highlight-current-row
       row-key="statement_id"
@@ -330,86 +331,114 @@
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
-          <el-button
-            v-if="row.invoice_file"
-            v-permission="[3]"
-            style="margin-left: 80px"
-            type="primary"
-            size="mini"
-            :loading="row.excelCreating"
-            @click.stop="handleDownloadReconcile(row, $index)"
-          >
-            下载结算单
-          </el-button>
-          <el-button
-            v-if="[4, 5].indexOf(row.statement_status) >= 0"
-            v-permission="[3]"
-            type="primary"
-            size="mini"
-            :loading="row.zipPacking"
-            @click.stop="handlePackZip(row, $index)"
-          >
-            下载结算材料
-          </el-button>
-          <el-button
-            v-if="row.invoice_file"
-            v-permission="[3]"
-            type="primary"
-            size="mini"
-            @click.stop="handleShowPack(row, $index)"
-          >
-            查看合同
-          </el-button>
-          <!-- <el-button
-            v-if="[0, 1, 3].indexOf(row.statement_status) >= 0"
-            v-permission="[3]"
-            type="primary"
-            size="mini"
-            plain
-            @click.stop="handleUploadReconcile(row)"
-          >
-            上传结算单
-          </el-button>
-          <el-button
-            v-if="[0].indexOf(row.statement_status) >= 0"
-            v-permission="[0]"
-            type="primary"
-            size="mini"
-            plain
-            @click.stop="handleUploadBill(row)"
-          >
-            申请结算
-          </el-button>
-          <el-button
-            v-if="row.bill_file"
-            v-permission="[3]"
-            type="primary"
-            size="mini"
-            plain
-            @click.stop="handleShowReconcile(row)"
-          >
-            查看结算单
-          </el-button>
-          <el-button
-            v-if="row.invoice_file"
-            v-permission="[3]"
-            type="primary"
-            size="mini"
-            plain
-            @click.stop="handleShowBill(row)"
-          >
-            查看发票
-          </el-button> -->
-          <el-button
-            v-if="[3].indexOf(row.statement_status) >= 0 && row.express === ''"
-            v-permission="[0]"
-            type="primary"
-            size="mini"
-            plain
-            @click.stop="handleBackfillOrderNum(row)"
-          >
-            填写回寄快递单号
-          </el-button>
+          <div class="btn-group">
+            <el-button
+              v-if="row.invoice_file"
+              v-permission="[3]"
+              type="primary"
+              size="mini"
+              :loading="row.excelCreating"
+              @click.stop="handleDownloadReconcile(row, $index)"
+            >
+              下载结算单
+            </el-button>
+            <el-button
+              v-if="[4, 5].indexOf(row.statement_status) >= 0"
+              v-permission="[3]"
+              type="primary"
+              size="mini"
+              :loading="row.zipPacking"
+              @click.stop="handlePackZip(row, $index)"
+            >
+              下载结算材料
+            </el-button>
+            <el-button
+              v-if="row.invoice_file"
+              v-permission="[3]"
+              type="primary"
+              size="mini"
+              @click.stop="handleShowPack(row, $index)"
+            >
+              查看合同
+            </el-button>
+            <!-- <el-button
+              v-if="[0, 1, 3].indexOf(row.statement_status) >= 0"
+              v-permission="[3]"
+              type="primary"
+              size="mini"
+              plain
+              @click.stop="handleUploadReconcile(row)"
+            >
+              上传结算单
+            </el-button>
+            <el-button
+              v-if="[0].indexOf(row.statement_status) >= 0"
+              v-permission="[0]"
+              type="primary"
+              size="mini"
+              plain
+              @click.stop="handleUploadBill(row)"
+            >
+              申请结算
+            </el-button>
+            <el-button
+              v-if="row.bill_file"
+              v-permission="[3]"
+              type="primary"
+              size="mini"
+              plain
+              @click.stop="handleShowReconcile(row)"
+            >
+              查看结算单
+            </el-button>
+            <el-button
+              v-if="row.invoice_file"
+              v-permission="[3]"
+              type="primary"
+              size="mini"
+              plain
+              @click.stop="handleShowBill(row)"
+            >
+              查看发票
+            </el-button> -->
+            <el-button
+              v-if="[3].indexOf(row.statement_status) >= 0 && row.express === ''"
+              v-permission="[0]"
+              type="primary"
+              size="mini"
+              plain
+              @click.stop="handleBackfillOrderNum(row)"
+            >
+              填写回寄快递单号
+            </el-button>
+            <el-button
+              v-if="row.invoice_image"
+              v-permission="[3]"
+              type="primary"
+              size="mini"
+              @click.stop="downLoadContract('发票图片-'+row.statement_id+'.'+row.invoice_image.split('.').pop(), row.invoice_image)"
+            >
+              下载发票图片
+            </el-button>
+            <el-button
+              v-if="row.invoice_file"
+              v-permission="[3]"
+              type="primary"
+              size="mini"
+              @click.stop="downLoadContract('发票文件-'+row.statement_id+'.'+row.invoice_file.split('.').pop(), row.invoice_file)"
+            >
+              下载发票文件
+            </el-button>
+            <el-button
+              v-permission="[3]"
+              type="primary"
+              size="mini"
+              :loading="row.zipWorkPacking"
+              @click.stop="handlePackWork(row, $index)"
+            >
+              打包作品
+            </el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -784,7 +813,8 @@ import {
   rejectStatement,
   createExcel,
   downloadStatementdMaterial,
-  fillExpressAddress
+  fillExpressAddress,
+  downloadStatementdWork
 } from '@/api/order/index'
 import { fetchPactDetail } from '@/api/provider/contract'
 import { downloadFile } from '@/api/system/file'
@@ -1548,7 +1578,26 @@ export default {
             .catch((error) => {})
         }
       })
-     }
+     },
+     /**
+     * 打包作品
+     */
+    handlePackWork(row, index) {
+      this.$set(this.list[index], 'zipWorkPacking', true)
+      downloadStatementdWork({ statement_id: row.statement_id })
+        .then((resp) => {
+          downloadFile({ url: resp.url })
+            .then(async(response) => {
+              downloadFileStream(baseName(resp.url), response)
+              this.$set(this.list[index], 'zipWorkPacking', false)
+            })
+            .catch((_error) => {})
+        })
+        .catch((_error) => {
+          // this.$message.error('哎呀，打包出错啦')
+          this.$set(this.list[index], 'zipWorkPacking', false)
+        })
+    },
   }
 }
 </script>
@@ -1601,6 +1650,10 @@ export default {
         border-radius: 50%;
         background-color: #f56c6c;
       }
+    }
+    .btn-group {
+      white-space: nowrap;
+      overflow: auto;
     }
   }
 }

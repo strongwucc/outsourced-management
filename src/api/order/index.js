@@ -265,3 +265,11 @@ export function fillExpressAddress(data) {
     data
   })
 }
+
+export function downloadStatementdWork(data) {
+  return request({
+    url: '/api/statement/packWork',
+    method: 'post',
+    data
+  })
+}
