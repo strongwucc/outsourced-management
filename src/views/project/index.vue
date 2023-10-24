@@ -150,6 +150,9 @@
         <el-form-item label="项目代码" prop="bn">
           <el-input v-model="temp.bn" />
         </el-form-item>
+        <el-form-item label="项目简称" prop="short_name">
+          <el-input v-model="temp.short_name" />
+        </el-form-item>
 
         <template v-if="dialogStatus === 'create'">
           <el-form-item label="项目简介" prop="brief">
@@ -253,6 +256,7 @@ export default {
         project_id: undefined,
         project_name: '',
         bn: '',
+        short_name: '',
         brief: '',
         budget_cost: '',
         warning_cost: '',
@@ -267,6 +271,7 @@ export default {
           { required: true, message: '请输入项目名称', trigger: 'blur' }
         ],
         bn: [{ required: true, message: '请输入项目代码', trigger: 'blur' }],
+        short_name: [{ required: true, message: '请输入项目简称', trigger: 'blur' }],
         budget_cost: [
           { required: true, message: '请输入预算', trigger: 'blur' }
         ],
@@ -354,7 +359,8 @@ export default {
           const temp = {
             project_id: this.temp.project_id,
             project_name: this.temp.project_name,
-            bn: this.temp.bn
+            bn: this.temp.bn,
+            short_name: this.temp.short_name,
           }
           updateProject(temp).then((response) => {
             const index = this.list.findIndex(
@@ -363,6 +369,7 @@ export default {
             if (index >= 0) {
               this.$set(this.list[index], 'project_name', temp.project_name)
               this.$set(this.list[index], 'bn', temp.bn)
+              this.$set(this.list[index], 'short_name', temp.short_name)
             }
             this.dialogFormVisible = false
             this.$notify({
