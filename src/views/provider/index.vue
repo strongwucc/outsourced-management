@@ -89,7 +89,7 @@
       <el-table-column
         label="操作"
         align="center"
-        width="350"
+        width="400"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="{ row, $index }">
@@ -112,7 +112,7 @@
             plain
             @click="resetPassword(row)"
           >
-            重置登录密码
+            重置用户名密码
           </el-button>
           <el-popconfirm
             v-permission="[3, 4]"
@@ -509,6 +509,12 @@
         label-width="100px"
         style="margin-left: 10px"
       >
+        <el-form-item label="用户名:" prop="login_name">
+          <el-input
+            v-model="tempPassword.login_name"
+            class="dialog-form-item"
+          />
+        </el-form-item>
         <el-form-item label="新密码:" prop="new_pass">
           <el-input
             v-model="tempPassword.new_pass"
@@ -630,10 +636,12 @@ export default {
       dialogPasswordVisible: false,
       tempPassword: {
         id: '',
+        login_name: '',
         new_pass: '',
         confirm_pass: ''
       },
       passwordRules: {
+        login_name: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
         new_pass: [{ required: true, message: '请输入新密码', trigger: 'blur' }],
         confirm_pass: [{ required: true, message: '请再次输入新密码', trigger: 'blur' }]
       }
@@ -791,7 +799,7 @@ export default {
       })
     },
     resetPassword(row) {
-      this.tempPassword = Object.assign({}, this.tempPassword, { id: row.user_id, new_pass: '', confirm_pass: '' })
+      this.tempPassword = Object.assign({}, this.tempPassword, { id: row.user_id, login_name: row.login_name, new_pass: '', confirm_pass: '' })
       this.dialogPasswordVisible = true
       this.$nextTick(() => {
         this.$refs['passwordForm'].clearValidate()
@@ -804,7 +812,7 @@ export default {
             this.$message.error('两次密码输入不一致')
             return false
           }
-          updateMember({ id: this.tempPassword.id, password: this.tempPassword.new_pass })
+          updateMember({ id: this.tempPassword.id, login_name: tempPassword.login_name, password: this.tempPassword.new_pass })
             .then(() => {
               this.dialogPasswordVisible = false
               this.$notify({
