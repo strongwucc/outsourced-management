@@ -1527,7 +1527,7 @@ export default {
           .then((data) => {
             data.forEach((file, fileIndex) => {
               const url = task.display_area[fileIndex].url
-              const fullFileName = `物件展示图-${task.task_id}${url.substring(
+              const fullFileName = `物件展示图-${task.task_id}-${task.task_name}${url.substring(
                 url.lastIndexOf('.')
               )}`
               downloadFileStream(fullFileName, file)
