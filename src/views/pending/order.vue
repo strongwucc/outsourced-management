@@ -244,7 +244,7 @@
                   {{ scope.row.work_num }}
                 </template>
               </el-table-column>
-              <el-table-column label="总金额" align="center" width="120">
+              <el-table-column label="总金额（人民币）" align="center" width="120">
                 <template slot-scope="scope">
                   {{ scope.row.work_amount }}
                 </template>
@@ -396,7 +396,14 @@
               />
               <el-table-column prop="nums" label="数量" align="center" />
               <el-table-column prop="unit" label="单位" align="center" />
-              <el-table-column prop="price" label="单价" align="center" />
+              <el-table-column label="单价" align="center">
+                <template slot-scope="scope">
+                  <span v-if="scope.row.currency_price > 0">
+                    {{ scope.row.currency }} {{ scope.row.currency_price }}
+                  </span>
+                  <span v-else>{{ scope.row.price }}</span>
+                </template>
+              </el-table-column>
               <el-table-column label="总价" align="center">
                 <template slot-scope="scope">
                   <span v-if="scope.row.pay_amount > 0">
