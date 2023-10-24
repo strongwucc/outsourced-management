@@ -68,6 +68,16 @@
         >
           导出
         </el-button>
+        <el-button
+          v-waves
+          class="filter-item"
+          type="primary"
+          size="mini"
+          @click="handleUnfinishedFilter"
+        >
+          <span v-if="listQuery.uncomplete === 1">显示全部订单</span>
+          <span v-else>显示未完成订单</span>
+        </el-button>
       </div>
       <div class="filter-right">
         <el-button
@@ -404,6 +414,16 @@
         </template>
       </el-table-column>
       <el-table-column
+        label="交付日期"
+        align="center"
+        min-width="150"
+        show-overflow-tooltip
+      >
+        <template slot-scope="{ row }">
+          {{ row.max_deliver_date }}
+        </template>
+      </el-table-column>
+      <el-table-column
         label="需求名称"
         align="center"
         min-width="150"
@@ -435,7 +455,7 @@
       </el-table-column>
       <el-table-column label="物件数量" align="center" min-width="80">
         <template slot-scope="{ row }">
-          {{ row.nums }}
+          {{ row.task_num }}
         </template>
       </el-table-column>
       <el-table-column label="工作总量" align="center" min-width="80">
@@ -858,7 +878,8 @@ export default {
         date_range: [],
         page: 1,
         page_num: 10,
-        all: true
+        all: true,
+        uncomplete: ''
       },
       textMap: {
         modify: '申请变更',
@@ -1056,6 +1077,12 @@ export default {
      */
     handleFilter() {
       this.listQuery.page = 1
+      this.listQuery.uncomplete = ''
+      this.getList(true)
+    },
+    handleUnfinishedFilter() {
+      this.listQuery.page = 1
+      this.listQuery.uncomplete = this.listQuery.uncomplete === 1 ? '' : 1
       this.getList(true)
     },
     /**
