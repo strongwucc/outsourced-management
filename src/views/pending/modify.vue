@@ -375,8 +375,8 @@
                     <i class="el-icon-right" />
                     <span>{{ scope.row.deliver_new_date }}</span>
                   </div>
-                  <div v-else class="modify-color">
-                    <span>{{ scope.row.deliver_new_date }}</span>
+                  <div v-else>
+                    <span>{{ scope.row.deliver_old_date }}</span>
                   </div>
                 </template>
               </el-table-column>
@@ -390,8 +390,8 @@
                     <i class="el-icon-right" />
                     <span>{{ scope.row.new_nums }}</span>
                   </div>
-                  <div v-else class="modify-color">
-                    {{ scope.row.new_nums }}
+                  <div v-else>
+                    {{ scope.row.old_nums }}
                   </div>
                 </template>
               </el-table-column>
@@ -400,12 +400,19 @@
                   {{ scope.row.work_unit || "-" }}
                 </template>
               </el-table-column>
-              <el-table-column prop="price" label="单价" align="center" />
-              <el-table-column label="单价" align="center">
+              <el-table-column label="单价" align="center" min-width="200">
                 <template slot-scope="scope">
                   <span v-if="scope.row.currency_price > 0">
                     {{ scope.row.currency }} {{ scope.row.currency_price }}
                   </span>
+                  <div
+                    v-else-if="scope.row.new_price !== scope.row.price"
+                    class="modify-color"
+                  >
+                    <span>{{ scope.row.price }}</span>
+                    <i class="el-icon-right" />
+                    <span>{{ scope.row.new_price }}</span>
+                  </div>
                   <span v-else>{{ scope.row.price }}</span>
                 </template>
               </el-table-column>

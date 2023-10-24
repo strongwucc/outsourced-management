@@ -871,9 +871,16 @@
             class="dialog-form-item"
           />
         </el-form-item>
-        <el-form-item label="单价:">
-          <span>{{ tempModify.work_price }}</span>
+        <el-form-item label="单价:" prop="price">
+          <el-input
+            v-model="tempModify.price"
+            placeholder="请输入变更后的单价"
+            class="dialog-form-item"
+          />
         </el-form-item>
+        <!-- <el-form-item label="单价:">
+          <span>{{ tempModify.work_price }}</span>
+        </el-form-item> -->
         <el-form-item label="总价:">
           <span>{{ tempModify.work_amount }}</span>
         </el-form-item>
@@ -1204,6 +1211,7 @@ export default {
         order_id: '',
         task_id: [],
         nums: '',
+        price: '',
         work_price: '',
         work_amount: '',
         deliver_date: '',
@@ -1398,6 +1406,7 @@ export default {
       this.tempModify = Object.assign({}, this.tempModify, {
         order_id: this.detail.order_id,
         task_id: taskCheckeds,
+        price: price,
         work_price: price,
         work_amount: amount,
         nums: '',
