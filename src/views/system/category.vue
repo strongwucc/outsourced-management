@@ -151,6 +151,9 @@
         <el-form-item label="需求品类名称:" prop="category_name">
           <el-input v-model="temp.category_name" class="dialog-form-item" />
         </el-form-item>
+        <el-form-item label="品类简称:" prop="short_name" v-if="temp.parent_id === 0">
+          <el-input v-model="temp.short_name" class="dialog-form-item" />
+        </el-form-item>
 
         <el-form-item
           v-if="temp.cat_path === 3"
@@ -376,6 +379,7 @@ export default {
         parent_id: '',
         cat_path: '',
         category_name: '',
+        short_name: '',
         thumbnail: 0,
         property_json: '[]',
         property_array: []
@@ -390,6 +394,9 @@ export default {
         ],
         category_name: [
           { required: true, message: '请输入需求品类名称', trigger: 'blur' }
+        ],
+        short_name: [
+          { required: true, message: '请输入品类简称', trigger: 'blur' }
         ],
         property_json: [
           { required: true, message: '请添加关联属性', trigger: 'blur' }
@@ -634,6 +641,7 @@ export default {
         parent_id,
         cat_path,
         category_name: '',
+        short_name: '',
         thumbnail: true,
         property_json: '[]',
         property_array: []
