@@ -495,6 +495,14 @@
                     v-else-if="tempBill.invoice_type === 0"
                   >增值税普通发票</template>
                 </el-descriptions-item>
+                <el-descriptions-item label="是否为全电发票" span="3">
+                  <template
+                    v-if="tempBill.invoice_is_electron === 1"
+                  >是</template>
+                  <template
+                    v-else-if="tempBill.invoice_is_electron === 0"
+                  >否</template>
+                </el-descriptions-item>
                 <el-descriptions-item label="开票日期">{{
                   tempBill.invoice_date
                 }}</el-descriptions-item>
@@ -903,6 +911,24 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="是否为全电发票:" prop="invoice_is_electron">
+          <el-select
+            v-model="tempBill.invoice_is_electron"
+            class="dialog-form-item"
+            style="width: 100%"
+            @change="isElectronChange"
+          >
+            <el-option
+              v-for="(item, itemIndex) in [
+                { label: '是', value: 1 },
+                { label: '否', value: 0 },
+              ]"
+              :key="itemIndex"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="开票日期:" prop="invoice_date">
           <el-date-picker
             v-model="tempBill.invoice_date"
@@ -918,6 +944,7 @@
             v-model="tempBill.invoice_code"
             placeholder="请输入发票代码"
             class="dialog-form-item"
+            :disabled="tempBill.invoice_is_electron === 1"
           />
         </el-form-item>
         <el-form-item label="发票号码:" prop="invoice_number">
@@ -1246,11 +1273,17 @@ export default {
         invoice_image: [
           { required: true, message: '请添加发票图片', trigger: 'blur' }
         ],
+        invoice_file: [
+          { required: true, message: '请添加发票文件', trigger: 'blur' }
+        ],
         // invoice_serial: [
         //   { required: true, message: '请输入序号', trigger: 'blur' }
         // ],
         invoice_type: [
-          { required: true, message: '请输入发票类型', trigger: 'blur' }
+          { required: true, message: '请选择发票类型', trigger: 'blur' }
+        ],
+        invoice_is_electron: [
+          { required: true, message: '请选择', trigger: 'blur' }
         ],
         invoice_date: [
           { required: true, message: '请选择开票日期', trigger: 'blur' }
@@ -1259,13 +1292,15 @@ export default {
           { required: true, message: '请输入发票代码', trigger: 'blur' }
         ],
         invoice_number: [
-          { required: true, message: '请输入发票号码', trigger: 'blur' }
+          { required: true, message: '请输入发票号码', trigger: 'blur' },
+          { pattern: /^\d{8}$/, message: '限8位数字', trigger: 'blur' },
         ],
         invoice_amount: [
           { required: true, message: '请输入价格合计，只能输入数字，不能输入符号及文字', trigger: 'blur' }
         ],
         invoice_detail: [
-          { required: true, message: '请输入发票明细', trigger: 'blur' }
+          { required: true, message: '请输入发票明细', trigger: 'blur' },
+          { pattern: /^\*.+\*.+-\￥\d+$/, message: '格式错误，请参考实例重新填写（示例：*设计服务*美术设计-￥10000）', trigger: 'blur' },
         ]
       },
       tempBill: {
@@ -1273,6 +1308,7 @@ export default {
         invoice_file: '',
         // invoice_serial: '',
         invoice_type: '',
+        invoice_is_electron: '',
         invoice_date: '',
         invoice_code: '',
         invoice_number: '',
@@ -1663,6 +1699,7 @@ export default {
         invoice_file_url: '',
         invoice_serial: '',
         invoice_type: '',
+        invoice_is_electron: '',
         invoice_date: '',
         invoice_code: '',
         invoice_number: '',
@@ -1790,6 +1827,7 @@ export default {
         invoice_file_url: this.detail.invoice_file || '',
         invoice_serial: this.detail.invoice_serial || '',
         invoice_type: this.detail.invoice_type || 0,
+        invoice_is_electron: this.detail.invoice_is_electron || 0,
         invoice_date: this.detail.invoice_date || '',
         invoice_code: this.detail.invoice_code || '',
         invoice_number: this.detail.invoice_number || '',
@@ -1991,6 +2029,14 @@ export default {
           this.getList(false)
         })
         .catch((_error) => {})
+    },
+    isElectronChange(value) {
+      if (value === 1) {
+        this.tempBill = Object.assign({}, this.tempBill, {invoice_code: ''})
+        this.$set(this.billRules.invoice_code[0], 'required', false)
+      } else {
+        this.$set(this.billRules.invoice_code[0], 'required', true)
+      }
     }
   }
 }
