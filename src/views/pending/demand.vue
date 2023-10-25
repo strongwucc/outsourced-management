@@ -1325,11 +1325,11 @@
             <el-option
               v-for="item in pacts"
               :key="item.id"
-              :label="item.pact_name"
+              :label="item.remark"
               :value="item.id"
             >
               <div class="pact-box">
-                <div class="name">{{ item.pact_name }}</div>
+                <div class="name">{{ item.remark }}</div>
                 <div class="time">
                   {{ item.period_start | dateFormat }} -
                   {{ item.period_end | dateFormat }}
