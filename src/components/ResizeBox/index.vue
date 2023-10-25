@@ -41,7 +41,7 @@ export default {
     overflow-x: hidden;
   }
   .resize-bar {
-    min-width: 200px;
+    min-width: 50px;
     width: 350px;
     height: inherit;
     resize: horizontal;
@@ -66,7 +66,7 @@ export default {
     border-left: 1px dashed #bbb;
   }
   .resize-bar::-webkit-scrollbar {
-    width: 350px;
+    width: 50px;
     height: inherit;
   }
 

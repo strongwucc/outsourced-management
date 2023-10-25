@@ -1695,7 +1695,8 @@ export default {
       color: #848484;
 
       .item-no,
-      .item-name {
+      .item-name,
+      .item-supplier {
         width: 100%;
         white-space: nowrap;
         overflow: hidden;
