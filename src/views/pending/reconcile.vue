@@ -1590,13 +1590,13 @@ export default {
       }
 
       if (workPriceMatch) {
-        data.push(this.detail.work_price)
+        data.push(this.detail.tasks[0].work_price)
       } else {
         data.push('需手动填写')
       }
 
       if (workUnitMatch) {
-        data.push(this.detail.work_unit)
+        data.push(this.detail.tasks[0].work_unit)
       } else {
         data.push('需手动填写')
       }

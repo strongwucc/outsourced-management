@@ -114,6 +114,18 @@
         >
           导出
         </el-button>
+        <el-button
+          v-permission="[1, 2, 3, 4, 5]"
+          v-waves
+          class="filter-btn"
+          type="primary"
+          icon="el-icon-download"
+          size="mini"
+          :loading="demandExporting"
+          @click="handleExportDemand"
+        >
+          导出需求卡
+        </el-button>
       </div>
       <div class="filter-right">
         <!-- <el-button
@@ -2266,6 +2278,7 @@ export default {
         ],
         supplier_reason: [{ message: '请选择理由', trigger: 'change', required: true }]
       },
+      demandExporting: false,
     }
   },
   computed: {
@@ -4227,6 +4240,50 @@ export default {
             .catch((error) => {})
         }
       })
+    },
+    /**
+     * 导出需求卡
+     */
+     handleExportDemand() {
+      if (this.demandExporting) {
+        return false
+      }
+      const { name, project_name, supplier_name, demand_id, category_name, tag, date_range, status } =
+        this.listQuery
+      let filter = {
+        name,
+        project_name,
+        supplier_name,
+        demand_id,
+        category_name,
+        tag,
+        date_range,
+        status,
+        class_name: 'demand',
+        dimension: 1
+      }
+
+      const checked = []
+      this.list.forEach((item) => {
+        if (item.checked) {
+          checked.push(item.demand_id)
+        }
+      })
+
+      if (checked.length > 0) {
+        filter = Object.assign({}, filter, { demand_id: checked })
+      }
+      this.demandExporting = true
+      exportOrders(filter)
+        .then((response) => {
+          this.demandExporting = false
+          const fileName = `需求单-${this.$moment().format('YYYYMMD')}.xlsx`
+          downloadFileStream(fileName, response)
+        })
+        .catch((error) => {
+          this.demandExporting = false
+          console.log(error)
+        })
     },
   }
 }
