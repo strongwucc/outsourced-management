@@ -153,3 +153,11 @@ export function editCatTagReason(data) {
     data
   })
 }
+
+export function deleteDemandPaperclip(data) {
+  return request({
+    url: '/api/needs/delFile',
+    method: 'post',
+    data
+  })
+}

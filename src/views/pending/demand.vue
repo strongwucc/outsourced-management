@@ -908,12 +908,27 @@
                 class="file-item"
               >
                 <div class="file-name">{{ file.name }}</div>
-                <el-button
-                  type="primary"
-                  size="mini"
-                  plain
-                  @click="downLoadContract(file.name, file.url)"
-                >下载</el-button>
+                <div class="btns">
+                  <el-button
+                    type="primary"
+                    size="mini"
+                    plain
+                    @click="downLoadContract(file.name, file.url)"
+                  >下载</el-button>
+                  <el-popconfirm
+                    v-permission="[0]"
+                    title="确定删除吗？"
+                    @confirm="deleteSupplierFile(file, _fileIndex)"
+                    style="margin-left: 10px;"
+                  >
+                    <el-button
+                      slot="reference"
+                      type="danger"
+                      size="mini"
+                      plain
+                    >删除</el-button>
+                  </el-popconfirm>
+                </div>
               </div>
             </div>
           </div>
@@ -1701,7 +1716,8 @@ import {
   uploadDemandPaperclip,
   toFinishDemand,
   toRefuseDemand,
-  exportTask
+  exportTask,
+  deleteDemandPaperclip
 } from '@/api/demand/index'
 import {
   createTask,
@@ -3750,6 +3766,21 @@ export default {
         this.$set(this.rules.supplier_reason[0], 'required', false)
         this.$set(this.temp, 'supplier_reason', '')
       }
+    },
+    /**
+     * 删除供应商附件
+     */
+    deleteSupplierFile(file, fileIndex) {
+      deleteDemandPaperclip({
+        demand_id: this.detail.demand_id,
+        file_id: file.file_id
+      })
+        .then((response) => {
+          this.detail.supplier_files.splice(fileIndex, 1)
+          this.$set(this.detail, 'supplier_file', this.detail.supplier_files.join(','))
+          this.$message.success('上传成功')
+        })
+        .catch((_error) => {})
     }
   }
 }
