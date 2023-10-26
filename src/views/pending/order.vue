@@ -234,7 +234,7 @@
                   {{ scope.row.supplier_management }}
                 </template>
               </el-table-column>
-              <el-table-column label="物件数量" align="center" width="120">
+              <el-table-column label="任务数量" align="center" width="120">
                 <template slot-scope="scope">
                   {{ scope.row.nums }}
                 </template>
@@ -260,7 +260,7 @@
                 :loading="addTaskLoading"
                 @click.stop="handleCreateTask()"
               >
-                新增物件
+                新增任务
               </el-button>
               <!-- <el-upload
                 v-permission="[0]"
@@ -312,7 +312,7 @@
           >
             <div class="title">
               <i class="el-icon-s-management" />
-              <span>物件明细</span>
+              <span>任务明细</span>
             </div>
             <el-descriptions
               v-if="detail.demand.supplier"
@@ -343,7 +343,7 @@
               />
               <el-table-column
                 prop="task_id"
-                label="物件单号"
+                label="任务单号"
                 width="150"
                 align="center"
               >
@@ -383,7 +383,7 @@
               </el-table-column>
               <el-table-column
                 prop="task_name"
-                label="物件名称"
+                label="任务名称"
                 width="205"
                 align="center"
                 :show-overflow-tooltip="true"
@@ -423,7 +423,7 @@
                 align="center"
                 show-overflow-tooltip
               />
-              <el-table-column label="物件状态" align="center" min-width="100">
+              <el-table-column label="任务状态" align="center" min-width="100">
                 <template slot-scope="scope">
                   <span>
                     {{ scope.row.task_status | taskStatusText }}
@@ -607,7 +607,7 @@
         </div>
       </div>
     </resize-box>
-    <!--新增物件-->
+    <!--新增任务-->
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogTaskVisible"
@@ -628,15 +628,15 @@
             <el-form-item>
               <div slot="label" class="form-title">基础信息</div>
             </el-form-item>
-            <el-form-item label="物件名称:" prop="task_name">
+            <el-form-item label="任务名称:" prop="task_name">
               <el-input
                 v-model="tempTask.task_name"
                 class="dialog-form-item"
-                placeholder="请输入物件名称"
+                placeholder="请输入任务名称"
               />
             </el-form-item>
 
-            <el-form-item label="物件类别:">
+            <el-form-item label="任务类别:">
               <span>{{ tempTaskCategory.category_name }}</span>
             </el-form-item>
 
@@ -815,14 +815,14 @@
             </template>
             <el-form-item>
               <div slot="label" class="form-title is-required">
-                新增物件原因
+                新增任务原因
               </div>
             </el-form-item>
             <el-form-item label-width="0" prop="reason">
               <el-input
                 v-model="tempTask.reason"
                 type="textarea"
-                placeholder="请输入新增物件原因"
+                placeholder="请输入新增任务原因"
                 class="dialog-form-item"
               />
             </el-form-item>
@@ -1043,7 +1043,7 @@ export default {
         2: '资源审核中',
         3: '资源已验收',
         4: '验收未通过',
-        5: '物件已终止',
+        5: '任务已终止',
         6: '验收通过'
       }
       return statusMap[status]
@@ -1070,9 +1070,9 @@ export default {
         1: '审核中',
         2: '审核未通过',
         3: '待分配供应商',
-        4: '待填写物件',
-        5: '物件审核中',
-        6: '物件审核未通过',
+        4: '待填写任务',
+        5: '任务审核中',
+        6: '任务审核未通过',
         7: '待生成订单',
         8: '订单待审核',
         9: '订单审核未通过',
@@ -1114,7 +1114,7 @@ export default {
       detailLoaded: false,
       textMap: {
         modify: '申请变更',
-        create_task: '新增物件'
+        create_task: '新增任务'
       },
       dialogStatus: '',
       dialogTaskVisible: false,
@@ -1144,7 +1144,7 @@ export default {
       },
       taskRules: {
         task_name: [
-          { required: true, message: '请输入物件名称', trigger: 'blur' }
+          { required: true, message: '请输入任务名称', trigger: 'blur' }
         ],
         task_image: [
           { required: true, message: '请添加缩略图', trigger: 'blur' }
@@ -1203,7 +1203,7 @@ export default {
         ],
         value: [{ required: true, message: '请设置属性值', trigger: 'blur' }],
         reason: [
-          { required: true, message: '请输入新增物件原因', trigger: 'blur' }
+          { required: true, message: '请输入新增任务原因', trigger: 'blur' }
         ]
       },
       dialogModifyVisible: false,
@@ -1379,7 +1379,7 @@ export default {
      */
     handleModify() {
       if (this.multipleTaskSelection.length <= 0) {
-        this.$message.error('请先选择物件')
+        this.$message.error('请先选择任务')
         return false
       }
 
@@ -1389,7 +1389,7 @@ export default {
 
       this.multipleTaskSelection.some((taskItem, taskIndex) => {
         if ([0, 4].indexOf(taskItem.task_status) < 0) {
-          const errorName = `[${taskItem.task_id}]: 该物件状态无法申请变更`
+          const errorName = `[${taskItem.task_id}]: 该任务状态无法申请变更`
           this.$message.error(errorName)
           return true
         }
@@ -1478,12 +1478,12 @@ export default {
         const result = this.multipleSelection.some((orderItem) => {
           return orderItem.tasks.some((taskItem) => {
             if ([0, 4].indexOf(taskItem.task_status) < 0) {
-              const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
+              const errorName = `[${taskItem.task_id}]: 该任务状态无法交付验收`
               this.$message.error(errorName)
               return true
             }
             if (taskItem.category && taskItem.category.thumbnail === 1 && taskItem.display_area.length <= 0) {
-              const errorName = `[${taskItem.task_id}]: 请上传该物件的展示图`
+              const errorName = `[${taskItem.task_id}]: 请上传该任务的展示图`
               this.$message.error(errorName)
               return true
             }
@@ -1503,7 +1503,7 @@ export default {
         }
       } else {
         if (this.multipleTaskSelection.length <= 0) {
-          this.$message.error('请先选择物件')
+          this.$message.error('请先选择任务')
           return false
         }
 
@@ -1523,12 +1523,12 @@ export default {
         const result = this.multipleTaskSelection.some((taskItem) => {
           // const result = this.detail.tasks.some((taskItem) => {
           if ([0, 4].indexOf(taskItem.task_status) < 0) {
-            const errorName = `[${taskItem.task_id}]: 该物件状态无法交付验收`
+            const errorName = `[${taskItem.task_id}]: 该任务状态无法交付验收`
             this.$message.error(errorName)
             return true
           }
           if (taskItem.category && taskItem.category.thumbnail === 1 && taskItem.display_area.length <= 0) {
-            const errorName = `[${taskItem.task_id}]: 请上传该物件的展示图`
+            const errorName = `[${taskItem.task_id}]: 请上传该任务的展示图`
             this.$message.error(errorName)
             return true
           }
@@ -1751,7 +1751,7 @@ export default {
       this.dialogStopReasonVisible = true
     },
     /**
-     * 重置物件数据
+     * 重置任务数据
      */
     resetTaskTemp() {
       this.tempTask = {
@@ -1770,7 +1770,7 @@ export default {
       }
     },
     /**
-     * 新增物件弹窗
+     * 新增任务弹窗
      */
     async handleCreateTask() {
       this.addTaskLoading = true
@@ -1807,7 +1807,7 @@ export default {
       })
     },
     /**
-     * 新增物件
+     * 新增任务
      */
     createTaskData() {
       this.$refs['taskDataForm'].validate((valid) => {
@@ -1815,7 +1815,7 @@ export default {
           const temp = JSON.parse(JSON.stringify(this.tempTask))
           addTask(temp).then(async(response) => {
             this.dialogTaskVisible = false
-            this.$message.success('新增物件成功')
+            this.$message.success('新增任务成功')
             await this.$store.dispatch('user/getPending')
             this.getList(false)
           })
@@ -1823,13 +1823,13 @@ export default {
       })
     },
     /**
-     * 上传物件图片成功回调
+     * 上传任务图片成功回调
      */
     handleTaskImageSuccess(response, file) {
       this.handleTaskImageChange(file)
     },
     /**
-     * 上传物件图片变化回调
+     * 上传任务图片变化回调
      */
     handleTaskImageChange(file) {
       if (file.response) {

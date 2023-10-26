@@ -29,7 +29,7 @@
         />
         <!-- <el-input
           v-model="listQuery.task_id"
-          placeholder="输入物件单号"
+          placeholder="输入任务单号"
           style="width: 200px"
           class="filter-item"
           size="mini"
@@ -291,7 +291,7 @@
               </el-table-column>
               <el-table-column
                 prop="task_id"
-                label="物件单号"
+                label="任务单号"
                 width="150"
                 align="center"
               >
@@ -318,13 +318,13 @@
               </el-table-column>
               <el-table-column
                 prop="task_name"
-                label="物件名称"
+                label="任务名称"
                 align="center"
                 :show-overflow-tooltip="true"
               />
               <!-- <el-table-column
                 prop="category_name"
-                label="物件品类"
+                label="任务品类"
                 align="center"
               >
                 <template slot-scope="scope">
@@ -353,7 +353,7 @@
                 </template>
               </el-table-column>
 
-              <el-table-column label="物件状态" align="center">
+              <el-table-column label="任务状态" align="center">
                 <template slot-scope="scope">
                   <span
                     :style="{
@@ -466,7 +466,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="物件数量" align="center" width="80">
+      <el-table-column label="任务数量" align="center" width="80">
         <template slot-scope="{ row }">
           {{ row.nums || 0 }}
         </template>
@@ -625,7 +625,7 @@
             plain
             @click.stop="handleCreateTask(row)"
           >
-            新增物件
+            新增任务
           </el-button>
           <el-button
             v-if="row.can_add_task === 1"
@@ -634,7 +634,7 @@
             plain
             @click.stop="handleImportTask(row)"
           >
-            导入物件
+            导入任务
           </el-button>
           <el-popconfirm
             v-if="row.is_creator === 1 && [0, 1, 2].indexOf(row.status) >= 0"
@@ -1206,7 +1206,7 @@
       </div>
     </el-dialog>
 
-    <!--新增物件-->
+    <!--新增任务-->
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogTaskVisible"
@@ -1226,15 +1226,15 @@
             <el-form-item>
               <div slot="label" class="form-title">基础信息</div>
             </el-form-item>
-            <el-form-item label="物件名称:" prop="task_name">
+            <el-form-item label="任务名称:" prop="task_name">
               <el-input
                 v-model="tempTask.task_name"
                 class="dialog-form-item"
-                placeholder="请输入物件名称"
+                placeholder="请输入任务名称"
               />
             </el-form-item>
 
-            <el-form-item label="物件类别:">
+            <el-form-item label="任务类别:">
               <span>{{ tempTaskCategory | categoryText }}</span>
             </el-form-item>
 
@@ -1379,7 +1379,7 @@
       </div>
     </el-dialog>
 
-    <!--导入物件-->
+    <!--导入任务-->
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogImportTaskVisible"
@@ -1394,11 +1394,11 @@
         label-width="150px"
         style="margin: 0 50px"
       >
-        <el-form-item label="物件模板">
+        <el-form-item label="任务模板">
           <el-button size="mini" @click="downloadTaskTpl">下载</el-button>
         </el-form-item>
 
-        <el-form-item label="导入物件">
+        <el-form-item label="导入任务">
           <el-upload
             class="upload-demo"
             :action="`${$baseUrl}/api/needs/importTaskTpl`"
@@ -1423,9 +1423,9 @@
       </div>
     </el-dialog>
 
-    <!--物件详情-->
+    <!--任务详情-->
     <el-dialog
-      title="物件详情"
+      title="任务详情"
       :visible.sync="dialogTaskDetailVisible"
       width="65%"
       top="20px"
@@ -1517,13 +1517,13 @@
                       class="task-image"
                     >
                   </el-descriptions-item>
-                  <el-descriptions-item label="物件名称">{{
+                  <el-descriptions-item label="任务名称">{{
                     tempTaskDetail.task_name
                   }}</el-descriptions-item>
-                  <el-descriptions-item label="物件单号">{{
+                  <el-descriptions-item label="任务单号">{{
                     tempTaskDetail.task_id
                   }}</el-descriptions-item>
-                  <el-descriptions-item label="物件类别">{{
+                  <el-descriptions-item label="任务类别">{{
                     tempTaskDetail.category | categoryText
                   }}</el-descriptions-item>
                   <el-descriptions-item
@@ -1987,9 +1987,9 @@ const statusMap = [
   { id: 1, name: '审核中' },
   { id: 2, name: '审核未通过' },
   { id: 3, name: '待分配供应商' },
-  { id: 4, name: '待填写物件' },
-  { id: 5, name: '物件审核中' },
-  { id: 6, name: '物件审核未通过' },
+  { id: 4, name: '待填写任务' },
+  { id: 5, name: '任务审核中' },
+  { id: 6, name: '任务审核未通过' },
   { id: 7, name: '待生成订单' },
   { id: 8, name: '订单待审核' },
   { id: 9, name: '订单审核未通过' },
@@ -2147,9 +2147,9 @@ export default {
         resolve: '审批',
         reject: '驳回',
         provider: '选择供应商',
-        create_task: '填写物件',
-        update_task: '修改物件',
-        import_task: '导入物件'
+        create_task: '填写任务',
+        update_task: '修改任务',
+        import_task: '导入任务'
       },
       rules: {
         process_id: [
@@ -2225,7 +2225,7 @@ export default {
       },
       taskRules: {
         task_name: [
-          { required: true, message: '请输入物件名称', trigger: 'blur' }
+          { required: true, message: '请输入任务名称', trigger: 'blur' }
         ],
         task_image: [
           { required: true, message: '请添加缩略图', trigger: 'blur' }
@@ -2984,7 +2984,7 @@ export default {
             status = this.dialogStatus === 'resolve' ? 3 : 2
             verifyFunc = verifyDemand
           } else if (this.dialogVerifyTaskVisible === true) {
-            baseError = '该需求并不是物件待审核状态，无法审核'
+            baseError = '该需求并不是任务待审核状态，无法审核'
             checkStatus = [5]
             status = this.dialogStatus === 'resolve' ? 7 : 6
             verifyFunc = verifyTask
@@ -3057,7 +3057,7 @@ export default {
       })
     },
     /**
-     * 物件审核弹窗
+     * 任务审核弹窗
      */
     handleResolveTask(ok) {
       const checkeds = []
@@ -3404,7 +3404,7 @@ export default {
           return listItem.tasks.some((taskItem) => {
             if (taskItem.checked) {
               if (taskItem.task_status !== 0) {
-                const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法终止`
+                const errorName = `[${taskItem.task_name}] 该任务不是正常状态，无法终止`
                 this.$message.error(errorName)
                 return true
               }
@@ -3416,7 +3416,7 @@ export default {
         })
       ) {
         if (checkeds.length <= 0) {
-          this.$message.error('请先选择物件')
+          this.$message.error('请先选择任务')
           return false
         }
       } else {
@@ -3505,7 +3505,7 @@ export default {
       })
     },
     /**
-     * 物件提交审核
+     * 任务提交审核
      */
     handleToVerifyTask() {
       const checkeds = []
@@ -3514,7 +3514,7 @@ export default {
         !this.list.some((listItem) => {
           if (listItem.checked) {
             if ([4, 6].indexOf(listItem.status) < 0) {
-              const errorName = `[${listItem.name}]: 该需求状态无法提交审核物件`
+              const errorName = `[${listItem.name}]: 该需求状态无法提交审核任务`
               this.$message.error(errorName)
               hasError = true
               return true
@@ -3523,7 +3523,7 @@ export default {
             return listItem.tasks.some((taskItem) => {
               if (taskItem.checked) {
                 if (taskItem.task_status !== 0) {
-                  const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法提交审核`
+                  const errorName = `[${taskItem.task_name}] 该任务不是正常状态，无法提交审核`
                   this.$message.error(errorName)
                   hasError = true
                   return true
@@ -3574,7 +3574,7 @@ export default {
         .catch((error) => {})
     },
     /**
-     * 重置物件数据
+     * 重置任务数据
      */
     resetTaskTemp() {
       this.tempTask = {
@@ -3590,7 +3590,7 @@ export default {
       }
     },
     /**
-     * 新增物件弹窗
+     * 新增任务弹窗
      */
     handleCreateTask(demand) {
       this.tempTaskCategory = demand.category
@@ -3613,7 +3613,7 @@ export default {
       })
     },
     /**
-     * 新增物件
+     * 新增任务
      */
     createTaskData() {
       this.$refs['taskDataForm'].validate((valid) => {
@@ -3674,7 +3674,7 @@ export default {
       })
     },
     /**
-     * 修改物件
+     * 修改任务
      */
     updateTaskData() {
       this.$refs['taskDataForm'].validate((valid) => {
@@ -3722,13 +3722,13 @@ export default {
       })
     },
     /**
-     * 上传物件图片成功回调
+     * 上传任务图片成功回调
      */
     handleTaskImageSuccess(response, file) {
       this.handleTaskImageChange(file)
     },
     /**
-     * 上传物件图片变化回调
+     * 上传任务图片变化回调
      */
     handleTaskImageChange(file) {
       if (file.response) {
@@ -3739,7 +3739,7 @@ export default {
       }
     },
     /**
-     * 导入物件弹窗
+     * 导入任务弹窗
      */
     handleImportTask(demand) {
       this.tempImportTask = Object.assign({}, this.tempImportTask, {
@@ -3754,13 +3754,13 @@ export default {
       })
     },
     /**
-     * 导出物件模板
+     * 导出任务模板
      */
     downloadTaskTpl() {
       if (this.tempImportTask.demand_id) {
         exportTaskTpl(this.tempImportTask.demand_id)
           .then((response) => {
-            downloadFileStream('物件模板.xlsx', response)
+            downloadFileStream('任务模板.xlsx', response)
           })
           .catch((error) => {
             console.log(error)
@@ -3777,7 +3777,7 @@ export default {
       })
     },
     /**
-     * 确认导入物件
+     * 确认导入任务
      */
     confirmImportTask() {
       this.$refs['importTaskDataForm'].validate((valid) => {
@@ -3818,7 +3818,7 @@ export default {
       })
     },
     /**
-     * 物件详情弹窗
+     * 任务详情弹窗
      */
     async handleShowTask(task, taskIndex, demandIndex) {
       this.$set(this.list[demandIndex].tasks[taskIndex], 'detailLoading', true)
@@ -3864,7 +3864,7 @@ export default {
       }
     },
     /**
-     * 上传物件展示图成功
+     * 上传任务展示图成功
      */
     handleAddTaskDisplayAreaSucc(response, file, fileList) {
       this.$set(
@@ -3881,19 +3881,19 @@ export default {
       )
     },
     /**
-     * 删除物件展示图
+     * 删除任务展示图
      */
     deleteTaskDisplayArea(fileIndex) {
       this.tempTaskDetail.display_area.splice(fileIndex, 1)
     },
     /**
-     * 删除物件作品
+     * 删除任务作品
      */
     deleteTaskFinishedProduct(fileIndex) {
       this.tempTaskDetail.finished_product.splice(fileIndex, 1)
     },
     /**
-     * 物件详情弹窗确认
+     * 任务详情弹窗确认
      */
     confirmTaskDetail() {
       const temp = JSON.parse(JSON.stringify(this.tempTaskDetail))
@@ -3933,7 +3933,7 @@ export default {
         .catch((error) => {})
     },
     /**
-     * 上传物件作品成功
+     * 上传任务作品成功
      */
     handleAddTaskFinishedProductSucc(response, file, fileList) {
       this.$set(
@@ -3950,7 +3950,7 @@ export default {
       )
     },
     /**
-     * 修改物件弹窗
+     * 修改任务弹窗
      */
     handleUpdateTask(task, taskIndex, demandIndex) {
       const demand = this.list[demandIndex]
@@ -3990,7 +3990,7 @@ export default {
       }
     },
     /**
-     * 删除物件弹窗
+     * 删除任务弹窗
      */
     handleDeleteTask(task, taskIndex, demandIndex) {
       deleteTask({ task_id: task.task_id })
@@ -4006,7 +4006,7 @@ export default {
         .catch((error) => {})
     },
     /**
-     * 复制物件弹窗
+     * 复制任务弹窗
      */
     handleCopyTask(task, taskIndex, demandIndex) {
       const demand = this.list[demandIndex]
@@ -4046,7 +4046,7 @@ export default {
       }
     },
     /**
-     * 终止物件原因弹窗
+     * 终止任务原因弹窗
      */
     handleStopTaskReason(task, taskIndex, demandIndex) {
       this.tempTask = JSON.parse(JSON.stringify(task))

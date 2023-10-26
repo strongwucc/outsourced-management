@@ -1,9 +1,9 @@
 <template>
   <div class="task-detail-container">
     <span class="task-id" @click.stop="handleShowTask">{{ taskId }}</span>
-    <!--物件详情-->
+    <!--任务详情-->
     <el-dialog
-      title="物件详情"
+      title="任务详情"
       :visible.sync="dialogTaskDetailVisible"
       width="65%"
       top="20px"
@@ -122,13 +122,13 @@
                       class="task-image"
                     >
                   </el-descriptions-item>
-                  <el-descriptions-item label="物件名称">{{
+                  <el-descriptions-item label="任务名称">{{
                     tempTaskDetail.task_name
                   }}</el-descriptions-item>
-                  <el-descriptions-item label="物件单号">{{
+                  <el-descriptions-item label="任务单号">{{
                     tempTaskDetail.task_id
                   }}</el-descriptions-item>
-                  <el-descriptions-item label="物件类别">{{
+                  <el-descriptions-item label="任务类别">{{
                     tempTaskDetail.category | categoryText
                   }}</el-descriptions-item>
                   <el-descriptions-item label="备注">{{
@@ -517,7 +517,7 @@ export default {
   },
   methods: {
     /**
-     * 物件详情弹窗
+     * 任务详情弹窗
      */
     async handleShowTask() {
       const loading = this.$loading({
@@ -568,7 +568,7 @@ export default {
         .catch((error) => {})
     },
     /**
-     * 上传物件展示图成功
+     * 上传任务展示图成功
      */
     handleAddTaskDisplayAreaSucc(response, file, fileList) {
       this.$set(
@@ -585,7 +585,7 @@ export default {
       )
     },
     /**
-     * 上传物件作品成功
+     * 上传任务作品成功
      */
     handleAddTaskFinishedProductSucc(response, file, fileList) {
       this.$set(
@@ -602,7 +602,7 @@ export default {
       )
     },
     /**
-     * 物件详情弹窗确认
+     * 任务详情弹窗确认
      */
     confirmTaskDetail() {
       const temp = JSON.parse(JSON.stringify(this.tempTaskDetail))
@@ -634,7 +634,7 @@ export default {
         .catch((_error) => {})
     },
     /**
-     * 删除物件展示图
+     * 删除任务展示图
      */
     deleteTaskDisplayArea(fileIndex) {
       const displayArea = JSON.parse(
@@ -662,7 +662,7 @@ export default {
       }
     },
     /**
-     * 删除物件作品
+     * 删除任务作品
      */
     deleteTaskFinishedProduct(fileIndex) {
       const finishedProduct = JSON.parse(

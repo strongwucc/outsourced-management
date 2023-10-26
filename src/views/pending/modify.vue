@@ -204,7 +204,7 @@
                   {{ row.supplier.name }}
                 </template>
               </el-table-column>
-              <el-table-column label="物件数量" align="center" width="120">
+              <el-table-column label="任务数量" align="center" width="120">
                 <template slot-scope="{ row }">
                   {{ row.tasks.length }}
                 </template>
@@ -291,7 +291,7 @@
           >
             <div class="title">
               <i class="el-icon-s-management" />
-              <span>物件明细</span>
+              <span>任务明细</span>
             </div>
             <el-descriptions
               v-if="detail.supplier"
@@ -315,7 +315,7 @@
             >
               <el-table-column
                 prop="task_id"
-                label="物件单号"
+                label="任务单号"
                 width="150"
                 align="center"
                 show-overflow-tooltip
@@ -349,12 +349,12 @@
               </el-table-column>
               <el-table-column
                 prop="task_name"
-                label="物件名称"
+                label="任务名称"
                 align="center"
                 width="205"
               />
               <el-table-column
-                label="物件品类"
+                label="任务品类"
                 align="center"
                 width="150"
                 show-overflow-tooltip
@@ -602,7 +602,7 @@ const initiatorMap = [
 ]
 const typeMap = [
   { label: '数量变更', value: 0 },
-  { label: '新增物件', value: 1 }
+  { label: '新增任务', value: 1 }
 ]
 const statusMap = [
   { label: '待审核', value: 0 },
@@ -633,9 +633,9 @@ export default {
         1: '审核中',
         2: '审核未通过',
         3: '待分配供应商',
-        4: '待填写物件',
-        5: '物件审核中',
-        6: '物件审核未通过',
+        4: '待填写任务',
+        5: '任务审核中',
+        6: '任务审核未通过',
         7: '待生成订单',
         8: '订单待审核',
         9: '订单审核未通过',
@@ -712,7 +712,7 @@ export default {
       detailLoaded: false,
       textMap: {
         modify: '申请变更',
-        create_task: '新增物件',
+        create_task: '新增任务',
         resolve: '通过',
         reject: '驳回'
       },
@@ -981,7 +981,7 @@ export default {
         .catch((_error) => {})
     },
     /**
-     * 下载物件
+     * 下载任务
      */
     handleDownloadTask() {
       if (this.detail.change_id) {

@@ -13,7 +13,7 @@
         />
         <el-input
           v-model="listQuery.task_id"
-          placeholder="输入物件单号"
+          placeholder="输入任务单号"
           style="width: 200px"
           class="filter-item"
           size="mini"
@@ -204,7 +204,7 @@
               </el-table-column> -->
               <el-table-column
                 prop="task_id"
-                label="物件单号"
+                label="任务单号"
                 min-width="200"
                 align="center"
                 show-overflow-tooltip
@@ -222,11 +222,11 @@
               />
               <el-table-column
                 prop="task_name"
-                label="物件名称"
+                label="任务名称"
                 align="center"
               />
               <el-table-column
-                label="物件品类"
+                label="任务品类"
                 align="center"
                 min-width="150"
                 show-overflow-tooltip
@@ -327,7 +327,7 @@
           {{ row.supplier.name }}
         </template>
       </el-table-column>
-      <el-table-column label="物件数量" align="center" min-width="120">
+      <el-table-column label="任务数量" align="center" min-width="120">
         <template slot-scope="{ row }">
           {{ row.tasks.length }}
         </template>
@@ -495,7 +495,7 @@ const initiatorMap = [
 ]
 const typeMap = [
   { label: '数量变更', value: 0 },
-  { label: '新增物件', value: 1 }
+  { label: '新增任务', value: 1 }
 ]
 const statusMap = [
   { label: '待审核', value: 0 },
@@ -573,7 +573,7 @@ export default {
       },
       textMap: {
         modify: '申请变更',
-        create_task: '新增物件',
+        create_task: '新增任务',
         resolve: '通过',
         reject: '驳回'
       },

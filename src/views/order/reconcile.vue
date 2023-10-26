@@ -13,7 +13,7 @@
         />
         <el-input
           v-model="listQuery.task_id"
-          placeholder="输入物件单号"
+          placeholder="输入任务单号"
           style="width: 200px"
           class="filter-item"
           size="mini"
@@ -176,7 +176,7 @@
               </el-table-column> -->
               <el-table-column
                 prop="task_id"
-                label="物件单号"
+                label="任务单号"
                 min-width="200"
                 align="center"
               >
@@ -210,11 +210,11 @@
               </el-table-column>
               <el-table-column
                 prop="task_name"
-                label="物件名称"
+                label="任务名称"
                 align="center"
               />
               <el-table-column
-                label="物件品类"
+                label="任务品类"
                 align="center"
                 min-width="150"
                 show-overflow-tooltip
@@ -288,7 +288,7 @@
           {{ row.supplier.name }}
         </template>
       </el-table-column>
-      <el-table-column label="物件数量" align="center" min-width="100">
+      <el-table-column label="任务数量" align="center" min-width="100">
         <template slot-scope="{ row }">
           {{ row.nums }}
         </template>

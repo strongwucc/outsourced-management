@@ -289,7 +289,7 @@
         </div>
       </el-form-item>
 
-      <el-form-item label="物件审核（项目组/项目组负责人）:" prop="wj_verify_json">
+      <el-form-item label="任务审核（项目组/项目组负责人）:" prop="wj_verify_json">
         <div class="wj-verify-box json-normal-box">
           <div
             v-for="(item, itemIndex) in detail.wj_verify_json"
@@ -796,7 +796,7 @@ export default {
         needs_create_json: [], // 创建需求卡
         needs_verify_json: [{ id: '' }, { id: '' }], // 需求卡审批
         assign_supplier_json: [], // 分配供应商
-        wj_verify_json: [{ id: '' }, { id: '' }], // 物件审核
+        wj_verify_json: [{ id: '' }, { id: '' }], // 任务审核
         order_create_json: [], // 拟制订单
         order_verify_json: [{ id: '' }, { id: '' }], // 订单审批
         check_json: [{ id: '' }, { id: '' }], // 验收资源
@@ -883,7 +883,7 @@ export default {
         //   {
         //     required: true,
         //     validator: validateJsonObj,
-        //     message: '请选择物件审核人员',
+        //     message: '请选择任务审核人员',
         //     trigger: 'change'
         //   }
         // ],

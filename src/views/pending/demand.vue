@@ -290,7 +290,7 @@
                   {{ scope.row.category | categoryText }}
                 </template>
               </el-table-column>
-              <el-table-column label="物件数量" align="center" width="80">
+              <el-table-column label="任务数量" align="center" width="80">
                 <template slot-scope="scope">
                   <template v-if="scope.row.nums > 0">
                     {{ scope.row.nums }}
@@ -455,7 +455,7 @@
                 :loading="addTaskLoading"
                 @click.stop="handleCreateTask()"
               >
-                新增物件
+                新增任务
               </el-button>
               <el-button
                 v-if="detail.can_add_task === 1"
@@ -465,7 +465,7 @@
                 plain
                 @click.stop="handleImportTask()"
               >
-                导入物件
+                导入任务
               </el-button>
               <el-button
                 v-if="[0, 1, 2].indexOf(detail.status) < 0"
@@ -617,7 +617,7 @@
           >
             <div class="title">
               <i class="el-icon-s-management" />
-              <span>物件明细</span>
+              <span>任务明细</span>
             </div>
             <el-descriptions
               v-if="detail.supplier_info"
@@ -647,7 +647,7 @@
               />
               <el-table-column
                 prop="task_id"
-                label="物件单号"
+                label="任务单号"
                 width="150"
                 align="center"
               >
@@ -674,7 +674,7 @@
               </el-table-column>
               <el-table-column
                 prop="task_name"
-                label="物件名称"
+                label="任务名称"
                 align="center"
                 width="205"
                 :show-overflow-tooltip="true"
@@ -703,7 +703,7 @@
                   <span v-else>{{ scope.row.work_amount }}</span>
                 </template>
               </el-table-column>
-              <el-table-column label="物件状态" align="center">
+              <el-table-column label="任务状态" align="center">
                 <template slot-scope="scope">
                   <span
                     :style="{
@@ -1364,7 +1364,7 @@
       </div>
     </el-dialog>
 
-    <!--新增物件-->
+    <!--新增任务-->
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogTaskVisible"
@@ -1385,15 +1385,15 @@
             <el-form-item>
               <div slot="label" class="form-title">基础信息</div>
             </el-form-item>
-            <el-form-item label="物件名称:" prop="task_name">
+            <el-form-item label="任务名称:" prop="task_name">
               <el-input
                 v-model="tempTask.task_name"
                 class="dialog-form-item"
-                placeholder="请输入物件名称"
+                placeholder="请输入任务名称"
               />
             </el-form-item>
 
-            <el-form-item label="物件类别:">
+            <el-form-item label="任务类别:">
               <span>{{ tempTaskCategory | categoryText }}</span>
             </el-form-item>
 
@@ -1590,7 +1590,7 @@
       </div>
     </el-dialog>
 
-    <!--导入物件-->
+    <!--导入任务-->
     <el-dialog
       :title="textMap[dialogStatus]"
       :visible.sync="dialogImportTaskVisible"
@@ -1605,11 +1605,11 @@
         label-width="150px"
         style="margin: 0 50px"
       >
-        <el-form-item label="物件模板">
+        <el-form-item label="任务模板">
           <el-button size="mini" @click="downloadTaskTpl">下载</el-button>
         </el-form-item>
 
-        <el-form-item label="导入物件">
+        <el-form-item label="导入任务">
           <el-upload
             class="upload-demo"
             :action="`${$baseUrl}/api/needs/importTaskTpl`"
@@ -1785,9 +1785,9 @@ export default {
         1: '审核中',
         2: '审核未通过',
         3: '待分配供应商',
-        4: '待填写物件',
-        5: '物件审核中',
-        6: '物件审核未通过',
+        4: '待填写任务',
+        5: '任务审核中',
+        6: '任务审核未通过',
         7: '待生成订单',
         8: '订单待审核',
         9: '订单审核未通过',
@@ -1852,9 +1852,9 @@ export default {
         resolve: '审批',
         reject: '驳回',
         provider: '选择供应商',
-        create_task: '填写物件',
-        update_task: '修改物件',
-        import_task: '导入物件',
+        create_task: '填写任务',
+        update_task: '修改任务',
+        import_task: '导入任务',
         create_order: '生成订单'
       },
       rules: {
@@ -1918,7 +1918,7 @@ export default {
       },
       taskRules: {
         task_name: [
-          { required: true, message: '请输入物件名称', trigger: 'blur' }
+          { required: true, message: '请输入任务名称', trigger: 'blur' }
         ],
         task_image: [
           { required: true, message: '请添加缩略图', trigger: 'blur' }
@@ -2723,7 +2723,7 @@ export default {
       }
     },
     /**
-     * 物件审核弹窗
+     * 任务审核弹窗
      */
     handleResolveTask(ok, multi = true) {
       const checkeds = []
@@ -2808,7 +2808,7 @@ export default {
         status = this.dialogStatus === 'resolve' ? 3 : 2
         verifyFunc = verifyDemand
       } else if (this.dialogVerifyTaskVisible === true) {
-        // baseError = "该需求并不是物件待审核状态，无法审核";
+        // baseError = "该需求并不是任务待审核状态，无法审核";
         // checkStatus = [5];
         status = this.dialogStatus === 'resolve' ? 7 : 6
         verifyFunc = verifyTask
@@ -2879,7 +2879,7 @@ export default {
       this.pacts = []
     },
     /**
-     * 重置物件数据
+     * 重置任务数据
      */
     resetTaskTemp() {
       this.tempTask = {
@@ -2898,7 +2898,7 @@ export default {
       }
     },
     /**
-     * 新增物件弹窗
+     * 新增任务弹窗
      */
     async handleCreateTask() {
       this.addTaskLoading = true
@@ -2934,7 +2934,7 @@ export default {
       })
     },
     /**
-     * 新增物件
+     * 新增任务
      */
     createTaskData() {
       this.$refs['taskDataForm'].validate((valid) => {
@@ -2956,7 +2956,7 @@ export default {
       })
     },
     /**
-     * 导入物件弹窗
+     * 导入任务弹窗
      */
     async handleImportTask() {
       const supplier_id = this.detail.supplier_id || 0
@@ -2981,13 +2981,13 @@ export default {
       })
     },
     /**
-     * 导出物件模板
+     * 导出任务模板
      */
     downloadTaskTpl() {
       if (this.tempImportTask.demand_id) {
         exportTaskTpl(this.tempImportTask.demand_id)
           .then((response) => {
-            downloadFileStream('物件模板.xlsx', response)
+            downloadFileStream('任务模板.xlsx', response)
           })
           .catch((error) => {
             console.log(error)
@@ -3010,7 +3010,7 @@ export default {
         })
       ) {
         this.$message.error(
-          '导入物件单价不能大于' + this.supplierCategoryPrice
+          '导入任务单价不能大于' + this.supplierCategoryPrice
         )
         return false
       }
@@ -3020,7 +3020,7 @@ export default {
       })
     },
     /**
-     * 确认导入物件
+     * 确认导入任务
      */
     confirmImportTask() {
       this.$refs['importTaskDataForm'].validate((valid) => {
@@ -3038,7 +3038,7 @@ export default {
       })
     },
     /**
-     * 修改物件
+     * 修改任务
      */
     updateTaskData() {
       this.$refs['taskDataForm'].validate((valid) => {
@@ -3056,13 +3056,13 @@ export default {
       })
     },
     /**
-     * 上传物件图片成功回调
+     * 上传任务图片成功回调
      */
     handleTaskImageSuccess(response, file) {
       this.handleTaskImageChange(file)
     },
     /**
-     * 上传物件图片变化回调
+     * 上传任务图片变化回调
      */
     handleTaskImageChange(file) {
       if (file.response) {
@@ -3073,7 +3073,7 @@ export default {
       }
     },
     /**
-     * 修改物件弹窗
+     * 修改任务弹窗
      */
     handleUpdateTask(task, taskIndex) {
       let extend
@@ -3111,7 +3111,7 @@ export default {
       })
     },
     /**
-     * 复制物件弹窗
+     * 复制任务弹窗
      */
     handleCopyTask(task, taskIndex) {
       let extend
@@ -3149,7 +3149,7 @@ export default {
       })
     },
     /**
-     * 删除物件弹窗
+     * 删除任务弹窗
      */
     handleDeleteTask(task, taskIndex) {
       deleteTask({ task_id: task.task_id })
@@ -3274,7 +3274,7 @@ export default {
       })
     },
     /**
-     * 物件提交审核
+     * 任务提交审核
      */
     handleToVerifyTask(multi = true) {
       const checkeds = []
@@ -3288,14 +3288,14 @@ export default {
 
         const result = this.multipleSelection.some((listItem) => {
           if ([4, 6].indexOf(listItem.status) < 0) {
-            const errorName = `[${listItem.name}]: 该需求状态无法提交审核物件`
+            const errorName = `[${listItem.name}]: 该需求状态无法提交审核任务`
             this.$message.error(errorName)
             return true
           }
 
           return listItem.tasks.some((taskItem) => {
             if (taskItem.task_status !== 0) {
-              const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法提交审核`
+              const errorName = `[${taskItem.task_name}] 该任务不是正常状态，无法提交审核`
               this.$message.error(errorName)
               return true
             }
@@ -3308,19 +3308,19 @@ export default {
         }
       } else {
         if ([4, 6].indexOf(this.detail.status) < 0) {
-          const errorName = `[${this.detail.name}]: 该需求状态无法提交审核物件`
+          const errorName = `[${this.detail.name}]: 该需求状态无法提交审核任务`
           this.$message.error(errorName)
           return true
         }
 
         if (this.detail.tasks.length <= 0) {
-          this.$message.error('请先新增物件')
+          this.$message.error('请先新增任务')
           return false
         }
 
         const result = this.detail.tasks.some((taskItem) => {
           if (taskItem.task_status !== 0) {
-            const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法提交审核`
+            const errorName = `[${taskItem.task_name}] 该任务不是正常状态，无法提交审核`
             this.$message.error(errorName)
             return true
           }
@@ -3473,7 +3473,7 @@ export default {
           return listItem.tasks.some((taskItem) => {
             if (taskItem.checked) {
               if (taskItem.task_status !== 0) {
-                const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法终止`
+                const errorName = `[${taskItem.task_name}] 该任务不是正常状态，无法终止`
                 this.$message.error(errorName)
                 return true
               }
@@ -3493,12 +3493,12 @@ export default {
           return false
         }
         if (this.multipleTaskSelection.length <= 0) {
-          this.$message.error('请先选择终止物件')
+          this.$message.error('请先选择终止任务')
           return false
         }
         const result = this.multipleTaskSelection.some((taskItem) => {
           if (taskItem.task_status !== 0) {
-            const errorName = `[${taskItem.task_name}] 该物件不是正常状态，无法终止`
+            const errorName = `[${taskItem.task_name}] 该任务不是正常状态，无法终止`
             this.$message.error(errorName)
             return true
           }
@@ -3725,7 +3725,7 @@ export default {
       })
     },
     /**
-     * 下载物件
+     * 下载任务
      */
     handleDownloadTask() {
       if (this.detail.demand_id) {

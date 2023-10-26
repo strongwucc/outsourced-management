@@ -13,7 +13,7 @@
         />
         <el-input
           v-model="listQuery.task_id"
-          placeholder="输入物件单号"
+          placeholder="输入任务单号"
           style="width: 200px"
           class="filter-item"
           size="mini"
@@ -218,7 +218,7 @@
               </el-table-column>
               <el-table-column
                 prop="task_id"
-                label="物件单号"
+                label="任务单号"
                 width="200"
                 align="center"
               >
@@ -245,12 +245,12 @@
               </el-table-column>
               <el-table-column
                 prop="task_name"
-                label="物件名称"
+                label="任务名称"
                 align="center"
                 show-overflow-tooltip
               />
               <el-table-column
-                label="物件品类"
+                label="任务品类"
                 align="center"
                 width="150"
                 show-overflow-tooltip
@@ -301,7 +301,7 @@
               </el-table-column>
               <el-table-column
                 prop="task_status"
-                label="物件状态"
+                label="任务状态"
                 width="100"
                 align="center"
                 show-overflow-tooltip
@@ -354,7 +354,7 @@
           {{ row.supplier_name }}
         </template>
       </el-table-column>
-      <el-table-column label="物件数量" align="center">
+      <el-table-column label="任务数量" align="center">
         <template slot-scope="{ row }">
           {{ row.nums }}
         </template>
@@ -605,7 +605,7 @@ const statusMap = [
   { id: 0, name: '资源审核中' },
   { id: 1, name: '资源已验收' },
   { id: 2, name: '验收不通过' },
-  { id: 3, name: '物件已终止' },
+  { id: 3, name: '任务已终止' },
   { id: 4, name: '已生成对帐单' }
 ]
 export default {
@@ -634,7 +634,7 @@ export default {
         1: '变更中',
         2: '资源已验收',
         3: '验收不通过',
-        4: '物件已终止',
+        4: '任务已终止',
         5: '已生成对帐单'
       }
       return taskStatusMap[status]
@@ -885,7 +885,7 @@ export default {
           return orderItem.items.some((taskItem, taskIndex) => {
             if (taskItem.checked) {
               if ([0].indexOf(taskItem.task_status) < 0) {
-                const errorName = `[${taskItem.task_id}]: 该物件状态无法申请变更`
+                const errorName = `[${taskItem.task_id}]: 该任务状态无法申请变更`
                 this.$message.error(errorName)
                 return true
               }
@@ -893,7 +893,7 @@ export default {
                 orderCheckeds.push(taskItem.receipt_id)
               }
               if (orderCheckeds.length > 1) {
-                const errorName = `只能选择单个验收单下的物件`
+                const errorName = `只能选择单个验收单下的任务`
                 this.$message.error(errorName)
                 return true
               }
@@ -907,7 +907,7 @@ export default {
         })
       ) {
         if (taskCheckeds.length <= 0) {
-          this.$message.error('请先选择物件')
+          this.$message.error('请先选择任务')
           return false
         }
       } else {
@@ -977,7 +977,7 @@ export default {
           return orderItem.items.some((taskItem, taskIndex) => {
             if (taskItem.checked) {
               if ([2].indexOf(taskItem.task_status) < 0) {
-                const errorName = `[${taskItem.task_id}]: 该物件状态无法生成结算单`
+                const errorName = `[${taskItem.task_id}]: 该任务状态无法生成结算单`
                 this.$message.error(errorName)
                 return true
               }
@@ -989,7 +989,7 @@ export default {
         })
       ) {
         if (taskCheckeds.length <= 0) {
-          this.$message.error('请先选择物件')
+          this.$message.error('请先选择任务')
           return false
         }
       } else {
@@ -1033,7 +1033,7 @@ export default {
           return listItem.items.some((taskItem) => {
             if (taskItem.checked) {
               if ([0].indexOf(taskItem.task_status) < 0) {
-                const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
+                const errorName = `[${taskItem.task_id}] 该任务不在审核中，无法审核`
                 this.$message.error(errorName)
                 return true
               }
@@ -1045,7 +1045,7 @@ export default {
         })
       ) {
         if (checkeds.length <= 0) {
-          this.$message.error('请先选择物件')
+          this.$message.error('请先选择任务')
           return false
         }
       } else {
@@ -1125,7 +1125,7 @@ export default {
           return listItem.items.some((taskItem) => {
             if (taskItem.checked) {
               if ([0].indexOf(taskItem.task_status) < 0) {
-                const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
+                const errorName = `[${taskItem.task_id}] 该任务不在审核中，无法审核`
                 this.$message.error(errorName)
                 return true
               }
@@ -1137,7 +1137,7 @@ export default {
         })
       ) {
         if (checkeds.length <= 0) {
-          this.$message.error('请先选择物件')
+          this.$message.error('请先选择任务')
           return false
         }
       } else {

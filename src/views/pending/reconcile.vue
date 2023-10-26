@@ -134,7 +134,7 @@
                   {{ row.supplier.name }}
                 </template>
               </el-table-column>
-              <el-table-column label="物件数量" align="center" min-width="100">
+              <el-table-column label="任务数量" align="center" min-width="100">
                 <template slot-scope="{ row }">
                   {{ row.nums }}
                 </template>
@@ -310,7 +310,7 @@
               " class="task-content">
             <div class="title">
               <i class="el-icon-s-management" />
-              <span>物件明细</span>
+              <span>任务明细</span>
             </div>
             <el-descriptions v-if="detail.supplier" class="supplier-box" :column="4" :label-style="{
               'font-weight': 'bold',
@@ -322,7 +322,7 @@
             </el-descriptions>
             <el-table :data="detail.tasks" class="task-table" width="100%" border row-key="task_id"
               @selection-change="handleTaskSelectionChange">
-              <el-table-column prop="task_id" label="物件单号" width="150" align="center">
+              <el-table-column prop="task_id" label="任务单号" width="150" align="center">
                 <template slot-scope="scope">
                   <task-detail :task-id="scope.row.task_id" />
                 </template>
@@ -339,8 +339,8 @@
                   <span v-else>-</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="task_name" label="物件名称" align="center" width="205" />
-              <el-table-column label="物件品类" align="center" width="150" show-overflow-tooltip>
+              <el-table-column prop="task_name" label="任务名称" align="center" width="205" />
+              <el-table-column label="任务品类" align="center" width="150" show-overflow-tooltip>
                 <template slot-scope="scope">
                   {{ scope.row.category | categoryText }}
                 </template>

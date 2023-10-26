@@ -243,7 +243,7 @@
                   {{ row.supplier.name }}
                 </template>
               </el-table-column>
-              <el-table-column label="物件数量" align="center" width="80">
+              <el-table-column label="任务数量" align="center" width="80">
                 <template slot-scope="{ row }">
                   {{ row.nums }}
                 </template>
@@ -330,7 +330,7 @@
           >
             <div class="title">
               <i class="el-icon-s-management" />
-              <span>物件明细</span>
+              <span>任务明细</span>
             </div>
             <el-descriptions
               v-if="detail.supplier"
@@ -361,7 +361,7 @@
               />
               <el-table-column
                 prop="task_id"
-                label="物件单号"
+                label="任务单号"
                 width="150"
                 align="center"
               >
@@ -394,13 +394,13 @@
               </el-table-column>
               <el-table-column
                 prop="task_name"
-                label="物件名称"
+                label="任务名称"
                 align="center"
                 width="205"
                 show-overflow-tooltip
               />
               <el-table-column
-                label="物件品类"
+                label="任务品类"
                 align="center"
                 width="150"
                 show-overflow-tooltip
@@ -454,7 +454,7 @@
               </el-table-column>
               <el-table-column
                 prop="task_status"
-                label="物件状态"
+                label="任务状态"
                 width="100"
                 align="center"
               >
@@ -823,9 +823,9 @@ export default {
         1: '审核中',
         2: '审核未通过',
         3: '待分配供应商',
-        4: '待填写物件',
-        5: '物件审核中',
-        6: '物件审核未通过',
+        4: '待填写任务',
+        5: '任务审核中',
+        6: '任务审核未通过',
         7: '待生成订单',
         8: '订单待审核',
         9: '订单审核未通过',
@@ -855,7 +855,7 @@ export default {
         1: '变更中',
         2: '资源已验收',
         3: '验收不通过',
-        4: '物件已终止',
+        4: '任务已终止',
         5: '已生成对帐单'
       }
       return statusMap[status]
@@ -865,7 +865,7 @@ export default {
         0: '资源审核中',
         1: '资源已验收',
         2: '验收不通过',
-        3: '物件已终止',
+        3: '任务已终止',
         4: '已生成对帐单'
       }
       return statusMap[status]
@@ -1111,12 +1111,12 @@ export default {
       let price, amount
 
       if (this.multipleTaskSelection.length <= 0) {
-        this.$message.error('请先选择物件')
+        this.$message.error('请先选择任务')
         return false
       }
       const result = this.multipleTaskSelection.some((taskItem) => {
         if ([0].indexOf(taskItem.task_status) < 0) {
-          const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
+          const errorName = `[${taskItem.task_id}] 该任务不在审核中，无法审核`
           this.$message.error(errorName)
           return true
         }
@@ -1180,7 +1180,7 @@ export default {
       //   const result = this.multipleSelection.some((listItem) => {
       //     return listItem.items.some((taskItem) => {
       //       if ([2].indexOf(taskItem.task_status) < 0) {
-      //         const errorName = `[${taskItem.task_id}] 该物件状态无法生成结算单`
+      //         const errorName = `[${taskItem.task_id}] 该任务状态无法生成结算单`
       //         this.$message.error(errorName)
       //         return true
       //       }
@@ -1194,12 +1194,12 @@ export default {
       //   }
       // } else {
       //   if (this.multipleTaskSelection.length <= 0) {
-      //     this.$message.error('请先选择物件')
+      //     this.$message.error('请先选择任务')
       //     return false
       //   }
       //   const result = this.multipleTaskSelection.some((taskItem) => {
       //     if ([2].indexOf(taskItem.task_status) < 0) {
-      //       const errorName = `[${taskItem.task_id}] 该物件状态无法生成结算单`
+      //       const errorName = `[${taskItem.task_id}] 该任务状态无法生成结算单`
       //       this.$message.error(errorName)
       //       return true
       //     }
@@ -1219,7 +1219,7 @@ export default {
         const result = this.multipleSelection.some((listItem) => {
           const itemResult = listItem.items.some((taskItem) => {
             if ([2].indexOf(taskItem.task_status) < 0) {
-              const errorName = `[${taskItem.task_id}] 该物件状态无法生成结算单`
+              const errorName = `[${taskItem.task_id}] 该任务状态无法生成结算单`
               this.$message.error(errorName)
               return true
             }
@@ -1239,7 +1239,7 @@ export default {
       } else {
         const result = this.multipleTaskSelection.some((taskItem) => {
           if ([2].indexOf(taskItem.task_status) < 0) {
-            const errorName = `[${taskItem.task_id}] 该物件状态无法生成结算单`
+            const errorName = `[${taskItem.task_id}] 该任务状态无法生成结算单`
             this.$message.error(errorName)
             return true
           }
@@ -1278,7 +1278,7 @@ export default {
         const result = this.multipleSelection.some((listItem) => {
           // return listItem.items.some((taskItem) => {
           //   if ([0].indexOf(taskItem.task_status) < 0) {
-          //     const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
+          //     const errorName = `[${taskItem.task_id}] 该任务不在审核中，无法审核`
           //     this.$message.error(errorName)
           //     return true
           //   }
@@ -1293,12 +1293,12 @@ export default {
         }
       } else {
         // if (this.multipleTaskSelection.length <= 0) {
-        //   this.$message.error('请先选择物件')
+        //   this.$message.error('请先选择任务')
         //   return false
         // }
         // const result = this.multipleTaskSelection.some((taskItem) => {
         //   if ([0].indexOf(taskItem.task_status) < 0) {
-        //     const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
+        //     const errorName = `[${taskItem.task_id}] 该任务不在审核中，无法审核`
         //     this.$message.error(errorName)
         //     return true
         //   }
@@ -1308,7 +1308,7 @@ export default {
         checkeds.push(this.detail.receipt_id)
         // const result = this.detail.items.some((taskItem) => {
         //   if ([0].indexOf(taskItem.task_status) < 0) {
-        //     const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
+        //     const errorName = `[${taskItem.task_id}] 该任务不在审核中，无法审核`
         //     this.$message.error(errorName)
         //     return true
         //   }
@@ -1410,7 +1410,7 @@ export default {
         const result = this.multipleSelection.some((listItem) => {
           return listItem.items.some((taskItem) => {
             if ([0].indexOf(taskItem.task_status) < 0) {
-              const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
+              const errorName = `[${taskItem.task_id}] 该任务不在审核中，无法审核`
               this.$message.error(errorName)
               return true
             }
@@ -1424,12 +1424,12 @@ export default {
         }
       } else {
         if (this.multipleTaskSelection.length <= 0) {
-          this.$message.error('请先选择物件')
+          this.$message.error('请先选择任务')
           return false
         }
         const result = this.multipleTaskSelection.some((taskItem) => {
           if ([0].indexOf(taskItem.task_status) < 0) {
-            const errorName = `[${taskItem.task_id}] 该物件不在审核中，无法审核`
+            const errorName = `[${taskItem.task_id}] 该任务不在审核中，无法审核`
             this.$message.error(errorName)
             return true
           }
@@ -1527,7 +1527,7 @@ export default {
           .then((data) => {
             data.forEach((file, fileIndex) => {
               const url = task.display_area[fileIndex].url
-              const fullFileName = `物件展示图-${task.task_id}-${task.task_name}${url.substring(
+              const fullFileName = `任务展示图-${task.task_id}-${task.task_name}${url.substring(
                 url.lastIndexOf('.')
               )}`
               downloadFileStream(fullFileName, file)
@@ -1625,7 +1625,7 @@ export default {
       }
     },
     /**
-     * 下载物件
+     * 下载任务
      */
     handleDownloadTask() {
       if (this.detail.receipt_id) {
