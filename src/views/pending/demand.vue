@@ -306,7 +306,7 @@
                   <template v-else> -- </template>
                 </template>
               </el-table-column>
-              <el-table-column label="总金额（人民币）" align="center" width="120">
+              <el-table-column label="总金额" align="center" width="80">
                 <template slot-scope="scope">
                   <template v-if="scope.row.work_amount > 0">
                     {{ scope.row.work_amount }}
@@ -687,14 +687,7 @@
               />
               <el-table-column prop="work_num" label="数量" align="center" />
               <el-table-column prop="work_unit" label="单位" align="center" />
-              <el-table-column label="单价" align="center">
-                <template slot-scope="scope">
-                  <span v-if="scope.row.currency_price > 0">
-                    {{ scope.row.currency }} {{ scope.row.currency_price }}
-                  </span>
-                  <span v-else>{{ scope.row.work_price }}</span>
-                </template>
-              </el-table-column>
+              <el-table-column prop="work_price" label="单价" align="center" />
               <el-table-column label="总价" align="center">
                 <template slot-scope="scope">
                   <span v-if="scope.row.pay_amount > 0">
@@ -1430,7 +1423,7 @@
               />
             </el-form-item>
 
-            <el-form-item label="单价（人民币）:" prop="price">
+            <el-form-item label="单价:" prop="price">
               <el-input
                 v-model="tempTask.price"
                 :placeholder="`请输入单价${
@@ -1470,12 +1463,12 @@
 
             <el-form-item
               v-if="tempTask.currency !== '人民币'"
-              :label="'单价（'+tempTask.currency+'）:'"
-              prop="currency_price"
+              label="实际支付外币金额:"
+              prop="pay_amount"
             >
               <el-input
-                v-model="tempTask.currency_price"
-                placeholder="请输入单价"
+                v-model="tempTask.pay_amount"
+                placeholder="请输入实际支付外币金额"
                 class="dialog-form-item"
               />
             </el-form-item>
@@ -1911,7 +1904,7 @@ export default {
         work_num: '',
         price: '',
         currency: '人民币',
-        currency_price: '',
+        pay_amount: '',
         deliver_date: '',
         remark: '',
         extend: []
@@ -1929,7 +1922,7 @@ export default {
         work_num: [
           {
             required: true,
-            message: this.work_unit ? '请输入有多少'+this.work_unit : '请输入单位数量',
+            message: '请输入单位数量',
             trigger: 'blur'
           },
           {
@@ -1947,22 +1940,22 @@ export default {
           { required: true, message: '请输入单价', trigger: 'blur' },
           {
             validator: (rule, value, callback) => {
-              if (value >= 0) {
+              if (value > 0) {
                 callback()
               } else {
-                callback(new Error('请输入正确的金额'))
+                callback(new Error('单价必须大于零'))
               }
             },
             trigger: 'blur'
           }
         ],
-        currency_price: [
+        pay_amount: [
           {
             validator: (rule, value, callback) => {
               if (value === '') {
                 callback()
               } else {
-                if (value >= 0) {
+                if (value > 0) {
                   callback()
                 } else {
                   callback(new Error('请输入正确的金额'))
@@ -2891,7 +2884,7 @@ export default {
         work_num: '',
         price: '',
         currency: '人民币',
-        currency_price: '',
+        pay_amount: '',
         deliver_date: '',
         remark: '',
         extend: []
