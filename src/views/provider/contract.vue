@@ -478,7 +478,7 @@
         <el-form-item label="导入合同">
           <el-upload
             class="upload-demo"
-            :action="`${$baseUrl}/api/needs/importPactTpl`"
+            :action="`${$baseUrl}/api/supply/importPactTpl`"
             :headers="{ Authorization: $store.getters.token }"
             :on-success="handleAddTplSucc"
             :show-file-list="false"
