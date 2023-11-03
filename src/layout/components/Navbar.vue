@@ -225,6 +225,7 @@
             <el-input
               v-model="temp.new_pass"
               class="dialog-form-item"
+              placeholder="密码需大于8位，且包含英文字符"
               show-password
             />
           </el-form-item>
