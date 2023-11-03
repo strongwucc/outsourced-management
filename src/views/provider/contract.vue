@@ -812,7 +812,7 @@ export default {
           createContract(postTemp).then((response) => {
             temp.pact_id = response.data.id
             temp.status = response.data.status
-            this.list.unshift(temp)
+            this.getList(false)
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
