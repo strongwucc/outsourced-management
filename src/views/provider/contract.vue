@@ -644,9 +644,13 @@ export default {
           { required: true, message: '请输入开户行', trigger: 'blur' }
         ],
         bank_account: [
-          { required: true, message: '请输入开户行账号', trigger: 'blur' }
+          { required: true, message: '请输入开户行账号', trigger: 'blur' },
+          { pattern: /^\d+$/, message: '请输入数字', trigger: 'blur'}
         ],
-        tax: [{ required: true, message: '请输入增值税', trigger: 'blur' }],
+        tax: [
+          { required: true, message: '请输入增值税', trigger: 'blur' },
+          { pattern: /^\d*\.?\d+$/, message: '请输入数字', trigger: 'blur'}
+        ],
         bn: [{ required: true, message: '请输入合同号', trigger: 'blur' }],
         pact_name: [
           { required: true, message: '请输入合同名称', trigger: 'blur' }
