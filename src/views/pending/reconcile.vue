@@ -1517,7 +1517,7 @@ export default {
         data.push(this.detail.supplier.name)
       }
       if (this.detail.project) {
-        data.push(this.detail.project.project_name)
+        data.push(this.detail.project.short_name)
       }
       if (this.detail.process && this.detail.process.account_dep) {
         data.push(this.detail.process.account_dep.name)
