@@ -1543,7 +1543,13 @@ export default {
         data.push(this.detail.project.short_name)
       }
       if (this.detail.created_at) {
-        data.push(this.detail.created_at)
+        // 将日期字符串解析为日期对象
+        let dateObject = new Date(this.detail.created_at)
+        // 提取年、月、日
+        let year = dateObject.getFullYear();
+        let month = ("0" + (dateObject.getMonth() + 1)).slice(-2); // 月份是从0开始的，所以要加1
+        let day = ("0" + dateObject.getDate()).slice(-2);
+        data.push(year + "/" + month + "/" + day)
       }
 
       //核算主体TODO
