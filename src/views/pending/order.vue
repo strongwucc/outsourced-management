@@ -1166,10 +1166,10 @@ export default {
           { required: true, message: '请输入单价', trigger: 'blur' },
           {
             validator: (rule, value, callback) => {
-              if (value > 0) {
+              if (value >= 0) {
                 callback()
               } else {
-                callback(new Error('单价必须大于零'))
+                callback(new Error('请输入正确的金额'))
               }
             },
             trigger: 'blur'
@@ -1181,7 +1181,7 @@ export default {
               if (value === '') {
                 callback()
               } else {
-                if (value > 0) {
+                if (value >= 0) {
                   callback()
                 } else {
                   callback(new Error('请输入正确的金额'))

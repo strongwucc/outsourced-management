@@ -198,7 +198,6 @@
         <el-form-item label="负责需求品类:" prop="cat_id" v-if="[1, 3].indexOf(temp.group_id) >= 0">
           <el-select
             v-model="temp.cat_id"
-            :disabled="dialogStatus === 'update'"
             class="dialog-form-item"
             placeholder="请选择"
             multiple
