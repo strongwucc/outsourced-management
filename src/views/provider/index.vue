@@ -812,7 +812,7 @@ export default {
             this.$message.error('两次密码输入不一致')
             return false
           }
-          updateMember({ id: this.tempPassword.id, login_name: tempPassword.login_name, password: this.tempPassword.new_pass })
+          updateMember({ id: this.tempPassword.id, login_name: this.tempPassword.login_name, password: this.tempPassword.new_pass })
             .then(() => {
               this.dialogPasswordVisible = false
               this.$notify({
