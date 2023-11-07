@@ -847,7 +847,7 @@ export default {
         ],
         invoice_detail: [
           { required: true, message: '请输入发票明细', trigger: 'blur' },
-          { pattern: /^\*.+\*.+-\￥\d+$/, message: '格式错误，请参考实例重新填写（示例：*设计服务*美术设计-￥10000）', trigger: 'blur' },
+          { pattern: /^\*.+\*.+-[\￥\¥]\d+$/, message: '格式错误，请参考实例重新填写（示例：*设计服务*美术设计-￥10000）', trigger: 'blur' },
         ]
       },
       tempBill: {
