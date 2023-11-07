@@ -1659,8 +1659,12 @@ export default {
       if (value === 1) {
         this.tempBill = Object.assign({}, this.tempBill, { invoice_code: '' })
         this.$set(this.billRules.invoice_code[0], 'required', false)
+        this.$set(this.billRules.invoice_number[1], 'pattern', /^\d{20}$/)
+        this.$set(this.billRules.invoice_number[1], 'message', '限20位数字')
       } else {
         this.$set(this.billRules.invoice_code[0], 'required', true)
+        this.$set(this.billRules.invoice_number[1], 'pattern', /^\d{8}$/)
+        this.$set(this.billRules.invoice_number[1], 'message', '限8位数字')
       }
     }
   }

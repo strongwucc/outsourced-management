@@ -550,7 +550,7 @@ export default {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.temp))
           // temp.id = parseInt(Math.random() * 100) + 1024
-          temp.cat_id = temp.cat_id.join(',')
+          temp.cat_id = temp.cat_id.length > 0 ? temp.cat_id.join(',') : ''
           createMember(temp)
             .then((response) => {
               temp.id = response.data.id
@@ -594,7 +594,7 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const temp = JSON.parse(JSON.stringify(this.temp))
-          temp.cat_id = temp.cat_id.join(',')
+          temp.cat_id = temp.cat_id.length > 0 ? temp.cat_id.join(',') : ''
           updateMember(temp)
             .then(() => {
               this.roles.some((roleItem) => {
