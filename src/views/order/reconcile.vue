@@ -714,6 +714,15 @@
         <el-form-item label="签约主体:">
           <div v-if="pact.sub">{{ pact.sub.name }}</div>
         </el-form-item>
+        <el-form-item label="开户行:">
+          <div>{{ pact.bank_name }}</div>
+        </el-form-item>
+        <el-form-item label="开户行账号:">
+          <div>{{ pact.bank_account }}</div>
+        </el-form-item>
+        <el-form-item label="增值税（%):">
+          <div>{{ pact.tax }}</div>
+        </el-form-item>
         <el-form-item label="合同号:">
           <div>{{ pact.bn }}</div>
         </el-form-item>
