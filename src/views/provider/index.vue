@@ -815,6 +815,10 @@ export default {
           updateMember({ id: this.tempPassword.id, login_name: this.tempPassword.login_name, password: this.tempPassword.new_pass })
             .then(() => {
               this.dialogPasswordVisible = false
+              const memberIndex = this.list.findIndex(item=>item.user_id===this.tempPassword.id)
+              if (memberIndex >= 0) {
+                this.$set(this.list[memberIndex], 'login_name', this.tempPassword.login_name)
+              }
               this.$notify({
                 title: '成功',
                 message: '修改成功',

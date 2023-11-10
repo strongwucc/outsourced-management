@@ -567,6 +567,7 @@ export default {
                 )
                 return this.departments[depIndex] || null
               })
+              temp.process = []
 
               this.list.unshift(temp)
               this.dialogFormVisible = false

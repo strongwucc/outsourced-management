@@ -278,7 +278,21 @@
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column prop="price" label="单价" align="center" />
+              <el-table-column label="单价" align="center">
+                <template slot-scope="scope">
+                  <div
+                    v-if="scope.row.price !== scope.row.new_price"
+                    class="modify-color"
+                  >
+                    <span>{{ scope.row.price }}</span>
+                    <i class="el-icon-right" />
+                    <span>{{ scope.row.new_price }}</span>
+                  </div>
+                  <div v-else>
+                    {{ scope.row.price }}
+                  </div>
+                </template>
+              </el-table-column>
               <el-table-column label="总价" align="center" min-width="150">
                 <template slot-scope="scope">
                   <span v-if="scope.row.pay_amount > 0">
