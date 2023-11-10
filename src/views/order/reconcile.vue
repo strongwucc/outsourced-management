@@ -318,7 +318,7 @@
       </el-table-column>
       <el-table-column label="结算状态" align="center" min-width="120">
         <template slot-scope="{ row }">
-          <el-tooltip class="item" effect="dark" :content="row.express" placement="top" v-if="[3].indexOf(row.statement_status) >= 0 && row.express">
+          <el-tooltip class="item" effect="dark" :content="row.express" placement="top" v-if="[2].indexOf(row.statement_status) >= 0 && row.express">
             <span style="color: #f56c6c">{{ row.statement_status | statusText }}</span>
           </el-tooltip>
           <span v-else>{{ row.statement_status | statusText }}</span>
@@ -402,7 +402,7 @@
               查看发票
             </el-button> -->
             <el-button
-              v-if="[3].indexOf(row.statement_status) >= 0 && row.express === ''"
+              v-if="[2].indexOf(row.statement_status) >= 0 && row.express === ''"
               v-permission="[0]"
               type="primary"
               size="mini"
