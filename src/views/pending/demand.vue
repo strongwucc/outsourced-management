@@ -1384,6 +1384,7 @@
                 <el-option
                   v-for="(item, itemIndex) in [
                     '人天',
+                    '人月',
                     '套',
                     '件',
                     '小时',
