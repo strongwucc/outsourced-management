@@ -1409,7 +1409,7 @@
               />
             </el-form-item>
 
-            <el-form-item label="单价:" prop="price">
+            <el-form-item label="单价(人民币):" prop="price">
               <el-input
                 v-model="tempTask.price"
                 :placeholder="`请输入单价${
@@ -1449,12 +1449,12 @@
 
             <el-form-item
               v-if="tempTask.currency !== '人民币'"
-              label="实际支付外币金额:"
+              label="物件外币总金额:"
               prop="pay_amount"
             >
               <el-input
                 v-model="tempTask.pay_amount"
-                placeholder="请输入实际支付外币金额"
+                placeholder="请输入物件外币总金额"
                 class="dialog-form-item"
               />
             </el-form-item>
